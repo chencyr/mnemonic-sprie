@@ -15,3 +15,40 @@ describe("game data validation", () => {
     expect(data.mapRules.floorCount).toBe(12);
   });
 });
+
+import type { CardDefinition, EnemyDefinition, GameData } from "../../src/core";
+
+describe("core type exports", () => {
+  it("exports card, enemy, and game data contracts", () => {
+    const card: CardDefinition = {
+      id: "strike",
+      name: "Strike",
+      cost: 1,
+      type: "attack",
+      rarity: "basic",
+      target: "singleEnemy",
+      description: "Deal 6 damage.",
+      effectId: "deal_damage_6",
+      tags: ["starter"],
+      mutationKeys: ["bloodthirst", "desperation"],
+      assets: { cardArt: "cards/strike.png" }
+    };
+
+    const enemy: EnemyDefinition = {
+      id: "sticker_punk",
+      name: "Sticker Punk",
+      kind: "normal",
+      maxHp: 30,
+      intents: [{ id: "poke", type: "attack", amount: 6, weight: 1 }],
+      assets: { sprite: "enemies/sticker_punk.png" }
+    };
+
+    const data: Pick<GameData, "cards" | "enemies"> = {
+      cards: [card],
+      enemies: [enemy]
+    };
+
+    expect(data.cards[0].id).toBe("strike");
+    expect(data.enemies[0].kind).toBe("normal");
+  });
+});
