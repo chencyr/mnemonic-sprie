@@ -21,3 +21,5 @@ export type {
   RelicTrigger,
   TargetType
 } from "./types";
+export { createRng, pickWeighted, shuffle } from "./rng";
+export type { Rng } from "./rng";
