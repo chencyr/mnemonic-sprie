@@ -1,0 +1,7 @@
+[
+  { "id": "broken_notes", "name": "破碎筆記", "rarity": "starter", "description": "每場戰鬥結束後，使用最多次的一張牌獲得記憶進度。", "trigger": "combatEnd", "assets": { "icon": "relics/broken_notes.png" } },
+  { "id": "neon_nail", "name": "霓虹釘", "rarity": "common", "description": "每場戰鬥第一次打出攻擊牌時造成 +2 傷害。", "trigger": "cardPlayed", "assets": { "icon": "relics/neon_nail.png" } },
+  { "id": "sticker_charm", "name": "貼紙護符", "rarity": "common", "description": "每場戰鬥第一次獲得記憶時，獲得 3 格擋。", "trigger": "memoryGained", "assets": { "icon": "relics/sticker_charm.png" } },
+  { "id": "old_ticket_stub", "name": "舊票根", "rarity": "uncommon", "description": "每個商人第一件商品打折。", "trigger": "shopOpened", "assets": { "icon": "relics/old_ticket_stub.png" } },
+  { "id": "broken_recorder", "name": "壞掉的錄音機", "rarity": "rare", "description": "每局一次，休息點可額外變異一張牌。", "trigger": "restSite", "assets": { "icon": "relics/broken_recorder.png" } }
+]

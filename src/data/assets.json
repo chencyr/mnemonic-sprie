@@ -1,0 +1,31 @@
+{
+  "placeholders": {
+    "cardArt": "ui/placeholders/card-art.png",
+    "character": "characters/seeker-placeholder.png",
+    "enemySprite": "ui/placeholders/enemy-sprite.png",
+    "relicIcon": "ui/placeholders/relic-icon.png",
+    "eventImage": "ui/placeholders/event-image.png",
+    "memorySticker": "stickers/memory-empty.png",
+    "uiIcon": "ui/placeholders/ui-icon.png"
+  },
+  "ui": {
+    "nodeNormalCombat": "ui/nodes/normal-combat.png",
+    "nodeEliteCombat": "ui/nodes/elite-combat.png",
+    "nodeEvent": "ui/nodes/event.png",
+    "nodeRest": "ui/nodes/rest.png",
+    "nodeShop": "ui/nodes/shop.png",
+    "nodeBoss": "ui/nodes/boss.png",
+    "intentAttack": "ui/intents/attack.png",
+    "intentBlock": "ui/intents/block.png",
+    "intentDebuff": "ui/intents/debuff.png"
+  },
+  "audio": {
+    "cardPlayed": "audio/sfx/card-played.ogg",
+    "damage": "audio/sfx/damage.ogg",
+    "memoryGained": "audio/sfx/memory-gained.ogg",
+    "mutation": "audio/sfx/mutation.ogg",
+    "victory": "audio/sfx/victory.ogg",
+    "failure": "audio/sfx/failure.ogg",
+    "bgm": "audio/bgm/main-loop.ogg"
+  }
+}
