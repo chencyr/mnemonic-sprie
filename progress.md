@@ -21,3 +21,9 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Decide the actual core game loop and memory mechanic for Mnemonic Spire.
 - Add focused gameplay tests once the first real feature is implemented.
 - Add asset pipeline conventions when art/audio direction is chosen.
+
+## 2026-05-05 MVP Implementation
+
+- Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.
+- Current target: complete the Phaser 3 + TypeScript + Vite MVP, then run self-designed E2E plus exploratory browser testing and fix issues until the core flow is playable.
+- Test strategy: verify deterministic text state through `window.render_game_to_text()`, drive clicks through browser tests, inspect screenshots, and run boundary/exploratory paths around combat, rewards, events, rest, shop, mutation, Boss, win, and failure states.
