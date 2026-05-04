@@ -148,15 +148,15 @@ export class GameScene extends Phaser.Scene {
 
   private drawTitle() {
     const art = this.assets.getPlaceholder("character");
-    this.image(640, 245, art.key, 260, 260, 0.88);
-    this.text(640, 118, "記憶牌塔", 64, "#fff8d8", 0.5, 0.5);
-    this.text(640, 168, "Phaser 3 + TypeScript MVP", 22, "#8be9d1", 0.5, 0.5);
-    this.button("start", "開始一局", 548, 510, 184, 54, () => {
+    this.image(640, 330, art.key, 260, 260, 0.9);
+    this.text(640, 112, "記憶牌塔", 64, "#fff8d8", 0.5, 0.5);
+    this.text(640, 166, "Phaser 3 + TypeScript MVP", 22, "#8be9d1", 0.5, 0.5);
+    this.button("start", "開始一局", 548, 548, 184, 54, () => {
       this.startAudio();
       startRun(this.engine);
       this.render();
     });
-    this.text(640, 590, "每張牌會記住本局經驗，休息點可將有記憶的牌變異。", 20, "#ffffff", 0.5, 0.5);
+    this.text(640, 635, "每張牌會記住本局經驗，休息點可將有記憶的牌變異。", 20, "#ffffff", 0.5, 0.5);
   }
 
   private drawMap() {
@@ -242,13 +242,13 @@ export class GameScene extends Phaser.Scene {
     if (!reward) return;
     this.text(58, 118, "戰鬥獎勵：選一張牌或跳過拿金幣", 28, "#fff8d8");
     reward.cards.forEach((card, index) => {
-      const x = 278 + index * REWARD_CARD_GAP;
-      this.image(x + CARD_WIDTH / 2, 252, this.assets.getCardArt(card.id).key, CARD_WIDTH, 112);
-      this.button(`reward:${card.id}`, card.name, x, 368, CARD_WIDTH, 54, () => {
+      const x = 230 + index * REWARD_CARD_GAP;
+      this.image(x + 90, 252, this.assets.getCardArt(card.id).key, CARD_WIDTH, 112);
+      this.button(`reward:${card.id}`, card.name, x, 368, 180, 54, () => {
         chooseCardReward(this.engine, card.id);
         this.render();
       });
-      this.text(x + CARD_WIDTH / 2, 440, card.description, 14, "#ffffff", 0.5, 0.5, CARD_WIDTH + 34);
+      this.text(x, 440, card.description, 13, "#ffffff", 0, 0, 190);
     });
     if (reward.relic) {
       this.text(850, 212, `精英遺物：${reward.relic.name}`, 20, "#c4b5fd");
@@ -399,7 +399,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf) {
-    const rect = this.add.rectangle(x, y, w, h, enabled ? color : 0x4b5563, enabled ? 0.92 : 0.45).setOrigin(0);
+    const rectAlpha = label === "" ? 0.38 : enabled ? 0.92 : 0.45;
+    const rect = this.add.rectangle(x, y, w, h, enabled ? color : 0x4b5563, rectAlpha).setOrigin(0);
     rect.setStrokeStyle(2, enabled ? 0xffffff : 0x6b7280, enabled ? 0.42 : 0.2);
     if (enabled) {
       rect.setInteractive({ useHandCursor: true });
@@ -407,7 +408,7 @@ export class GameScene extends Phaser.Scene {
     }
     const text = this.add
       .text(x + w / 2, y + h / 2, label, {
-        color: "#101318",
+        color: enabled ? "#101318" : "#fff8d8",
         fontFamily: HUD_FONT,
         fontSize: label.length > 10 ? "14px" : "17px",
         fontStyle: "700",

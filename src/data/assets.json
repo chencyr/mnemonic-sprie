@@ -1,7 +1,7 @@
 {
   "placeholders": {
     "cardArt": "ui/placeholders/card-art.png",
-    "character": "characters/seeker-placeholder.png",
+    "character": "characters/seeker.png",
     "enemySprite": "ui/placeholders/enemy-sprite.png",
     "relicIcon": "ui/placeholders/relic-icon.png",
     "eventImage": "ui/placeholders/event-image.png",

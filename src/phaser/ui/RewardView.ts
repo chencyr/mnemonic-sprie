@@ -1,1 +1,1 @@
-export const REWARD_CARD_GAP = 164;
+export const REWARD_CARD_GAP = 260;

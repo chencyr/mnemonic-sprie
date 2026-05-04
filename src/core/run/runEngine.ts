@@ -97,6 +97,12 @@ export function endRunTurn(engine: RunEngine) {
 
 export function autoWinCombat(engine: RunEngine) {
   const combat = requireCombat(engine.run);
+  const memoryTargetId = combat.hand[0] ?? combat.drawPile[0] ?? combat.cards[0]?.instanceId;
+  const memoryTarget = combat.cards.find((card) => card.instanceId === memoryTargetId);
+  if (memoryTarget) {
+    memoryTarget.memory.bloodthirst = Math.max(memoryTarget.memory.bloodthirst, 3);
+    combat.playedCounts[memoryTarget.instanceId] = Math.max(combat.playedCounts[memoryTarget.instanceId] ?? 0, 1);
+  }
   for (const enemy of combat.enemies) enemy.hp = 0;
   checkCombatEnd(combat);
   completeCombat(engine);
