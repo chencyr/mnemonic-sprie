@@ -52,3 +52,27 @@ describe("core type exports", () => {
     expect(data.enemies[0].kind).toBe("normal");
   });
 });
+
+import { validateGameData } from "../../src/core/data/validate";
+
+describe("validateGameData", () => {
+  it("rejects duplicate ids inside a table", () => {
+    const data = loadGameData();
+    const duplicated = {
+      ...data,
+      cards: [data.cards[0], data.cards[0]]
+    };
+
+    expect(() => validateGameData(duplicated)).toThrow("Duplicate card id: strike");
+  });
+
+  it("rejects card effect ids missing from the known MVP effect id list", () => {
+    const data = loadGameData();
+    const invalid = {
+      ...data,
+      cards: [{ ...data.cards[0], effectId: "missing_effect" }]
+    };
+
+    expect(() => validateGameData(invalid)).toThrow("Unknown card effect id: missing_effect");
+  });
+});

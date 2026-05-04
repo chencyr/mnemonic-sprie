@@ -1,3 +1,5 @@
+export { loadGameData } from "./data/loadGameData";
+export { knownCardEffectIds, validateGameData } from "./data/validate";
 export type {
   AssetDefaults,
   AssetSlots,
