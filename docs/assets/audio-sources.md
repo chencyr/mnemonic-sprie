@@ -12,3 +12,36 @@
 - Local technical check: Ogg Vorbis, stereo, 44100 Hz, duration 129.6 seconds, bitrate about 138 kbps.
 
 This is a placeholder asset for MVP development. Replace it before final release if a stronger original soundtrack becomes available.
+
+## Placeholder SFX
+
+All placeholder SFX below are from Kenney asset packs licensed as Creative Commons Zero (CC0). The downloaded packs include `License.txt` stating the content is free for personal, educational, and commercial projects, and that credit is not mandatory.
+
+### Source Packs
+
+- Interface Sounds
+  - Source page: https://kenney.nl/assets/interface-sounds
+  - Mirror used for download: https://opengameart.org/content/interface-sounds
+  - Download used: https://opengameart.org/sites/default/files/kenney_interfaceSounds.zip
+  - License: CC0
+- Impact Sounds
+  - Source page: https://kenney.nl/assets/impact-sounds
+  - Download used: https://www.kenney.nl/media/pages/assets/impact-sounds/8aa7b545c9-1677589768/kenney_impact-sounds.zip
+  - License: CC0
+- Music Jingles
+  - Source page: https://kenney.nl/assets/music-jingles
+  - Download used: https://www.kenney.nl/media/pages/assets/music-jingles/4f5dd770b7-1677590399/kenney_music-jingles.zip
+  - License: CC0
+
+### File Mapping
+
+| Local file | Source pack | Source file | Technical check |
+| --- | --- | --- | --- |
+| `public/assets/audio/sfx/card-played.ogg` | Kenney Interface Sounds | `Audio/drop_004.ogg` | Ogg Vorbis, 44.1kHz, stereo, 0.286689s |
+| `public/assets/audio/sfx/damage.ogg` | Kenney Impact Sounds | `Audio/impactPunch_heavy_000.ogg` | Ogg Vorbis, 44.1kHz, stereo, 0.649025s |
+| `public/assets/audio/sfx/memory-gained.ogg` | Kenney Interface Sounds | `Audio/confirmation_003.ogg` | Ogg Vorbis, 44.1kHz, mono, 0.322018s |
+| `public/assets/audio/sfx/mutation.ogg` | Kenney Interface Sounds | `Audio/scratch_004.ogg` | Ogg Vorbis, 44.1kHz, mono, 0.325079s |
+| `public/assets/audio/sfx/victory.ogg` | Kenney Music Jingles | `Audio/8-Bit jingles/jingles_NES00.ogg` | Ogg Vorbis, 44.1kHz, stereo, 1.757846s |
+| `public/assets/audio/sfx/failure.ogg` | Kenney Interface Sounds | `Audio/error_006.ogg` | Ogg Vorbis, 44.1kHz, mono, 0.500045s |
+
+These SFX are placeholders selected for functional feedback, not final sound direction.
