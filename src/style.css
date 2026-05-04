@@ -35,7 +35,7 @@ body {
     #16181e;
 }
 
-#game {
+#app canvas {
   display: block;
   width: min(100vw, 177.7778vh);
   height: min(56.25vw, 100vh);
