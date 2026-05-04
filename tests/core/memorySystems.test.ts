@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { chooseBossCountermeasure, loadGameData, mutateCardInstance } from "../../src/core";
+import { chooseBossCountermeasure, loadGameData, mutateCardInstance, type CardInstance } from "../../src/core";
 
 describe("memory systems", () => {
   it("mutates an eligible card once", () => {
     const data = loadGameData();
-    const card = {
+    const card: CardInstance = {
       instanceId: "strike-1",
       cardId: "strike",
       memory: { bloodthirst: 3, desperation: 0, grudge: 0, obsession: 0, witness: 0 },
