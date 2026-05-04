@@ -23,3 +23,5 @@ export type {
 } from "./types";
 export { createRng, pickWeighted, shuffle } from "./rng";
 export type { Rng } from "./rng";
+export { createEffectRegistry, registerMvpEffectPlaceholders } from "./effects/effectRegistry";
+export type { EffectHandler, EffectRegistry, EffectResult } from "./effects/effectRegistry";
