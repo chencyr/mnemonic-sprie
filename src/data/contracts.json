@@ -1,0 +1,6 @@
+[
+  { "id": "blood_contract", "name": "血契", "benefit": "立刻獲得 1 張稀有牌。", "cost": "接下來 3 場戰鬥開場失去 5 HP。", "trigger": "combatStart", "remainingUses": 3, "assets": { "icon": "ui/contracts/blood_contract.png" } },
+  { "id": "debt_contract", "name": "債契", "benefit": "立刻獲得 100 金幣。", "cost": "下次商人價格提高 50%。", "trigger": "shopOpened", "remainingUses": 1, "assets": { "icon": "ui/contracts/debt_contract.png" } },
+  { "id": "ink_contract", "name": "墨契", "benefit": "立即讓一張有記憶的牌變異。", "cost": "牌組加入 1 張詛咒牌。", "trigger": "immediate", "remainingUses": 1, "assets": { "icon": "ui/contracts/ink_contract.png" } },
+  { "id": "blank_contract", "name": "空白契", "benefit": "移除一張牌。", "cost": "Boss 戰開場 Boss 獲得額外強化。", "trigger": "bossStart", "remainingUses": 1, "assets": { "icon": "ui/contracts/blank_contract.png" } }
+]

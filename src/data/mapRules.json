@@ -1,0 +1,12 @@
+{
+  "floorCount": 12,
+  "minNodesPerMiddleFloor": 2,
+  "maxNodesPerMiddleFloor": 4,
+  "bossFloor": 12,
+  "firstFloorNodeType": "normalCombat",
+  "requiredRestFloorMin": 6,
+  "requiredRestFloorMax": 9,
+  "lateSpecialFloorMin": 10,
+  "lateSpecialFloorMax": 11,
+  "maxConsecutiveNonCombat": 2
+}
