@@ -30,6 +30,10 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetRole(current, "combat-ui:turn-device", "combat");
   assertVisibleAssetRole(current, "combat-ui:ticker-panel", "combat");
   assertVisibleAssetRole(current, "combat-ui:hand-tray", "combat");
+  assert.equal(current.combatUi?.reference, "battle-design-proposal-3");
+  for (const role of ["combat-ui:background", "combat-ui:player-panel", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]) {
+    assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
+  }
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");

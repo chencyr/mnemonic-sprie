@@ -119,6 +119,10 @@ interface TextSnapshot {
     ticker: CombatFeedbackItem[];
     center: CombatFeedbackItem[];
   };
+  combatUi?: {
+    reference: "battle-design-proposal-3";
+    assetRoles: string[];
+  };
   audio: {
     muted: boolean;
     started: boolean;
@@ -895,6 +899,13 @@ export class GameScene extends Phaser.Scene {
       turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
       victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
       feedback: this.feedbackSnapshot(),
+      combatUi:
+        run.mode === "combat"
+          ? {
+              reference: "battle-design-proposal-3",
+              assetRoles: this.visibleAssets.filter((asset) => asset.role.startsWith("combat-ui:")).map((asset) => asset.role)
+            }
+          : undefined,
       audio: {
         muted: this.muted,
         started: this.audioStarted,
