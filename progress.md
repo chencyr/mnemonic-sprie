@@ -45,6 +45,20 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Manual Playwright screenshots written to `output/manual-review-game-feel/`.
   - Visual review confirmed enemy damage float text, player HP panel changing to 66/72 after enemy damage, `-6 HP` float text, and reward card stagger entry.
 
+## 2026-05-06 Block Fix
+
+- User reported block was ineffective during combat.
+- Root cause: `endPlayerTurn()` cleared `combat.player.block` before `resolveEnemyTurn()`, so enemy attacks never saw player block.
+- Added core regression test: playing `guard` against a fixed 6-damage enemy intent should leave player HP at 71 from 72.
+- Fix: keep block during enemy turn, then clear block after enemy turn before `startPlayerTurn()`.
+- Verification:
+  - `npm test -- tests/core/combatEngine.test.ts` passed.
+  - `npm test` passed: 8 files / 30 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - develop-web-game client run wrote screenshots/state to `output/web-game-block-fix/`.
+  - Manual Playwright block scenario confirmed 5 block reduces 6 incoming damage to 1; screenshot/report in `output/manual-review-block-fix/`.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.

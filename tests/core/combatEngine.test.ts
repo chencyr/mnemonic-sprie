@@ -58,6 +58,29 @@ describe("combat engine", () => {
     expect(combat.hand.length).toBeGreaterThan(0);
     expect(combat.player.hp).toBeLessThanOrEqual(72);
   });
+
+  it("keeps player block through the enemy attack step", () => {
+    const data = loadGameData();
+    const combat = createCombat(data, createRng(9), {
+      floor: 1,
+      enemyKind: "normal",
+      playerHp: 72,
+      playerMaxHp: 72,
+      deck: starterDeck(),
+      enemyIds: ["sticker_punk"]
+    });
+    combat.hand = ["guard-1"];
+    combat.drawPile = [];
+    combat.discardPile = [];
+    combat.enemies[0].intent = { id: "test-attack", type: "attack", amount: 6, weight: 1 };
+
+    playCard(combat, data, createRng(3), "guard-1");
+    expect(combat.player.block).toBe(5);
+
+    endPlayerTurn(combat, data, createRng(10));
+
+    expect(combat.player.hp).toBe(71);
+  });
 });
 
 function starterDeck() {
