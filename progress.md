@@ -36,6 +36,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Verification: `npm run build` passed.
 - Task 4 complete locally: `GameScene` now consumes new combat events once per combat id, tracks player/enemy render anchors, and plays damage/player feedback FX after combat render.
 - Verification: `npm run build` and `npm run test:e2e` passed.
+- Task 5 complete locally: added `screenFx` and staggered reward card entry animation while preserving immediate reward button descriptors.
+- Verification: `npm run build` and `npm run test:e2e` passed.
 
 ## 2026-05-05 MVP Implementation
 
