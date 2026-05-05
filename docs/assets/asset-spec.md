@@ -131,6 +131,30 @@ Audio format:
 | `public/assets/ui/contracts/ink_contract.png` | ink contract | Ink blot and marker contract seal. |
 | `public/assets/ui/contracts/blank_contract.png` | blank contract | Empty label and eye contract seal. |
 
+### Combat UI Surfaces
+
+These assets support the combat scene UI implementation based on `externals/battle-design-proposal-3.png`, with diagonal street energy from `externals/battle-design-proposal-4.png`.
+
+Rules:
+
+- Store final runtime files under `public/assets/ui/combat/`.
+- Do not embed gameplay text in the image. HP, energy, block, turn labels, card names, damage, and combat ticker text are Phaser-rendered.
+- Use strong sticker silhouettes, thick marker-like linework, grunge street texture, cyan/magenta/yellow accents, and dark readable negative space.
+- Transparent panel assets should include only the designed frame/surface and decorative marks.
+- The full background must leave enough visual quiet space for enemies, cards, and feedback text.
+
+| File | Key | Size | Transparency | Purpose |
+| --- | --- | ---: | --- | --- |
+| `public/assets/ui/combat/battle-bg.png` | `combatBattleBg` | 1920x1080 | No | Full combat stage background, street-graffiti wall/floor, no embedded text. |
+| `public/assets/ui/combat/player-panel.png` | `combatPlayerPanel` | 420x280 | Yes | Upper-left player HP/energy/block frame. |
+| `public/assets/ui/combat/top-resource-frame.png` | `combatTopResourceFrame` | 760x72 | Yes | Top floor/gold/relic/contract tab strip frame. |
+| `public/assets/ui/combat/turn-device.png` | `combatTurnDevice` | 360x260 | Yes | Right-bottom end-turn device. |
+| `public/assets/ui/combat/combat-ticker-panel.png` | `combatTickerPanel` | 330x430 | Yes | Right combat ticker drawer/panel. |
+| `public/assets/ui/combat/enemy-platform.png` | `combatEnemyPlatform` | 320x120 | Yes | Enemy ground platform / sticker base. |
+| `public/assets/ui/combat/target-ring.png` | `combatTargetRing` | 320x320 | Yes | Neon selected/hover target ring. |
+| `public/assets/ui/combat/hand-tray.png` | `combatHandTray` | 940x230 | Yes | Bottom card tray/rail. |
+| `public/assets/ui/combat/drop-zone.png` | `combatDropZone` | 280x210 | Yes | Drag/drop hint surface. |
+
 ### Placeholders
 
 | File | Slot |
