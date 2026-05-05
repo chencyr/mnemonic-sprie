@@ -27,6 +27,13 @@
     "victory": "audio/sfx/victory.ogg",
     "failure": "audio/sfx/failure.ogg",
     "bgm": "audio/bgm/main-loop.ogg",
-    "combatBgm": "audio/bgm/combat-loop.ogg"
+    "combatBgm": "audio/bgm/combat-loop.ogg",
+    "cardDragStart": "audio/sfx/card-played.ogg",
+    "cardDropPlay": "audio/sfx/card-played.ogg",
+    "cardDropCancel": "audio/sfx/failure.ogg",
+    "attackHit": "audio/sfx/damage.ogg",
+    "blockGain": "audio/sfx/memory-gained.ogg",
+    "enemyAttack": "audio/sfx/damage.ogg",
+    "autoEndTurn": "audio/sfx/mutation.ogg"
   }
 }

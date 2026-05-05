@@ -89,6 +89,18 @@ describe("asset registry", () => {
       key: "audio:combatBgm",
       path: "/assets/audio/bgm/combat-loop.ogg"
     });
+    expect(registry.getAudio("cardDragStart")).toEqual({
+      key: "audio:cardDragStart",
+      path: "/assets/audio/sfx/card-played.ogg"
+    });
+    expect(registry.getAudio("cardDropCancel")).toEqual({
+      key: "audio:cardDropCancel",
+      path: "/assets/audio/sfx/failure.ogg"
+    });
+    expect(registry.getAudio("autoEndTurn")).toEqual({
+      key: "audio:autoEndTurn",
+      path: "/assets/audio/sfx/mutation.ogg"
+    });
   });
 
   it("preloads combat background music from the asset data", () => {
