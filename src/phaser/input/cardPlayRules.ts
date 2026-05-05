@@ -1,4 +1,4 @@
-import { effectiveCardCost, type CardDefinition, type CardInstance, type CombatState, type EnemyInstance, type GameData } from "../../core";
+import { effectiveCardCost, isEnemyAlive, type CardDefinition, type CardInstance, type CombatState, type EnemyInstance, type GameData } from "../../core";
 
 export type DropZoneKind = "enemy" | "battlefield" | "player" | "hand" | "invalid";
 
@@ -16,7 +16,7 @@ export interface ResolvedCardPlay {
 
 export function findAutoEnemyTarget(enemies: readonly EnemyInstance[]): string | undefined {
   return enemies
-    .filter((enemy) => enemy.hp > 0)
+    .filter(isEnemyAlive)
     .reduce<EnemyInstance | undefined>((best, enemy) => {
       if (!best) return enemy;
       if (enemy.hp < best.hp) return enemy;
@@ -78,7 +78,7 @@ function cardDefinition(data: GameData, card: CardInstance): CardDefinition | un
 }
 
 function livingEnemyId(combat: CombatState, enemyId?: string): string | undefined {
-  return combat.enemies.find((enemy) => enemy.instanceId === enemyId && enemy.hp > 0)?.instanceId;
+  return combat.enemies.find((enemy) => enemy.instanceId === enemyId && isEnemyAlive(enemy))?.instanceId;
 }
 
 function targetHandCard(combat: CombatState, cardInstanceId: string): string | undefined {

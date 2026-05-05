@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { colors, HUD_FONT } from "./uiTheme";
 import type { UiRenderContext } from "./uiTypes";
+import { coverCrop } from "./imageLayout";
 
 export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: number, title?: string) {
   const container = scene.add.container(x, y);
@@ -42,6 +43,38 @@ export function image(
 ) {
   if (!scene.textures.exists(key)) return undefined;
   const img = scene.add.image(x, y, key).setDisplaySize(w, h).setAlpha(alpha);
+  context.visibleAssets.push({ key, role });
+  return img;
+}
+
+export function coverImage(
+  scene: Phaser.Scene,
+  context: UiRenderContext,
+  frameX: number,
+  frameY: number,
+  frameW: number,
+  frameH: number,
+  key: string,
+  role: string,
+  alpha = 1,
+  focusY = 0.32
+) {
+  if (!scene.textures.exists(key)) return undefined;
+  const source = scene.textures.get(key).getSourceImage() as { width?: number; height?: number };
+  const sourceWidth = source.width ?? frameW;
+  const sourceHeight = source.height ?? frameH;
+  const crop = coverCrop({
+    sourceWidth,
+    sourceHeight,
+    frameWidth: frameW,
+    frameHeight: frameH,
+    focusY
+  });
+  const img = scene.add
+    .image(frameX + frameW / 2, frameY + frameH / 2, key)
+    .setCrop(crop.x, crop.y, crop.width, crop.height)
+    .setDisplaySize(frameW, frameH)
+    .setAlpha(alpha);
   context.visibleAssets.push({ key, role });
   return img;
 }

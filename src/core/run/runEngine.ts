@@ -1,6 +1,7 @@
 import { chooseBossCountermeasure } from "../boss/habitAnalysis";
 import { createCombat } from "../combat/createCombat";
 import { checkCombatEnd, endPlayerTurn, playCard } from "../combat/combatEngine";
+import { markEnemyDead } from "../combat/enemyState";
 import { emptyMemory, type CardInstance } from "../combat/types";
 import { createRng, type Rng } from "../rng";
 import { applyBrokenNotes, hasRelic } from "../relics/relicEngine";
@@ -21,6 +22,10 @@ export interface RunEngine {
 export interface CreateRunOptions {
   seed?: number;
   quick?: boolean;
+}
+
+export interface CombatCompletionOptions {
+  completeVictory?: boolean;
 }
 
 export function createRun(data: GameData, options: CreateRunOptions = {}): RunEngine {
@@ -81,18 +86,22 @@ export function selectMapNode(engine: RunEngine, nodeId: string) {
   rng.next();
 }
 
-export function playRunCard(engine: RunEngine, cardInstanceId: string, targetEnemyId?: string, targetCardId?: string) {
+export function playRunCard(engine: RunEngine, cardInstanceId: string, targetEnemyId?: string, targetCardId?: string, options: CombatCompletionOptions = {}) {
   const combat = requireCombat(engine.run);
   playCard(combat, engine.data, engine.rng, cardInstanceId, { targetEnemyId, targetCardId });
-  if (combat.phase === "victory") completeCombat(engine);
+  if (combat.phase === "victory" && options.completeVictory !== false) completeCombat(engine);
   if (combat.phase === "defeat") engine.run.mode = "defeat";
 }
 
-export function endRunTurn(engine: RunEngine) {
+export function endRunTurn(engine: RunEngine, options: CombatCompletionOptions = {}) {
   const combat = requireCombat(engine.run);
   endPlayerTurn(combat, engine.data, engine.rng);
-  if (combat.phase === "victory") completeCombat(engine);
+  if (combat.phase === "victory" && options.completeVictory !== false) completeCombat(engine);
   if (combat.phase === "defeat") engine.run.mode = "defeat";
+}
+
+export function completeCurrentCombat(engine: RunEngine) {
+  completeCombat(engine);
 }
 
 export function autoWinCombat(engine: RunEngine) {
@@ -103,7 +112,10 @@ export function autoWinCombat(engine: RunEngine) {
     memoryTarget.memory.bloodthirst = Math.max(memoryTarget.memory.bloodthirst, 3);
     combat.playedCounts[memoryTarget.instanceId] = Math.max(combat.playedCounts[memoryTarget.instanceId] ?? 0, 1);
   }
-  for (const enemy of combat.enemies) enemy.hp = 0;
+  for (const enemy of combat.enemies) {
+    enemy.hp = 0;
+    markEnemyDead(combat, enemy);
+  }
   checkCombatEnd(combat);
   completeCombat(engine);
 }

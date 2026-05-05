@@ -5,9 +5,11 @@ import {
   canMutate,
   chooseCardReward,
   chooseEventOption,
+  completeCurrentCombat,
   createRun,
   effectiveCardCost,
   endRunTurn,
+  isEnemyAlive,
   leaveShop,
   playRunCard,
   restHeal,
@@ -69,6 +71,12 @@ interface TurnTransitionState {
   timer?: Phaser.Time.TimerEvent;
 }
 
+interface VictoryTransitionState {
+  message: string;
+  dueAt: number;
+  timer?: Phaser.Time.TimerEvent;
+}
+
 interface RenderAnchor {
   x: number;
   y: number;
@@ -89,6 +97,9 @@ interface TextSnapshot {
   drag: DragCardState;
   turnTransition?: {
     kind: TurnTransitionState["kind"];
+    message: string;
+  };
+  victoryTransition?: {
     message: string;
   };
   audio: {
@@ -134,6 +145,7 @@ export class GameScene extends Phaser.Scene {
   private handDropZone?: DropRect;
   private dragFeedback?: Phaser.GameObjects.Graphics;
   private turnTransition?: TurnTransitionState;
+  private victoryTransition?: VictoryTransitionState;
   private virtualNow = 0;
 
   constructor() {
@@ -149,6 +161,7 @@ export class GameScene extends Phaser.Scene {
     window.advanceTime = (ms: number) => {
       this.virtualNow += ms;
       this.resolvePendingTurnTransition();
+      this.resolvePendingVictoryTransition();
       this.render();
     };
     this.input.keyboard?.on("keydown-F", () => {
@@ -159,7 +172,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private render() {
-    if (this.engine?.run.mode !== "combat") this.turnTransition = undefined;
+    if (this.engine?.run.mode !== "combat") {
+      this.turnTransition = undefined;
+      this.victoryTransition = undefined;
+    }
     this.clearDragFeedback();
     this.root?.destroy(true);
     this.buttons = [];
@@ -230,6 +246,7 @@ export class GameScene extends Phaser.Scene {
       startRun(this.engine);
       this.combatEventCursor = { eventCount: 0 };
       this.turnTransition = undefined;
+      this.victoryTransition = undefined;
       this.dragCard = { active: false };
       this.render();
     }, true, 0x39d98a);
@@ -294,12 +311,13 @@ export class GameScene extends Phaser.Scene {
         y,
         target: enemyView as FxTarget
       });
-      this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 96, y: y - 138, w: 192, h: 300 });
+      if (isEnemyAlive(enemy)) this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 96, y: y - 138, w: 192, h: 300 });
     });
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
     const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
     const logLines = combat.events.map((event) => event.message).slice(-8);
     if (this.turnTransition) logLines.push(this.turnTransition.message);
+    if (this.victoryTransition) logLines.push(this.victoryTransition.message);
     if (this.dragCard.reasonIfBlocked) logLines.push(this.dragCard.reasonIfBlocked);
     logPanel.add(label(this, 14, 48, logLines.join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
     this.root?.add(logPanel);
@@ -321,20 +339,20 @@ export class GameScene extends Phaser.Scene {
         card: cardDef,
         instance: card,
         selected,
-        playable: effectiveCardCost(this.dataModel, card) <= combat.player.energy,
+        playable: effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.victoryTransition,
         mode: "hand"
       });
       this.root?.add(cardView);
-      this.registerCardInput(cardView, card.instanceId, x, y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition);
+      this.registerCardInput(cardView, card.instanceId, x, y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition && !this.victoryTransition);
     });
     this.button("end-turn", "結束回合", layout.endTurn.x, layout.endTurn.y, layout.endTurn.w, layout.endTurn.h, () => {
       this.beginTurnTransition("manual");
-    }, !this.turnTransition);
+    }, !this.turnTransition && !this.victoryTransition);
     if (this.quick) {
       this.button("auto-win", "測試勝利", layout.endTurn.x, layout.endTurn.y - 56, layout.endTurn.w, 42, () => {
         autoWinCombat(this.engine);
         this.render();
-      }, true, 0x39d98a);
+      }, !this.victoryTransition, 0x39d98a);
     }
     const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
     this.combatEventCursor = diff.cursor;
@@ -444,6 +462,7 @@ export class GameScene extends Phaser.Scene {
       this.selected = undefined;
       this.combatEventCursor = { eventCount: 0 };
       this.turnTransition = undefined;
+      this.victoryTransition = undefined;
       this.dragCard = { active: false };
       this.render();
     }, true, color);
@@ -528,10 +547,10 @@ export class GameScene extends Phaser.Scene {
       this.render();
       return;
     }
-    playRunCard(this.engine, cardInstanceId, resolved.targetEnemyId, resolved.targetCardId);
+    playRunCard(this.engine, cardInstanceId, resolved.targetEnemyId, resolved.targetCardId, { completeVictory: false });
     this.selected = undefined;
     this.playSfx("audio:cardDropPlay", 0.46);
-    this.maybeBeginAutoEndTurn();
+    if (!this.maybeBeginVictoryTransition()) this.maybeBeginAutoEndTurn();
     this.render();
   }
 
@@ -570,7 +589,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private beginTurnTransition(kind: TurnTransitionState["kind"]) {
-    if (this.turnTransition || this.engine.run.mode !== "combat") return;
+    if (this.turnTransition || this.victoryTransition || this.engine.run.mode !== "combat") return;
     const delayMs = kind === "manual" ? 240 : 650;
     const message = kind === "manual" ? "回合結束。" : "沒有可出的牌，自動結束回合。";
     this.playSfx(kind === "manual" ? "audio:cardDropPlay" : "audio:autoEndTurn", 0.5);
@@ -590,7 +609,38 @@ export class GameScene extends Phaser.Scene {
     this.turnTransition.timer?.remove(false);
     this.turnTransition = undefined;
     if (this.engine.run.mode !== "combat" || !this.engine.run.currentCombat) return;
-    endRunTurn(this.engine);
+    endRunTurn(this.engine, { completeVictory: false });
+    this.selected = undefined;
+    this.maybeBeginVictoryTransition();
+  }
+
+  private maybeBeginVictoryTransition(): boolean {
+    const combat = this.engine.run.currentCombat;
+    if (this.engine.run.mode !== "combat" || !combat || combat.phase !== "victory") return false;
+    this.beginVictoryTransition();
+    return true;
+  }
+
+  private beginVictoryTransition() {
+    if (this.victoryTransition || this.engine.run.mode !== "combat") return;
+    const delayMs = 1000;
+    const transition: VictoryTransitionState = { message: "敵人倒下，記憶正在沉澱。", dueAt: this.virtualNow + delayMs };
+    transition.timer = this.time.delayedCall(delayMs, () => {
+      this.resolvePendingVictoryTransition(true);
+      this.render();
+    });
+    this.victoryTransition = transition;
+    this.turnTransition = undefined;
+    this.selected = undefined;
+  }
+
+  private resolvePendingVictoryTransition(force = false) {
+    if (!this.victoryTransition) return;
+    if (!force && this.virtualNow < this.victoryTransition.dueAt) return;
+    this.victoryTransition.timer?.remove(false);
+    this.victoryTransition = undefined;
+    if (this.engine.run.mode !== "combat" || this.engine.run.currentCombat?.phase !== "victory") return;
+    completeCurrentCombat(this.engine);
     this.selected = undefined;
   }
 
@@ -611,7 +661,7 @@ export class GameScene extends Phaser.Scene {
           floatText(this, anchor?.x ?? 620, (anchor?.y ?? 240) - 86, `-${payload.damage}`, { color: "#ff6b6b" });
         }
         const enemy = payload?.enemy ? this.engine.run.currentCombat?.enemies.find((item) => item.instanceId === payload.enemy) : undefined;
-        if (enemy?.hp === 0) fadeOutOnDeath(this, anchor?.target);
+        if (enemy?.state === "dead") fadeOutOnDeath(this, anchor?.target);
       }
 
       if (event.type === "PLAYER_DAMAGED") {
@@ -641,10 +691,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     const targetCardId = definition.target === "handCard" ? combat.hand.find((id) => id !== cardInstanceId) : undefined;
-    playRunCard(this.engine, cardInstanceId, undefined, targetCardId);
+    playRunCard(this.engine, cardInstanceId, undefined, targetCardId, { completeVictory: false });
     this.selected = undefined;
     this.playSfx("audio:cardDropPlay", 0.46);
-    this.maybeBeginAutoEndTurn();
+    if (!this.maybeBeginVictoryTransition()) this.maybeBeginAutoEndTurn();
     this.render();
   }
 
@@ -654,10 +704,10 @@ export class GameScene extends Phaser.Scene {
     const selectedCard = combat?.cards.find((card) => card.instanceId === this.selected?.cardInstanceId);
     const definition = selectedCard ? this.dataModel.cards.find((card) => card.id === selectedCard.cardId) : undefined;
     const targetCardId = definition?.target === "handCard" ? combat?.hand.find((id) => id !== selectedCard?.instanceId) : undefined;
-    playRunCard(this.engine, this.selected.cardInstanceId, enemyId, targetCardId);
+    playRunCard(this.engine, this.selected.cardInstanceId, enemyId, targetCardId, { completeVictory: false });
     this.selected = undefined;
     this.playSfx("audio:cardDropPlay", 0.46);
-    this.maybeBeginAutoEndTurn();
+    if (!this.maybeBeginVictoryTransition()) this.maybeBeginAutoEndTurn();
     this.render();
   }
 
@@ -695,6 +745,7 @@ export class GameScene extends Phaser.Scene {
       buttons: this.buttons,
       drag: this.dragCard,
       turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
+      victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
       audio: {
         muted: this.muted,
         started: this.audioStarted,
@@ -714,7 +765,7 @@ export class GameScene extends Phaser.Scene {
               const def = this.dataModel.cards.find((item) => item.id === card.cardId)!;
               return { id, cardId: card.cardId, name: card.mutation?.name ?? def.name, cost: effectiveCardCost(this.dataModel, card), type: def.type };
             }),
-            enemies: combat.enemies.map((enemy) => ({ id: enemy.instanceId, enemyId: enemy.enemyId, hp: enemy.hp, maxHp: enemy.maxHp, intent: enemy.intent.type })),
+            enemies: combat.enemies.map((enemy) => ({ id: enemy.instanceId, enemyId: enemy.enemyId, state: enemy.state, hp: enemy.hp, maxHp: enemy.maxHp, intent: enemy.intent.type })),
             events: combat.events.slice(-8).map((event) => ({
               type: event.type,
               message: event.message,

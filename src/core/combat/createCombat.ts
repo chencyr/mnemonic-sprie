@@ -1,5 +1,6 @@
 import { pickWeighted, shuffle, type Rng } from "../rng";
 import type { EnemyDefinition, GameData } from "../types";
+import { isEnemyAlive } from "./enemyState";
 import type { BossCountermeasure, CardInstance, CombatDataLookup, CombatState, EnemyInstance } from "./types";
 
 export interface CreateCombatOptions {
@@ -65,6 +66,7 @@ export function createCombat(data: GameData, rng: Rng, options: CreateCombatOpti
     enemies: enemyDefs.map((enemy, index): EnemyInstance => ({
       instanceId: `${enemy.id}-${index + 1}`,
       enemyId: enemy.id,
+      state: "alive",
       hp: options.quick ? Math.min(enemy.maxHp, enemy.kind === "boss" ? 24 : 8) : enemy.maxHp,
       maxHp: options.quick ? Math.min(enemy.maxHp, enemy.kind === "boss" ? 24 : 8) : enemy.maxHp,
       block: 0,
@@ -105,7 +107,7 @@ export function findCard(combat: CombatState, instanceId: string): CardInstance 
 }
 
 export function findLivingEnemy(combat: CombatState, instanceId?: string): EnemyInstance {
-  const living = combat.enemies.filter((enemy) => enemy.hp > 0);
+  const living = combat.enemies.filter(isEnemyAlive);
   const enemy = instanceId ? living.find((item) => item.instanceId === instanceId) : living[0];
   if (!enemy) throw new Error(`No living enemy target available: ${instanceId ?? "first"}`);
   return enemy;

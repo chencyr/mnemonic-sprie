@@ -1,4 +1,5 @@
 import type { CardDefinition, GameData, MemoryType } from "../types";
+import { isEnemyAlive, syncEnemyDeathState } from "./enemyState";
 import type { CombatState, EnemyInstance, StatusKey } from "./types";
 
 export interface EffectContext {
@@ -136,7 +137,7 @@ function damageSingle(context: EffectContext, base: number): EffectOutcome {
 }
 
 function damageAll(context: EffectContext, base: number): EffectOutcome {
-  return damageEnemies(context, context.combat.enemies.filter((enemy) => enemy.hp > 0), base);
+  return damageEnemies(context, context.combat.enemies.filter(isEnemyAlive), base);
 }
 
 function damageEnemies(context: EffectContext, enemies: EnemyInstance[], base: number): EffectOutcome {
@@ -160,13 +161,13 @@ function damageEnemies(context: EffectContext, enemies: EnemyInstance[], base: n
     enemy.hp = Math.max(0, enemy.hp - hpDamage);
     total += hpDamage;
     context.combat.events.push({ type: "DAMAGE_DEALT", message: `造成 ${hpDamage} 傷害。`, payload: { enemy: enemy.instanceId, damage: hpDamage } });
-    if (enemy.hp === 0) killedEnemyIds.push(enemy.instanceId);
+    if (syncEnemyDeathState(context.combat, enemy)) killedEnemyIds.push(enemy.instanceId);
   }
   return { damageDealt: total, killedEnemyIds };
 }
 
 function requireEnemy(context: EffectContext): EnemyInstance {
-  if (!context.targetEnemy || context.targetEnemy.hp <= 0) {
+  if (!context.targetEnemy || !isEnemyAlive(context.targetEnemy)) {
     throw new Error("這張牌需要一個存活敵人目標。");
   }
   return context.targetEnemy;

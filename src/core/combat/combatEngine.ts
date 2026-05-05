@@ -3,6 +3,7 @@ import type { GameData } from "../types";
 import { addMemoryProgress } from "../memory/memoryRules";
 import { drawCards, findCard, findLivingEnemy } from "./createCombat";
 import { resolveCombatEffect } from "./cardEffects";
+import { isEnemyAlive, syncEnemyDeathState } from "./enemyState";
 import type { CardInstance, CombatState, EnemyInstance, StatusKey } from "./types";
 
 export interface PlayCardOptions {
@@ -97,7 +98,7 @@ export function startPlayerTurn(combat: CombatState, rng: Rng) {
 }
 
 function resolveEnemyTurn(combat: CombatState, data: GameData, rng: Rng) {
-  for (const enemy of combat.enemies.filter((item) => item.hp > 0)) {
+  for (const enemy of combat.enemies.filter(isEnemyAlive)) {
     const intent = enemy.intent;
     if (intent.type === "attack" || intent.type === "mixed") {
       const weakPenalty = enemy.statuses.weak ? 0.75 : 1;
@@ -105,6 +106,7 @@ function resolveEnemyTurn(combat: CombatState, data: GameData, rng: Rng) {
       damagePlayer(combat, Math.floor((intent.amount ?? 0) * weakPenalty) + guardBreakerBonus);
       if ((combat.player.statuses.spikes ?? 0) > 0) {
         enemy.hp = Math.max(0, enemy.hp - (combat.player.statuses.spikes ?? 0));
+        syncEnemyDeathState(combat, enemy);
       }
     }
     if (intent.type === "block") {
@@ -137,7 +139,8 @@ function damagePlayer(combat: CombatState, amount: number) {
 }
 
 export function checkCombatEnd(combat: CombatState) {
-  if (combat.enemies.every((enemy) => enemy.hp <= 0)) {
+  for (const enemy of combat.enemies) syncEnemyDeathState(combat, enemy);
+  if (combat.enemies.every((enemy) => !isEnemyAlive(enemy))) {
     combat.phase = "victory";
     combat.summary.won = true;
     combat.events.push({ type: "COMBAT_VICTORY", message: "戰鬥勝利。" });

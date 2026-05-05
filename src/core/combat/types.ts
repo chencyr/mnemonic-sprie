@@ -2,6 +2,7 @@ import type { CardDefinition, EnemyDefinition, EnemyIntentDefinition, MemoryType
 
 export type CombatPhase = "player" | "enemy" | "victory" | "defeat";
 export type StatusKey = "weak" | "vulnerable" | "frail" | "spikes";
+export type EnemyLifecycleState = "alive" | "dead";
 
 export interface CardMemoryState {
   bloodthirst: number;
@@ -47,6 +48,7 @@ export interface PlayerCombatState {
 export interface EnemyInstance {
   instanceId: string;
   enemyId: string;
+  state: EnemyLifecycleState;
   hp: number;
   maxHp: number;
   block: number;

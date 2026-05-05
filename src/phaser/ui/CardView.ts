@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type { AssetRegistry, CardDefinition, CardInstance, GameData } from "../../core";
 import { effectiveCardCost } from "../../core";
-import { image, label } from "./uiPrimitives";
+import { coverImage, image, label } from "./uiPrimitives";
 import { cardSize, colors } from "./uiTheme";
 import type { UiRenderContext } from "./uiTypes";
 export type { ButtonDescriptor } from "./uiTypes";
@@ -37,19 +37,29 @@ export function renderCardView(options: CardViewOptions) {
       .setOrigin(0)
       .setStrokeStyle(selected ? 4 : 2, frameColor, selected ? 0.88 : 0.42)
   );
-  container.add(scene.add.rectangle(8, 8, w - 16, Math.floor(h * 0.48), 0x0f172a, 0.78).setOrigin(0));
-  const art = image(
+  const artFrame = {
+    x: 8,
+    y: 8,
+    w: w - 16,
+    h: h - 16
+  };
+  container.add(scene.add.rectangle(artFrame.x, artFrame.y, artFrame.w, artFrame.h, 0x0f172a, 0.78).setOrigin(0));
+  const art = coverImage(
     scene,
     context,
-    w / 2,
-    8 + Math.floor(h * 0.24),
+    artFrame.x,
+    artFrame.y,
+    artFrame.w,
+    artFrame.h,
     assets.getCardArt(card.id).key,
-    w - 22,
-    Math.floor(h * 0.44),
     `card:${card.id}`,
-    playable ? 0.96 : 0.52
+    playable ? 0.96 : 0.52,
+    0.3
   );
   if (art) container.add(art);
+  container.add(scene.add.rectangle(8, Math.floor(h * 0.48), w - 16, Math.floor(h * 0.18), 0x101827, 0.76).setOrigin(0));
+  container.add(scene.add.rectangle(8, Math.floor(h * 0.66), w - 16, Math.floor(h * 0.24), 0x101827, 0.7).setOrigin(0));
+  container.add(scene.add.rectangle(8, h - 34, w - 16, 26, 0x101827, 0.72).setOrigin(0));
   container.add(scene.add.circle(22, 22, 18, costColor(card.type), 1).setStrokeStyle(2, 0xffffff, 0.7));
   const cost = instance ? effectiveCardCost(data, instance) : card.cost;
   container.add(label(scene, 22, 22, String(cost), 18, "#101318").setOrigin(0.5));

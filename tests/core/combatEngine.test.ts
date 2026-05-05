@@ -81,6 +81,48 @@ describe("combat engine", () => {
 
     expect(combat.player.hp).toBe(71);
   });
+
+  it("marks an enemy dead before checking victory after lethal damage", () => {
+    const data = loadGameData();
+    const combat = createCombat(data, createRng(2), {
+      floor: 1,
+      enemyKind: "normal",
+      playerHp: 72,
+      playerMaxHp: 72,
+      deck: starterDeck(),
+      enemyIds: ["sticker_punk"]
+    });
+    combat.hand = ["strike-1"];
+    combat.drawPile = [];
+    combat.discardPile = [];
+    combat.enemies[0].hp = 4;
+
+    playCard(combat, data, createRng(3), "strike-1", { targetEnemyId: combat.enemies[0].instanceId });
+
+    expect(combat.enemies[0].hp).toBe(0);
+    expect(combat.enemies[0].state).toBe("dead");
+    expect(combat.phase).toBe("victory");
+  });
+
+  it("does not let a dead enemy act even if hp is stale", () => {
+    const data = loadGameData();
+    const combat = createCombat(data, createRng(9), {
+      floor: 1,
+      enemyKind: "normal",
+      playerHp: 72,
+      playerMaxHp: 72,
+      deck: starterDeck(),
+      enemyIds: ["sticker_punk"]
+    });
+    combat.enemies[0].hp = 8;
+    combat.enemies[0].state = "dead";
+    combat.enemies[0].intent = { id: "test-attack", type: "attack", amount: 6, weight: 1 };
+
+    endPlayerTurn(combat, data, createRng(10));
+
+    expect(combat.player.hp).toBe(72);
+    expect(combat.phase).toBe("victory");
+  });
 });
 
 function starterDeck() {

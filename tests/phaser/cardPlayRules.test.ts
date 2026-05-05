@@ -13,10 +13,11 @@ function combatFixture(): CombatState {
   return engine.run.currentCombat;
 }
 
-function enemy(id: string, hp: number): EnemyInstance {
+function enemy(id: string, hp: number, state: EnemyInstance["state"] = "alive"): EnemyInstance {
   return {
     instanceId: id,
     enemyId: "sticker_punk",
+    state,
     hp,
     maxHp: 12,
     block: 0,
@@ -50,6 +51,10 @@ describe("card play drag rules", () => {
 
   it("ignores defeated enemies when auto-targeting", () => {
     expect(findAutoEnemyTarget([enemy("dead", 0), enemy("alive", 7)])).toBe("alive");
+  });
+
+  it("ignores dead-state enemies even if hp is stale", () => {
+    expect(findAutoEnemyTarget([enemy("dead", 1, "dead"), enemy("alive", 7)])).toBe("alive");
   });
 
   it("resolves a single-target attack dropped on battlefield to auto target", () => {

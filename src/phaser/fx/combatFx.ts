@@ -68,7 +68,7 @@ export function fadeOutOnDeath(scene: Phaser.Scene, target: FxTarget | undefined
     alpha: 0.22,
     scaleX: 0.92,
     scaleY: 0.92,
-    duration: 220,
+    duration: 1000,
     ease: "Back.easeIn"
   });
 }

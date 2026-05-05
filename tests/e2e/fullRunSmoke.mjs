@@ -38,12 +38,7 @@ await withGamePage(async ({ page }) => {
   current = await state(page);
   assert.equal(current.mode, "combat");
 
-  await playOneCardIfPossible(page);
-  current = await state(page);
-  assert.ok(current.mode === "combat" || current.mode === "reward", `Expected combat or reward after card play, got ${current.mode}`);
-  if (current.mode === "combat") assert.ok(current.combat.energy <= 3);
-
-  if (current.mode === "combat") current = await clickButton(page, "auto-win");
+  current = await assertVictoryTransitionDelaysReward(page);
   assert.equal(current.mode, "reward");
   assert.equal(current.audio?.currentMusic, "audio:bgm");
   assertVisibleAssetPrefix(current, "card:", "reward");
@@ -129,6 +124,63 @@ async function playOneCardIfPossible(page) {
   throw new Error("Could not draw an attack card during combat smoke.");
 }
 
+async function assertVictoryTransitionDelaysReward(page) {
+  await page.evaluate(() => {
+    const scene = window.mnemonicSpireScene;
+    const combat = scene.engine.run.currentCombat;
+    const enemy = combat.enemies[0];
+    const strike = combat.cards.find((card) => card.cardId === "strike");
+    if (!strike) throw new Error("Missing strike card for victory transition scenario.");
+    strike.memory.bloodthirst = 3;
+    combat.enemies = [
+      {
+        ...enemy,
+        instanceId: "transition-target",
+        state: "alive",
+        hp: 4,
+        maxHp: 8,
+        block: 0,
+        statuses: {},
+        intent: { id: "attack", type: "attack", amount: 6, weight: 1 }
+      }
+    ];
+    combat.phase = "player";
+    combat.player.energy = 3;
+    combat.hand = [strike.instanceId];
+    combat.drawPile = [];
+    combat.discardPile = [];
+    scene.turnTransition = undefined;
+    scene.victoryTransition = undefined;
+    scene.render();
+  });
+
+  let current = await state(page);
+  const strike = current.combat.hand.find((card) => card.cardId === "strike");
+  assert.ok(strike, "Victory transition scenario should expose a strike card.");
+  const targetButton = current.buttons.find((button) => button.id === "enemy:transition-target");
+  assert.ok(targetButton, "Victory transition scenario should expose target enemy coordinates.");
+  current = await dragButtonTo(page, `card:${strike.id}`, targetButton.x, targetButton.y - 120);
+
+  assert.equal(current.mode, "combat");
+  assert.equal(current.combat.phase, "victory");
+  assert.equal(current.combat.enemies[0].state, "dead");
+  assert.ok(current.victoryTransition, "Victory should wait for death presentation.");
+  assert.equal(current.reward, undefined);
+  assert.ok(!current.buttons.find((button) => button.id === "end-turn")?.enabled, "End turn should be disabled during victory presentation.");
+  assert.ok(!current.buttons.find((button) => button.id === "auto-win")?.enabled, "Test win shortcut should be disabled during victory presentation.");
+
+  await page.waitForTimeout(500);
+  current = await state(page);
+  assert.equal(current.mode, "combat");
+  assert.ok(current.victoryTransition, "Reward should not appear before the 1s death presentation finishes.");
+
+  await page.waitForTimeout(700);
+  current = await state(page);
+  assert.equal(current.mode, "reward");
+  assert.equal(current.victoryTransition, undefined);
+  return current;
+}
+
 async function dragButtonTo(page, buttonId, x, y) {
   const current = await state(page);
   const button = current.buttons.find((item) => item.id === buttonId);
@@ -148,7 +200,7 @@ async function assertDragAttackAutoTargets(page) {
   let current = await state(page);
   const attack = current.combat.hand.find((card) => card.type === "attack" && card.cost <= current.combat.energy);
   if (!attack) return;
-  const enemyBefore = current.combat.enemies.find((enemy) => enemy.hp > 0);
+  const enemyBefore = current.combat.enemies.find((enemy) => enemy.state === "alive");
   assert.ok(enemyBefore, "Expected a living enemy before drag attack.");
   current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
   const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
@@ -244,6 +296,7 @@ function assertNoInvalidNumbers(current) {
     assert.ok(current.combat.playerHp <= current.combat.playerMaxHp, "combat player HP should not exceed max HP");
     for (const enemy of current.combat.enemies) {
       assert.ok(enemy.hp >= 0, `enemy HP should not be negative: ${enemy.id}`);
+      assert.ok(["alive", "dead"].includes(enemy.state), `enemy state should be lifecycle state: ${enemy.id}`);
     }
   }
 }

@@ -82,6 +82,42 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Verified with npm tests, build, E2E, and develop-web-game screenshot/state inspection.
 - develop-web-game client wrote artifacts to `output/web-game-drag-drop-card-play/`; no `errors-*.json` files were produced.
 
+## 2026-05-06 Enemy Lifecycle State
+
+- User reported defeated enemies could visually return from semi-transparent dead presentation to a solid alive-looking sprite after the next turn.
+- Root cause: enemy life/death was inferred from `hp > 0` in multiple places, while death visuals were only a transient Phaser tween on the current render object.
+- Added enemy lifecycle state (`alive` / `dead`) and helper functions for state-based targeting, enemy action, death transition, and victory checks.
+- Updated Phaser enemy rendering so dead enemies persist as semi-transparent, show `已擊倒`, hide intent, and do not register active enemy drop zones.
+- Updated `window.render_game_to_text()` enemy payloads to include `state`.
+- Added deferred victory presentation:
+  - `playRunCard` / `endRunTurn` can now leave a victorious combat open with `completeVictory: false`.
+  - Phaser starts a 1000ms `victoryTransition` after the final enemy death.
+  - `completeCurrentCombat()` is called only after the death presentation finishes.
+  - Death fade duration is now 1000ms.
+  - Hand cards, end turn, enemy targeting, and quick `auto-win` shortcut are disabled during the victory presentation.
+- Verification:
+  - Red tests confirmed missing death state, dead enemies acting when HP was stale, and auto-targeting dead-state enemies.
+  - Red test confirmed victory card play completed combat immediately before deferred completion support.
+  - Green tests passed after implementation.
+  - `npm test`, `npm run build`, and `npm run test:e2e` passed.
+  - develop-web-game client wrote screenshots/state to `output/web-game-enemy-state-start/` with no error files.
+  - Manual Playwright enemy lifecycle scenario wrote artifacts to `output/manual-enemy-state/`; it confirmed one dead enemy stays dead/transparent across turn advance while the living enemy still acts.
+  - develop-web-game client wrote screenshots/state to `output/web-game-victory-transition/` with no error files.
+  - Manual Playwright victory transition scenario wrote artifacts to `output/manual-victory-transition/`; it confirmed immediate and 500ms states remain `combat` with `victoryTransition`, then reach `reward` after the 1000ms presentation.
+
+## 2026-05-06 Card Art Fit
+
+- User reported hand card images were distorted and should follow the card asset specification.
+- Root cause: card assets are vertical 1024x1536 images, but `CardView` rendered them with `setDisplaySize()` into a short horizontal art strip.
+- Added `coverCrop()` / `coverFrame()` layout helpers and tests to preserve source aspect ratio.
+- Updated card rendering to use vertical card art as the card background with cropped cover placement and translucent text panels, instead of stretching the image.
+- Verification:
+  - Red test failed before `imageLayout` existed.
+  - `npm test -- tests/phaser/imageLayout.test.ts` passed after implementation.
+  - `npm test`, `npm run build`, and `npm run test:e2e` passed.
+  - develop-web-game client wrote screenshots/state to `output/web-game-card-art-fit/` with no error files.
+  - Manual Playwright combat screenshot in `output/manual-card-art-fit/combat.png` confirmed hand cards use upright card art assets without horizontal distortion.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.
