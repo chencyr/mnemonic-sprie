@@ -26,7 +26,7 @@ export type { Rng } from "./rng";
 export { createEffectRegistry, registerMvpEffectPlaceholders } from "./effects/effectRegistry";
 export type { EffectHandler, EffectRegistry, EffectResult } from "./effects/effectRegistry";
 export { createAssetRegistry } from "./assets/assetRegistry";
-export type { AssetEntry, AssetRegistry } from "./assets/assetRegistry";
+export type { AssetEntry, AssetRegistry, AudioAssetKey, IntentIconType } from "./assets/assetRegistry";
 export { createCombat, createCombatLookup, drawCards } from "./combat/createCombat";
 export { checkCombatEnd, effectiveCardCost, endPlayerTurn, playCard, startPlayerTurn } from "./combat/combatEngine";
 export { combatEffectIds, resolveCombatEffect } from "./combat/cardEffects";
