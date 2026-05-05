@@ -22,13 +22,14 @@ import {
   type MapNode,
   type RunEngine
 } from "../core";
-import { CARD_HEIGHT, CARD_WIDTH, type ButtonDescriptor } from "../phaser/ui/CardView";
+import { CARD_HEIGHT, CARD_WIDTH } from "../phaser/ui/CardView";
 import { ENEMY_SIZE } from "../phaser/ui/EnemyView";
 import { HUD_FONT } from "../phaser/ui/HudView";
 import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
 import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
 import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
 import { EVENT_PANEL_WIDTH } from "../phaser/ui/EventView";
+import type { ButtonDescriptor, UiRenderContext, VisibleAssetDescriptor } from "../phaser/ui/uiTypes";
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -46,6 +47,7 @@ interface TextSnapshot {
   reward?: unknown;
   shop?: unknown;
   event?: unknown;
+  visibleAssets: VisibleAssetDescriptor[];
   log: string[];
 }
 
@@ -64,6 +66,7 @@ export class GameScene extends Phaser.Scene {
   private root?: Phaser.GameObjects.Container;
   private selected: Selection;
   private buttons: ButtonDescriptor[] = [];
+  private visibleAssets: VisibleAssetDescriptor[] = [];
   private readonly quick = new URLSearchParams(window.location.search).has("e2e");
   private muted = true;
 
@@ -90,6 +93,7 @@ export class GameScene extends Phaser.Scene {
   private render() {
     this.root?.destroy(true);
     this.buttons = [];
+    this.visibleAssets = [];
     this.root = this.add.container(0, 0);
     this.drawBackground();
     this.drawHud();
@@ -387,7 +391,15 @@ export class GameScene extends Phaser.Scene {
       reward: run.reward ? { cards: run.reward.cards.map((card) => card.id), gold: run.reward.gold, relic: run.reward.relic?.id } : undefined,
       shop: run.shop?.map((item) => ({ id: item.id, kind: item.kind, itemId: item.itemId, price: item.price, sold: item.sold })),
       event: run.activeEvent ? { id: run.activeEvent.id, options: run.activeEvent.options.map((option) => option.id) } : undefined,
+      visibleAssets: this.visibleAssets,
       log: run.log.slice(-5)
+    };
+  }
+
+  uiContext(): UiRenderContext {
+    return {
+      buttons: this.buttons,
+      visibleAssets: this.visibleAssets
     };
   }
 
@@ -438,6 +450,7 @@ export class GameScene extends Phaser.Scene {
   private image(x: number, y: number, key: string, w: number, h: number, alpha = 1) {
     if (!this.textures.exists(key)) return;
     const image = this.add.image(x, y, key).setDisplaySize(w, h).setAlpha(alpha);
+    this.visibleAssets.push({ key, role: "image" });
     this.root?.add(image);
   }
 }
