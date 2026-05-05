@@ -24,6 +24,7 @@ import {
 } from "../core";
 import { cameraHit, fadeOutOnDeath, flashTarget, floatText, shakeTarget, type FxTarget } from "../phaser/fx/combatFx";
 import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/combatEventDiff";
+import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { renderEventView } from "../phaser/ui/EventView";
@@ -40,6 +41,33 @@ const HEIGHT = 720;
 
 type Selection = { cardInstanceId: string } | undefined;
 type MusicKey = "audio:bgm" | "audio:combatBgm";
+
+interface DragCardState {
+  active: boolean;
+  cardInstanceId?: string;
+  originX?: number;
+  originY?: number;
+  currentX?: number;
+  currentY?: number;
+  validDropZone?: DropZoneKind;
+  hoverEnemyId?: string;
+  reasonIfBlocked?: string;
+}
+
+interface DropRect {
+  id?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface TurnTransitionState {
+  kind: "manual" | "autoNoPlayableCards";
+  message: string;
+  dueAt: number;
+  timer?: Phaser.Time.TimerEvent;
+}
 
 interface RenderAnchor {
   x: number;
@@ -58,6 +86,11 @@ interface TextSnapshot {
   run: ReturnType<typeof snapshotRun>;
   selectedCard?: string;
   buttons: ButtonDescriptor[];
+  drag: DragCardState;
+  turnTransition?: {
+    kind: TurnTransitionState["kind"];
+    message: string;
+  };
   audio: {
     muted: boolean;
     started: boolean;
@@ -93,6 +126,15 @@ export class GameScene extends Phaser.Scene {
   private muted = true;
   private audioStarted = false;
   private activeMusic?: MusicKey;
+  private dragCard: DragCardState = { active: false };
+  private cardPointerDown?: { cardInstanceId: string; x: number; y: number };
+  private enemyDropZones = new Map<string, DropRect>();
+  private battlefieldDropZone?: DropRect;
+  private playerDropZone?: DropRect;
+  private handDropZone?: DropRect;
+  private dragFeedback?: Phaser.GameObjects.Graphics;
+  private turnTransition?: TurnTransitionState;
+  private virtualNow = 0;
 
   constructor() {
     super("GameScene");
@@ -104,7 +146,9 @@ export class GameScene extends Phaser.Scene {
     this.engine = createRun(this.dataModel, { seed: 20260505, quick: this.quick });
     window.mnemonicSpireScene = this;
     window.render_game_to_text = () => JSON.stringify(this.snapshot());
-    window.advanceTime = (_ms: number) => {
+    window.advanceTime = (ms: number) => {
+      this.virtualNow += ms;
+      this.resolvePendingTurnTransition();
       this.render();
     };
     this.input.keyboard?.on("keydown-F", () => {
@@ -115,6 +159,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private render() {
+    if (this.engine?.run.mode !== "combat") this.turnTransition = undefined;
+    this.clearDragFeedback();
     this.root?.destroy(true);
     this.buttons = [];
     this.visibleAssets = [];
@@ -183,6 +229,8 @@ export class GameScene extends Phaser.Scene {
       this.startAudio();
       startRun(this.engine);
       this.combatEventCursor = { eventCount: 0 };
+      this.turnTransition = undefined;
+      this.dragCard = { active: false };
       this.render();
     }, true, 0x39d98a);
   }
@@ -208,6 +256,10 @@ export class GameScene extends Phaser.Scene {
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
+    this.enemyDropZones = new Map();
+    this.battlefieldDropZone = { x: layout.battlefield.x, y: layout.battlefield.y, w: layout.battlefield.w, h: layout.battlefield.h };
+    this.playerDropZone = { x: layout.leftPanel.x, y: layout.leftPanel.y, w: layout.leftPanel.w, h: layout.leftPanel.h };
+    this.handDropZone = { x: layout.hand.x, y: layout.hand.y, w: layout.hand.w, h: layout.hand.h };
     const anchors: CombatRenderAnchors = { enemies: new Map() };
     const playerPanel = renderPlayerPanel(this, this.engine.run, {
       hp: combat.player.hp,
@@ -242,10 +294,14 @@ export class GameScene extends Phaser.Scene {
         y,
         target: enemyView as FxTarget
       });
+      this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 96, y: y - 138, w: 192, h: 300 });
     });
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
     const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
-    logPanel.add(label(this, 14, 48, combat.events.map((event) => event.message).slice(-8).join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
+    const logLines = combat.events.map((event) => event.message).slice(-8);
+    if (this.turnTransition) logLines.push(this.turnTransition.message);
+    if (this.dragCard.reasonIfBlocked) logLines.push(this.dragCard.reasonIfBlocked);
+    logPanel.add(label(this, 14, 48, logLines.join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
     this.root?.add(logPanel);
     const handPanel = panel(this, layout.hand.x, layout.hand.y, layout.hand.w, layout.hand.h, "手牌");
     this.root?.add(handPanel);
@@ -269,13 +325,11 @@ export class GameScene extends Phaser.Scene {
         mode: "hand"
       });
       this.root?.add(cardView);
-      this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340, 0.02);
+      this.registerCardInput(cardView, card.instanceId, x, y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition);
     });
     this.button("end-turn", "結束回合", layout.endTurn.x, layout.endTurn.y, layout.endTurn.w, layout.endTurn.h, () => {
-      endRunTurn(this.engine);
-      this.selected = undefined;
-      this.render();
-    });
+      this.beginTurnTransition("manual");
+    }, !this.turnTransition);
     if (this.quick) {
       this.button("auto-win", "測試勝利", layout.endTurn.x, layout.endTurn.y - 56, layout.endTurn.w, 42, () => {
         autoWinCombat(this.engine);
@@ -389,13 +443,154 @@ export class GameScene extends Phaser.Scene {
       this.engine = createRun(this.dataModel, { seed: 20260505, quick: this.quick });
       this.selected = undefined;
       this.combatEventCursor = { eventCount: 0 };
+      this.turnTransition = undefined;
+      this.dragCard = { active: false };
       this.render();
     }, true, color);
+  }
+
+  private registerCardInput(cardView: Phaser.GameObjects.Container, cardInstanceId: string, x: number, y: number, enabled: boolean) {
+    this.buttons.push({ id: `card:${cardInstanceId}`, label: "", x: x + CARD_WIDTH / 2, y: y + CARD_HEIGHT / 2, w: CARD_WIDTH, h: CARD_HEIGHT, enabled });
+    if (!enabled) return;
+    cardView.setSize(CARD_WIDTH, CARD_HEIGHT);
+    cardView.setInteractive(new Phaser.Geom.Rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT), Phaser.Geom.Rectangle.Contains);
+    this.input.setDraggable(cardView);
+    cardView.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      this.cardPointerDown = { cardInstanceId, x: pointer.x, y: pointer.y };
+    });
+    cardView.on("pointerup", (pointer: Phaser.Input.Pointer) => {
+      const down = this.cardPointerDown;
+      this.cardPointerDown = undefined;
+      if (!down || down.cardInstanceId !== cardInstanceId || this.dragCard.active) return;
+      if (Phaser.Math.Distance.Between(down.x, down.y, pointer.x, pointer.y) <= 8) this.selectOrPlayCard(cardInstanceId);
+    });
+    cardView.on("dragstart", () => this.beginCardDrag(cardInstanceId, x, y));
+    cardView.on("drag", (_pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => this.updateCardDrag(cardView, cardInstanceId, dragX, dragY));
+    cardView.on("dragend", (pointer: Phaser.Input.Pointer) => this.finishCardDrag(cardInstanceId, pointer.x, pointer.y));
+  }
+
+  private beginCardDrag(cardInstanceId: string, originX: number, originY: number) {
+    const combat = this.engine.run.currentCombat;
+    this.dragCard = {
+      active: true,
+      cardInstanceId,
+      originX,
+      originY,
+      currentX: originX,
+      currentY: originY,
+      reasonIfBlocked: combat ? playabilityReason(this.dataModel, combat, cardInstanceId) : "沒有戰鬥。"
+    };
+    this.playSfx("audio:cardDragStart", 0.42);
+  }
+
+  private updateCardDrag(cardView: Phaser.GameObjects.Container, cardInstanceId: string, dragX: number, dragY: number) {
+    if (this.dragCard.cardInstanceId !== cardInstanceId) return;
+    cardView.setPosition(dragX, dragY);
+    cardView.setDepth(20);
+    const drop = this.dropResultAt(dragX + CARD_WIDTH / 2, dragY + CARD_HEIGHT / 2);
+    this.dragCard = {
+      ...this.dragCard,
+      currentX: dragX,
+      currentY: dragY,
+      validDropZone: drop.zone,
+      hoverEnemyId: drop.enemyId
+    };
+    this.updateDragFeedback(drop);
+  }
+
+  private finishCardDrag(cardInstanceId: string, pointerX: number, pointerY: number) {
+    if (this.dragCard.cardInstanceId !== cardInstanceId) return;
+    const combat = this.engine.run.currentCombat;
+    const drop = this.dropResultAt(pointerX, pointerY);
+    this.clearDragFeedback();
+    this.cardPointerDown = undefined;
+    this.dragCard = { active: false };
+    if (!combat) {
+      this.render();
+      return;
+    }
+    const resolved = resolveDraggedCardPlay(this.dataModel, combat, cardInstanceId, drop);
+    if (!resolved.ok) {
+      this.playSfx("audio:cardDropCancel", 0.48);
+      this.dragCard = { active: false, reasonIfBlocked: resolved.reason };
+      this.render();
+      return;
+    }
+    playRunCard(this.engine, cardInstanceId, resolved.targetEnemyId, resolved.targetCardId);
+    this.selected = undefined;
+    this.playSfx("audio:cardDropPlay", 0.46);
+    this.maybeBeginAutoEndTurn();
+    this.render();
+  }
+
+  private dropResultAt(x: number, y: number): CardDropResult {
+    for (const zone of this.enemyDropZones.values()) {
+      if (pointInRect(x, y, zone)) return { zone: "enemy", enemyId: zone.id };
+    }
+    if (this.handDropZone && pointInRect(x, y, this.handDropZone)) return { zone: "hand" };
+    if (this.playerDropZone && pointInRect(x, y, this.playerDropZone)) return { zone: "player" };
+    if (this.battlefieldDropZone && pointInRect(x, y, this.battlefieldDropZone)) return { zone: "battlefield" };
+    return { zone: "invalid" };
+  }
+
+  private updateDragFeedback(drop: CardDropResult) {
+    if (!this.dragFeedback) {
+      this.dragFeedback = this.add.graphics();
+      this.root?.add(this.dragFeedback);
+    }
+    this.dragFeedback.clear();
+    const color = drop.zone === "invalid" || drop.zone === "hand" ? 0xee4266 : 0x39d98a;
+    const rect = drop.enemyId ? this.enemyDropZones.get(drop.enemyId) : drop.zone === "player" ? this.playerDropZone : drop.zone === "battlefield" ? this.battlefieldDropZone : undefined;
+    if (!rect) return;
+    this.dragFeedback.lineStyle(4, color, 0.78).strokeRect(rect.x, rect.y, rect.w, rect.h);
+  }
+
+  private clearDragFeedback() {
+    this.dragFeedback?.destroy();
+    this.dragFeedback = undefined;
+  }
+
+  private maybeBeginAutoEndTurn() {
+    const combat = this.engine.run.currentCombat;
+    if (!combat || this.engine.run.mode !== "combat" || combat.phase !== "player") return;
+    if (canAnyHandCardPlay(this.dataModel, combat)) return;
+    this.beginTurnTransition("autoNoPlayableCards");
+  }
+
+  private beginTurnTransition(kind: TurnTransitionState["kind"]) {
+    if (this.turnTransition || this.engine.run.mode !== "combat") return;
+    const delayMs = kind === "manual" ? 240 : 650;
+    const message = kind === "manual" ? "回合結束。" : "沒有可出的牌，自動結束回合。";
+    this.playSfx(kind === "manual" ? "audio:cardDropPlay" : "audio:autoEndTurn", 0.5);
+    const transition: TurnTransitionState = { kind, message, dueAt: this.virtualNow + delayMs };
+    transition.timer = this.time.delayedCall(delayMs, () => {
+      this.resolvePendingTurnTransition(true);
+      this.render();
+    });
+    this.turnTransition = transition;
+    this.selected = undefined;
+    this.render();
+  }
+
+  private resolvePendingTurnTransition(force = false) {
+    if (!this.turnTransition) return;
+    if (!force && this.virtualNow < this.turnTransition.dueAt) return;
+    this.turnTransition.timer?.remove(false);
+    this.turnTransition = undefined;
+    if (this.engine.run.mode !== "combat" || !this.engine.run.currentCombat) return;
+    endRunTurn(this.engine);
+    this.selected = undefined;
+  }
+
+  private playSfx(key: string, volume = 0.5) {
+    if (this.muted || !this.audioStarted) return;
+    if (this.cache.audio.exists(key)) this.sound.play(key, { volume });
   }
 
   private playCombatFx(events: readonly CombatEvent[], anchors: CombatRenderAnchors) {
     for (const event of events) {
       if (event.type === "DAMAGE_DEALT") {
+        this.playSfx("audio:attackHit", 0.48);
         const payload = event.payload as { enemy?: string; damage?: number } | undefined;
         const anchor = payload?.enemy ? anchors.enemies.get(payload.enemy) : undefined;
         if (payload?.damage && payload.damage > 0) {
@@ -408,6 +603,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       if (event.type === "PLAYER_DAMAGED") {
+        this.playSfx("audio:enemyAttack", 0.48);
         const payload = event.payload as { damage?: number } | undefined;
         const damage = payload?.damage ?? 0;
         if (damage > 0) {
@@ -435,6 +631,8 @@ export class GameScene extends Phaser.Scene {
     const targetCardId = definition.target === "handCard" ? combat.hand.find((id) => id !== cardInstanceId) : undefined;
     playRunCard(this.engine, cardInstanceId, undefined, targetCardId);
     this.selected = undefined;
+    this.playSfx("audio:cardDropPlay", 0.46);
+    this.maybeBeginAutoEndTurn();
     this.render();
   }
 
@@ -446,6 +644,8 @@ export class GameScene extends Phaser.Scene {
     const targetCardId = definition?.target === "handCard" ? combat?.hand.find((id) => id !== selectedCard?.instanceId) : undefined;
     playRunCard(this.engine, this.selected.cardInstanceId, enemyId, targetCardId);
     this.selected = undefined;
+    this.playSfx("audio:cardDropPlay", 0.46);
+    this.maybeBeginAutoEndTurn();
     this.render();
   }
 
@@ -481,6 +681,8 @@ export class GameScene extends Phaser.Scene {
       run: snapshotRun(run),
       selectedCard: this.selected?.cardInstanceId,
       buttons: this.buttons,
+      drag: this.dragCard,
+      turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
       audio: {
         muted: this.muted,
         started: this.audioStarted,
@@ -567,4 +769,8 @@ export class GameScene extends Phaser.Scene {
     this.visibleAssets.push({ key, role });
     this.root?.add(image);
   }
+}
+
+function pointInRect(x: number, y: number, rect: DropRect) {
+  return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
 }
