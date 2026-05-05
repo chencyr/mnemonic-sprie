@@ -22,7 +22,7 @@ import {
   type MapNode,
   type RunEngine
 } from "../core";
-import { CARD_HEIGHT, CARD_WIDTH } from "../phaser/ui/CardView";
+import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { ENEMY_SIZE } from "../phaser/ui/EnemyView";
 import { HUD_FONT } from "../phaser/ui/HudView";
 import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
@@ -221,11 +221,21 @@ export class GameScene extends Phaser.Scene {
       const x = 88 + index * 144;
       const y = 492;
       const selected = this.selected?.cardInstanceId === card.instanceId;
-      this.image(x + CARD_WIDTH / 2, y + 66, this.assets.getCardArt(card.cardId).key, CARD_WIDTH - 20, 96, selected ? 1 : 0.72);
-      this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340);
-      this.text(x + 12, y + 12, `${card.mutation?.name ?? cardDef.name} [${effectiveCardCost(this.dataModel, card)}]`, 15, "#ffffff");
-      this.text(x + 12, y + 118, cardDef.type, 13, "#8be9d1");
-      this.text(x + 12, y + 140, memoryShort(card), 13, "#ffd166");
+      const cardView = renderCardView({
+        scene: this,
+        context: this.uiContext(),
+        data: this.dataModel,
+        assets: this.assets,
+        x,
+        y,
+        card: cardDef,
+        instance: card,
+        selected,
+        playable: effectiveCardCost(this.dataModel, card) <= combat.player.energy,
+        mode: "hand"
+      });
+      this.root?.add(cardView);
+      this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340, 0.02);
     });
     this.button("end-turn", "結束回合", 1080, 544, 142, 48, () => {
       endRunTurn(this.engine);
@@ -247,12 +257,23 @@ export class GameScene extends Phaser.Scene {
     this.text(58, 118, "戰鬥獎勵：選一張牌或跳過拿金幣", 28, "#fff8d8");
     reward.cards.forEach((card, index) => {
       const x = 230 + index * REWARD_CARD_GAP;
-      this.image(x + 90, 252, this.assets.getCardArt(card.id).key, CARD_WIDTH, 112);
+      const cardView = renderCardView({
+        scene: this,
+        context: this.uiContext(),
+        data: this.dataModel,
+        assets: this.assets,
+        x,
+        y: 188,
+        w: 178,
+        h: 248,
+        card,
+        mode: "reward"
+      });
+      this.root?.add(cardView);
       this.button(`reward:${card.id}`, card.name, x, 368, 180, 54, () => {
         chooseCardReward(this.engine, card.id);
         this.render();
       });
-      this.text(x, 440, card.description, 13, "#ffffff", 0, 0, 190);
     });
     if (reward.relic) {
       this.text(850, 212, `精英遺物：${reward.relic.name}`, 20, "#c4b5fd");
@@ -410,8 +431,8 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf) {
-    const rectAlpha = label === "" ? 0.38 : enabled ? 0.92 : 0.45;
+  private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf, alpha?: number) {
+    const rectAlpha = alpha ?? (label === "" ? 0.38 : enabled ? 0.92 : 0.45);
     const rect = this.add.rectangle(x, y, w, h, enabled ? color : 0x4b5563, rectAlpha).setOrigin(0);
     rect.setStrokeStyle(2, enabled ? 0xffffff : 0x6b7280, enabled ? 0.42 : 0.2);
     if (enabled) {
@@ -487,9 +508,4 @@ function intentLabel(type: string): string {
     default:
       return type;
   }
-}
-
-function memoryShort(card: CardInstance): string {
-  const memory = card.memory;
-  return `血${memory.bloodthirst} 絕${memory.desperation} 怨${memory.grudge} 執${memory.obsession} 見${memory.witness}`;
 }
