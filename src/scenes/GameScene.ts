@@ -39,6 +39,7 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 
 type Selection = { cardInstanceId: string } | undefined;
+type MusicKey = "audio:bgm" | "audio:combatBgm";
 
 interface RenderAnchor {
   x: number;
@@ -57,6 +58,11 @@ interface TextSnapshot {
   run: ReturnType<typeof snapshotRun>;
   selectedCard?: string;
   buttons: ButtonDescriptor[];
+  audio: {
+    muted: boolean;
+    started: boolean;
+    currentMusic?: MusicKey;
+  };
   combat?: unknown;
   map?: unknown;
   reward?: unknown;
@@ -85,6 +91,8 @@ export class GameScene extends Phaser.Scene {
   private combatEventCursor: CombatEventCursor = { eventCount: 0 };
   private readonly quick = new URLSearchParams(window.location.search).has("e2e");
   private muted = true;
+  private audioStarted = false;
+  private activeMusic?: MusicKey;
 
   constructor() {
     super("GameScene");
@@ -142,6 +150,7 @@ export class GameScene extends Phaser.Scene {
         this.drawEnd("挑戰失敗", "拾憶者倒在這一層。", 0xf45b69);
         break;
     }
+    this.syncMusicForMode();
   }
 
   private drawBackground() {
@@ -449,9 +458,18 @@ export class GameScene extends Phaser.Scene {
   private startAudio() {
     this.muted = false;
     this.sound.mute = false;
-    if (!this.sound.get("audio:bgm")) {
-      this.sound.play("audio:bgm", { loop: true, volume: 0.28 });
-    }
+    this.audioStarted = true;
+    this.syncMusicForMode();
+  }
+
+  private syncMusicForMode() {
+    if (!this.audioStarted) return;
+    const nextMusic: MusicKey = this.engine.run.mode === "combat" ? "audio:combatBgm" : "audio:bgm";
+    if (this.activeMusic === nextMusic) return;
+    if (this.activeMusic) this.sound.stopByKey(this.activeMusic);
+    this.sound.stopByKey(nextMusic);
+    this.sound.play(nextMusic, { loop: true, volume: nextMusic === "audio:combatBgm" ? 0.34 : 0.28 });
+    this.activeMusic = nextMusic;
   }
 
   private snapshot(): TextSnapshot {
@@ -463,6 +481,11 @@ export class GameScene extends Phaser.Scene {
       run: snapshotRun(run),
       selectedCard: this.selected?.cardInstanceId,
       buttons: this.buttons,
+      audio: {
+        muted: this.muted,
+        started: this.audioStarted,
+        currentMusic: this.activeMusic
+      },
       combat: combat
         ? {
             phase: combat.phase,

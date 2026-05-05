@@ -85,5 +85,19 @@ describe("asset registry", () => {
       key: "audio:bgm",
       path: "/assets/audio/bgm/main-loop.ogg"
     });
+    expect(registry.getAudio("combatBgm")).toEqual({
+      key: "audio:combatBgm",
+      path: "/assets/audio/bgm/combat-loop.ogg"
+    });
+  });
+
+  it("preloads combat background music from the asset data", () => {
+    const registry = createAssetRegistry(loadGameData());
+    const entries = registry.listPreloadEntries();
+
+    expect(entries).toContainEqual({
+      key: "audio:combatBgm",
+      path: "/assets/audio/bgm/combat-loop.ogg"
+    });
   });
 });

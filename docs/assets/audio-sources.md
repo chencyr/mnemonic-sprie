@@ -13,6 +13,17 @@
 
 This is a placeholder asset for MVP development. Replace it before final release if a stronger original soundtrack becomes available.
 
+## Placeholder Combat BGM
+
+- Local file: `public/assets/audio/bgm/combat-loop.ogg`
+- Source file: `public/assets/externals/Corrupted Buffer.wav`
+- Source metadata: `made with suno; created=2026-05-03T09:12:24Z; id=0d6fc412-33d9-4bc8-83b7-c818d6a453a5`
+- Intended use: combat atmosphere loop.
+- License status: use only if the source was generated while the project owner had Suno Pro/Premier rights for that output. If the source was generated on Suno Basic/free, keep it as local non-commercial development audio and replace before public release.
+- Conversion command:
+  - `ffmpeg -y -i 'public/assets/externals/Corrupted Buffer.wav' -vn -ar 44100 -ac 2 -c:a vorbis -strict -2 -q:a 5 'public/assets/audio/bgm/combat-loop.ogg'`
+- Local technical check: Ogg Vorbis, stereo, 44100 Hz, duration 103.752562 seconds, bitrate about 213 kbps.
+
 ## Placeholder SFX
 
 All placeholder SFX below are from Kenney asset packs licensed as Creative Commons Zero (CC0). The downloaded packs include `License.txt` stating the content is free for personal, educational, and commercial projects, and that credit is not mandatory.

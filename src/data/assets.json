@@ -26,6 +26,7 @@
     "mutation": "audio/sfx/mutation.ogg",
     "victory": "audio/sfx/victory.ogg",
     "failure": "audio/sfx/failure.ogg",
-    "bgm": "audio/bgm/main-loop.ogg"
+    "bgm": "audio/bgm/main-loop.ogg",
+    "combatBgm": "audio/bgm/combat-loop.ogg"
   }
 }

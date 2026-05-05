@@ -59,6 +59,20 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - develop-web-game client run wrote screenshots/state to `output/web-game-block-fix/`.
   - Manual Playwright block scenario confirmed 5 block reduces 6 incoming damage to 1; screenshot/report in `output/manual-review-block-fix/`.
 
+## 2026-05-06 Combat Atmosphere Music
+
+- User confirmed `public/assets/externals/Corrupted Buffer.wav` is intended as combat atmosphere music.
+- Converted it to `public/assets/audio/bgm/combat-loop.ogg` using Ogg Vorbis, stereo, 44.1kHz.
+- Added `combatBgm` to `src/data/assets.json` so it is preloaded through the asset registry.
+- Updated `docs/assets/audio-sources.md` with source metadata, conversion command, technical check, and Suno rights caveat.
+- Added music state to `window.render_game_to_text()` and switched runtime music by mode:
+  - combat uses `audio:combatBgm`
+  - non-combat uses `audio:bgm`
+- TDD checks:
+  - Red: `tests/core/assetRegistry.test.ts` failed before `combatBgm` was added.
+  - Red: `npm run test:e2e` failed before snapshot/runtime music exposed `audio:combatBgm`.
+  - Green: targeted asset registry test and E2E passed after implementation.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.

@@ -25,6 +25,7 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetPrefix(current, "enemy:", "combat");
   assertVisibleAssetPrefix(current, "card:", "combat");
   assertVisibleAssetPrefix(current, "ui:intent", "combat");
+  assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
 
@@ -39,6 +40,7 @@ await withGamePage(async ({ page }) => {
 
   current = await clickButton(page, "auto-win");
   assert.equal(current.mode, "reward");
+  assert.equal(current.audio?.currentMusic, "audio:bgm");
   assertVisibleAssetPrefix(current, "card:", "reward");
   await screenshot(page, "reward");
 
