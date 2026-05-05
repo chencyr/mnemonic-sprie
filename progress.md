@@ -118,6 +118,13 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - develop-web-game client wrote screenshots/state to `output/web-game-card-art-fit/` with no error files.
   - Manual Playwright combat screenshot in `output/manual-card-art-fit/combat.png` confirmed hand cards use upright card art assets without horizontal distortion.
 
+## 2026-05-06 Combat Feedback Readability
+
+- Continuing in `.worktrees/combat-feedback-readability` on branch `feature/combat-feedback-readability`.
+- User chose Inline Execution for `docs/superpowers/plans/2026-05-06-combat-feedback-readability-plan.md`.
+- Per project rules, implementation uses `superpowers:executing-plans` together with `develop-web-game`.
+- Task 0 complete: moved `03-combat-feedback-readability-backlog.md` into `backlogs/in-progress/` and committed the backlog state transition.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.
