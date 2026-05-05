@@ -22,6 +22,15 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Add focused gameplay tests once the first real feature is implemented.
 - Add asset pipeline conventions when art/audio direction is chosen.
 
+## 2026-05-06 Phaser Game Feel
+
+- Continuing in `.worktrees/phaser-game-feel` on branch `feature/phaser-game-feel`.
+- User chose Inline Execution and explicitly requested `develop-web-game` + `superpowers:executing-plans`.
+- Current goal: implement `docs/superpowers/plans/2026-05-06-phaser-game-feel-plan.md`.
+- Priority behavior: combat feedback first, including fixing combat-time player HP display from `combat.player.hp`.
+- Task 1 complete locally: added `consumeNewCombatEvents` pure helper and Vitest coverage for new combat reset, appended events, and truncated event recovery.
+- Verification: `npm test -- tests/phaser/combatEventDiff.test.ts` passed.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.
