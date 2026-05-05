@@ -195,3 +195,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm test`
   - `npm run build`
   - `npm run test:e2e`
+- develop-web-game verification passed for combat scene UI:
+  - `$WEB_GAME_CLIENT` wrote screenshot/state to `output/web-game-combat-scene-ui/`.
+  - Manual Playwright wrote screenshots/state to `output/manual-combat-scene-ui/`.
+  - Visual review confirmed proposal-3 combat layout direction, regenerated combat UI assets, readable dynamic text, intact drag attack, and intact death transition.
+  - Console/page errors were empty.
