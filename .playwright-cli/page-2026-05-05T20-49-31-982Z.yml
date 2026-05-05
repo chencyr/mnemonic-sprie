@@ -1,0 +1,44 @@
+- main [ref=e2]:
+  - img [ref=e3]
+  - img [ref=e6]
+  - img [ref=e7]
+  - img [ref=e8]
+  - img [ref=e9]
+  - img [ref=e10]
+  - generic:
+    - img
+  - img [ref=e11]
+  - img [ref=e12]
+  - img [ref=e13]
+  - img [ref=e14]
+  - generic [ref=e15]:
+    - generic [ref=e16]: 不是開始畫面，是第一份契約
+    - heading "記憶 牌塔" [level=1] [ref=e17]:
+      - text: 記憶
+      - text: 牌塔
+    - paragraph [ref=e18]: 每一張牌都會記住你的打法。牌塔也會。
+  - img [ref=e20]
+  - generic [ref=e21]:
+    - img [ref=e23]
+    - generic [ref=e24]: 入塔同意書
+    - generic [ref=e25]: 簽下後立即開始一局。你會帶著破碎筆記進入第 1 層，直到牌塔讀懂你，或你讀懂它。
+    - generic [ref=e26]:
+      - img [ref=e27]
+      - text: 起始遺物：破碎筆記
+    - generic [ref=e28]:
+      - img [ref=e29]
+      - text: 路線：12 層爬塔
+    - generic [ref=e30]:
+      - img [ref=e31]
+      - text: 警告：Boss 會反制習慣
+    - generic [ref=e32]: 簽名，開始一局
+    - generic [ref=e33]: 沒有撤回鍵。只有下一回合。
+  - generic [ref=e34]:
+    - img [ref=e35]
+    - generic [ref=e36]:
+      - generic [ref=e37]: 標準模式
+      - text: 一名 Seeker / 一座會記仇的塔
+  - generic [ref=e38]:
+    - generic [ref=e39]: F0 / 12
+    - generic [ref=e40]: 金幣 99
+    - generic [ref=e41]: 契約 0

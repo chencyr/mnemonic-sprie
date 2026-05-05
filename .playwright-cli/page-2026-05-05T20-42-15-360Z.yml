@@ -1,0 +1,72 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 記憶牌塔
+      - generic [ref=e7]: F0 / 12
+      - generic [ref=e8]: 金幣 99
+      - generic [ref=e9]: 起始遺物 已選定
+    - img
+    - heading "記憶牌塔" [level=1] [ref=e11]
+    - paragraph [ref=e12]: 爬上 12 層牌塔，讓每一張牌記住它的戰鬥方式。
+    - generic [ref=e13]:
+      - img [ref=e14]
+      - img [ref=e15]
+      - img [ref=e16]
+      - img [ref=e17]
+      - img [ref=e18]
+    - img
+    - generic [ref=e19]:
+      - text: 起始遺物：破碎筆記
+      - generic [ref=e20]: 戰鬥後，最常使用的牌獲得記憶進度。
+    - generic [ref=e21]: 開始一局
+    - img [ref=e22]
+    - img [ref=e23]
+    - img [ref=e24]
+  - generic [ref=e25]:
+    - img [ref=e26]
+    - img
+    - img
+    - img
+    - heading "記憶牌塔" [level=1] [ref=e29]
+    - paragraph [ref=e30]: 巷口亮著牌塔的入口。這不是首頁，是你下一場冒險前的最後一口氣。
+    - generic [ref=e31]:
+      - generic [ref=e32]: 開始新局
+      - generic [ref=e33]: 今日契約
+      - generic [ref=e34]: 圖鑑
+    - generic [ref=e35]:
+      - img [ref=e36]
+      - img [ref=e37]
+      - generic [ref=e38]:
+        - text: 契約正在等你簽名
+        - generic [ref=e39]: 選擇風險，換取更快的成長節奏。
+  - generic [ref=e40]:
+    - generic:
+      - img [ref=e42]
+      - img [ref=e43]
+      - img [ref=e44]
+      - img [ref=e45]
+    - img
+    - img
+    - heading "記憶牌塔" [level=1] [ref=e46]
+    - paragraph [ref=e47]: 牌塔會記住你的習慣。Boss 也會。這一局，別讓自己被讀懂。
+    - generic [ref=e48]:
+      - heading "本局承諾" [level=2] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img [ref=e52]
+          - text: 12 層爬塔路線
+        - generic [ref=e53]:
+          - img [ref=e54]
+          - text: 卡牌記憶變異
+        - generic [ref=e55]:
+          - img [ref=e56]
+          - text: Boss 反制習慣
+        - generic [ref=e57]:
+          - img [ref=e58]
+          - text: 遺物與契約組合
+    - generic [ref=e59]: 挑戰牌塔
+    - generic [ref=e60]: 標準模式 / 12 層
+    - img [ref=e61]
+    - img [ref=e62]
+    - img [ref=e63]
+    - img [ref=e64]
