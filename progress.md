@@ -180,3 +180,9 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Pillow alpha validation confirmed `battle-bg.png` is opaque and the eight panel/overlay assets have transparent corners and non-empty alpha.
   - Contact sheet visual review confirmed the assets contain no embedded gameplay text.
 - Stopping here by user request; Task 3 asset registry and Phaser UI implementation are intentionally not started.
+- User approved regenerating the nine combat UI PNGs with the `style-teradadara-like` direction.
+- Regeneration constraints:
+  - Use `externals/battle-design-proposal-3.png` and `externals/battle-design-proposal-4.png` as references only, not as source images to copy.
+  - Preserve exact runtime filenames, dimensions, and transparency requirements.
+  - Keep all gameplay text dynamic in Phaser; generated images must not include readable gameplay labels.
+- After regeneration, continue executing the plan from Task 3 through completion with `superpowers:executing-plans` plus `develop-web-game`.

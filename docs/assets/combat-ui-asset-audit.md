@@ -41,3 +41,5 @@ Implement `backlogs/in-progress/18-combat-scene-ui-implementation-backlog.md` us
 - Generated assets must not include readable gameplay text.
 - Dynamic labels such as HP, energy, block, turn, and end turn must remain Phaser text.
 - Assets must fit the existing modern Japanese street-graffiti chibi sticker direction.
+- For the regenerated combat UI pass, use the `style-teradadara-like` direction: character-focused sticker surfaces, oversized mascot eyes, symbolic pupils, at least seven clashing colors, thick marker-style linework, flat fills, and non-painterly rendering.
+- `externals/battle-design-proposal-3.png` and `externals/battle-design-proposal-4.png` are composition references only. Do not copy their exact characters, layout details, text, markings, or image content.
