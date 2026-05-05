@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright";
 
 export async function withGamePage(testBody, { port = 5174 } = {}) {
@@ -43,6 +44,25 @@ export async function clickButton(page, id) {
   await page.mouse.click(button.x, button.y);
   await page.waitForTimeout(50);
   return state(page);
+}
+
+export async function screenshot(page, name) {
+  await mkdir("output/e2e", { recursive: true });
+  await page.screenshot({ path: `output/e2e/${name}.png`, fullPage: false });
+}
+
+export function assertVisibleAssetPrefix(current, prefix, mode) {
+  const found = current.visibleAssets?.some((asset) => asset.key.startsWith(prefix));
+  if (!found) {
+    throw new Error(`Expected visible asset prefix ${prefix} in ${mode}.\n${JSON.stringify(current.visibleAssets, null, 2)}`);
+  }
+}
+
+export function assertVisibleAssetRole(current, role, mode) {
+  const found = current.visibleAssets?.some((asset) => asset.role === role || asset.role.startsWith(`${role}:`));
+  if (!found) {
+    throw new Error(`Expected visible asset role ${role} in ${mode}.\n${JSON.stringify(current.visibleAssets, null, 2)}`);
+  }
 }
 
 export function firstEnabledButton(current, prefix) {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { clickButton, firstEnabledButton, state, withGamePage } from "./helpers.mjs";
+import { assertVisibleAssetPrefix, assertVisibleAssetRole, clickButton, firstEnabledButton, screenshot, state, withGamePage } from "./helpers.mjs";
 
 const exploratory = {
   maxFullRunSteps: 80,
@@ -12,12 +12,20 @@ await withGamePage(async ({ page }) => {
   let current = await state(page);
   assert.equal(current.mode, "title");
   assert.ok(current.buttons.some((button) => button.id === "start"));
+  assertVisibleAssetRole(current, "title", "title");
+  await screenshot(page, "title");
 
   current = await clickButton(page, "start");
   assert.equal(current.mode, "map");
+  assertVisibleAssetPrefix(current, "ui:node", "map");
+  await screenshot(page, "map");
 
   current = await clickButton(page, firstEnabledButton(current, "map:").id);
   assert.equal(current.mode, "combat");
+  assertVisibleAssetPrefix(current, "enemy:", "combat");
+  assertVisibleAssetPrefix(current, "card:", "combat");
+  assertVisibleAssetPrefix(current, "ui:intent", "combat");
+  await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
 
   await playOneCardIfPossible(page);
@@ -27,6 +35,8 @@ await withGamePage(async ({ page }) => {
 
   current = await clickButton(page, "auto-win");
   assert.equal(current.mode, "reward");
+  assertVisibleAssetPrefix(current, "card:", "reward");
+  await screenshot(page, "reward");
 
   const visitedScreens = new Set(["title", "map", "combat", "reward"]);
   const visitedActions = new Set(["playedCard"]);
@@ -35,6 +45,9 @@ await withGamePage(async ({ page }) => {
     visitedScreens.add(current.mode);
     assert.ok(current.buttons.length > 0 || current.mode === "victory", `No buttons in mode ${current.mode}`);
     assertNoInvalidNumbers(current);
+    if (current.mode === "event") assertVisibleAssetPrefix(current, "event:", "event");
+    if (current.mode === "shop") assert.ok(current.visibleAssets?.length > 0, "shop should render visible assets");
+    if (current.mode === "rest") assertVisibleAssetRole(current, "rest", "rest");
 
     if (current.mode === "victory") break;
     if (current.mode === "map") {
@@ -71,6 +84,8 @@ await withGamePage(async ({ page }) => {
 
   current = await state(page);
   assert.equal(current.mode, "victory");
+  assertVisibleAssetRole(current, "end", "victory");
+  await screenshot(page, "victory");
   for (const screen of exploratory.requiredScreens) {
     assert.ok(visitedScreens.has(screen), `Screen was not reached: ${screen}`);
   }
