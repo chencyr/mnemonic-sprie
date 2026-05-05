@@ -164,6 +164,8 @@ async function assertVictoryTransitionDelaysReward(page) {
   assert.equal(current.mode, "combat");
   assert.equal(current.combat.phase, "victory");
   assert.equal(current.combat.enemies[0].state, "dead");
+  assert.ok(current.feedback?.center?.some((item) => item.type === "death"), "Enemy death should surface as center combat feedback.");
+  assert.ok(current.feedback?.ticker?.some((item) => item.type === "death"), "Enemy death should surface in combat ticker.");
   assert.ok(current.victoryTransition, "Victory should wait for death presentation.");
   assert.equal(current.reward, undefined);
   assert.ok(!current.buttons.find((button) => button.id === "end-turn")?.enabled, "End turn should be disabled during victory presentation.");
@@ -205,6 +207,8 @@ async function assertDragAttackAutoTargets(page) {
   current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
   const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
   assert.ok(enemyAfter && enemyAfter.hp < enemyBefore.hp, "Dragging attack to battlefield should damage auto target.");
+  assert.ok(current.feedback?.active?.some((item) => item.type === "damage" && item.anchor === "enemy"), "Dragging attack should create enemy damage feedback.");
+  assert.ok(current.feedback?.ticker?.some((item) => item.type === "damage"), "Dragging attack should create ticker damage feedback.");
 }
 
 async function assertInvalidDragCancels(page) {
@@ -250,6 +254,7 @@ async function assertCombatHpTracksEnemyTurn(page) {
   const damageEvent = current.combat.events.find((event) => event.type === "PLAYER_DAMAGED");
   if (damageEvent && damageEvent.payload?.damage > 0) {
     assert.ok(current.combat.playerHp < beforeHp, "combat playerHp should decrease when PLAYER_DAMAGED has positive damage");
+    assert.ok(current.feedback?.active?.some((item) => item.type === "damage" && item.anchor === "player"), "Enemy turn should create player damage feedback.");
   }
 }
 

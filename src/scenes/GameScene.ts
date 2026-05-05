@@ -26,6 +26,7 @@ import {
 } from "../core";
 import { cameraHit, fadeOutOnDeath, flashTarget, floatText, shakeTarget, type FxTarget } from "../phaser/fx/combatFx";
 import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/combatEventDiff";
+import { activeFeedbackItems, mapCombatEventsToFeedback, tickerItems, type CombatFeedbackItem } from "../phaser/fx/combatFeedback";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
@@ -102,6 +103,11 @@ interface TextSnapshot {
   victoryTransition?: {
     message: string;
   };
+  feedback: {
+    active: CombatFeedbackItem[];
+    ticker: CombatFeedbackItem[];
+    center: CombatFeedbackItem[];
+  };
   audio: {
     muted: boolean;
     started: boolean;
@@ -146,6 +152,8 @@ export class GameScene extends Phaser.Scene {
   private dragFeedback?: Phaser.GameObjects.Graphics;
   private turnTransition?: TurnTransitionState;
   private victoryTransition?: VictoryTransitionState;
+  private feedbackItems: CombatFeedbackItem[] = [];
+  private feedbackSequence = 0;
   private virtualNow = 0;
 
   constructor() {
@@ -175,6 +183,7 @@ export class GameScene extends Phaser.Scene {
     if (this.engine?.run.mode !== "combat") {
       this.turnTransition = undefined;
       this.victoryTransition = undefined;
+      this.feedbackItems = [];
     }
     this.clearDragFeedback();
     this.root?.destroy(true);
@@ -247,6 +256,8 @@ export class GameScene extends Phaser.Scene {
       this.combatEventCursor = { eventCount: 0 };
       this.turnTransition = undefined;
       this.victoryTransition = undefined;
+      this.feedbackItems = [];
+      this.feedbackSequence = 0;
       this.dragCard = { active: false };
       this.render();
     }, true, 0x39d98a);
@@ -313,13 +324,12 @@ export class GameScene extends Phaser.Scene {
       });
       if (isEnemyAlive(enemy)) this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 96, y: y - 138, w: 192, h: 300 });
     });
+    const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
+    this.combatEventCursor = diff.cursor;
+    this.ingestCombatFeedback(diff.events);
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
     const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
-    const logLines = combat.events.map((event) => event.message).slice(-8);
-    if (this.turnTransition) logLines.push(this.turnTransition.message);
-    if (this.victoryTransition) logLines.push(this.victoryTransition.message);
-    if (this.dragCard.reasonIfBlocked) logLines.push(this.dragCard.reasonIfBlocked);
-    logPanel.add(label(this, 14, 48, logLines.join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
+    this.renderCombatTicker(logPanel);
     this.root?.add(logPanel);
     const handPanel = panel(this, layout.hand.x, layout.hand.y, layout.hand.w, layout.hand.h, "手牌");
     this.root?.add(handPanel);
@@ -354,9 +364,85 @@ export class GameScene extends Phaser.Scene {
         this.render();
       }, !this.victoryTransition, 0x39d98a);
     }
-    const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
-    this.combatEventCursor = diff.cursor;
+    this.renderCenterFeedback();
     this.playCombatFx(diff.events, anchors);
+  }
+
+  private ingestCombatFeedback(events: readonly CombatEvent[]) {
+    const now = this.feedbackNow();
+    const mapped = mapCombatEventsToFeedback(events, { now, sequenceStart: this.feedbackSequence });
+    this.feedbackSequence += events.length;
+    this.feedbackItems = activeFeedbackItems([...this.feedbackItems, ...mapped], now);
+  }
+
+  private renderCombatTicker(logPanel: Phaser.GameObjects.Container) {
+    const active = this.feedbackSnapshot();
+    const rows = active.ticker.map((item) => ({ text: item.tickerText, color: this.feedbackColor(item.type) }));
+
+    if (this.turnTransition) rows.push({ text: this.turnTransition.message, color: "#f4e04d" });
+    if (this.victoryTransition) rows.push({ text: this.victoryTransition.message, color: "#c4b5fd" });
+    if (this.dragCard.reasonIfBlocked) rows.push({ text: this.dragCard.reasonIfBlocked, color: "#ff9f6e" });
+
+    const visibleRows = rows.slice(-6);
+    if (visibleRows.length === 0) {
+      logPanel.add(label(this, 14, 54, "等待行動", 14, "#d1d5db", layout.rightPanel.w - 28));
+      return;
+    }
+
+    visibleRows.forEach((row, index) => {
+      const y = 50 + index * 34;
+      const dot = this.add.circle(22, y + 7, 4, Phaser.Display.Color.HexStringToColor(row.color).color, 0.95);
+      const text = label(this, 34, y, row.text, 13, row.color, layout.rightPanel.w - 52);
+      logPanel.add([dot, text]);
+    });
+  }
+
+  private renderCenterFeedback() {
+    const center = this.feedbackSnapshot().center.at(-1);
+    if (!center) return;
+    const box = this.add.container(WIDTH / 2, 128);
+    const bg = this.add.rectangle(0, 0, 310, 48, 0x101318, 0.78).setStrokeStyle(2, 0xffffff, 0.22);
+    const text = this.add
+      .text(0, 0, center.text, {
+        color: this.feedbackColor(center.type),
+        fontFamily: HUD_FONT,
+        fontSize: "22px",
+        fontStyle: "900"
+      })
+      .setOrigin(0.5);
+    box.add([bg, text]);
+    box.setDepth(14);
+    this.root?.add(box);
+  }
+
+  private feedbackSnapshot() {
+    const active = activeFeedbackItems(this.feedbackItems, this.feedbackNow());
+    const ticker = tickerItems(active);
+    const center = active.filter((item) => item.center);
+    return { active, ticker, center };
+  }
+
+  private feedbackNow() {
+    return Math.max(this.virtualNow, Math.floor(this.time.now));
+  }
+
+  private feedbackColor(type: CombatFeedbackItem["type"]) {
+    switch (type) {
+      case "damage":
+        return "#ff6b6b";
+      case "block":
+        return "#8be9d1";
+      case "memory":
+        return "#c4b5fd";
+      case "draw":
+        return "#f4e04d";
+      case "death":
+        return "#ff9f6e";
+      case "turn":
+        return "#f4e04d";
+      case "system":
+        return "#d1d5db";
+    }
   }
 
   private drawReward() {
@@ -463,6 +549,8 @@ export class GameScene extends Phaser.Scene {
       this.combatEventCursor = { eventCount: 0 };
       this.turnTransition = undefined;
       this.victoryTransition = undefined;
+      this.feedbackItems = [];
+      this.feedbackSequence = 0;
       this.dragCard = { active: false };
       this.render();
     }, true, color);
@@ -677,6 +765,49 @@ export class GameScene extends Phaser.Scene {
           floatText(this, anchors.player?.x ?? 130, anchors.player?.y ?? 190, "格擋", { color: "#8be9d1", fontSize: 18 });
         }
       }
+
+      if (event.type === "BLOCK_GAINED") {
+        const payload = event.payload as { block?: number } | undefined;
+        const block = payload?.block ?? 0;
+        if (block > 0) {
+          this.playSfx("audio:blockGain", 0.42);
+          flashTarget(this, anchors.player?.target, 0x8be9d1, 90);
+          floatText(this, anchors.player?.x ?? 130, (anchors.player?.y ?? 190) + 18, `+${block} 格擋`, { color: "#8be9d1", fontSize: 18, dy: 34 });
+        }
+      }
+
+      if (event.type === "ENEMY_BLOCK_GAINED") {
+        const payload = event.payload as { enemy?: string; block?: number } | undefined;
+        const block = payload?.block ?? 0;
+        const anchor = payload?.enemy ? anchors.enemies.get(payload.enemy) : undefined;
+        if (block > 0) {
+          flashTarget(this, anchor?.target, 0x8be9d1, 90);
+          floatText(this, anchor?.x ?? 620, (anchor?.y ?? 240) - 52, `+${block} 格擋`, { color: "#8be9d1", fontSize: 18, dy: 34 });
+        }
+      }
+
+      if (event.type === "MEMORY_PROGRESS_GAINED") {
+        this.playSfx("audio:memoryGained", 0.42);
+        floatText(this, layout.hand.x + layout.hand.w / 2, layout.hand.y + 30, "記憶 +1", { color: "#c4b5fd", fontSize: 20, dy: 30 });
+      }
+
+      if (event.type === "CARDS_DRAWN") {
+        const payload = event.payload as { cards?: string[] } | undefined;
+        const count = payload?.cards?.length ?? 0;
+        if (count > 0) {
+          floatText(this, layout.hand.x + layout.hand.w / 2, layout.hand.y + 48, `抽 ${count} 張`, { color: "#f4e04d", fontSize: 18, dy: 28 });
+        }
+      }
+
+      if (event.type === "ENEMY_STATE_CHANGED") {
+        const payload = event.payload as { enemy?: string; to?: string } | undefined;
+        if (payload?.to === "dead") {
+          this.playSfx("audio:enemyDefeat", 0.5);
+          const anchor = payload.enemy ? anchors.enemies.get(payload.enemy) : undefined;
+          fadeOutOnDeath(this, anchor?.target);
+          floatText(this, anchor?.x ?? 620, (anchor?.y ?? 240) - 126, "擊倒", { color: "#ff6b6b", fontSize: 20, dy: 26, duration: 900 });
+        }
+      }
     }
   }
 
@@ -746,6 +877,7 @@ export class GameScene extends Phaser.Scene {
       drag: this.dragCard,
       turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
       victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
+      feedback: this.feedbackSnapshot(),
       audio: {
         muted: this.muted,
         started: this.audioStarted,

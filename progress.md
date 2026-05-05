@@ -124,6 +124,19 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - User chose Inline Execution for `docs/superpowers/plans/2026-05-06-combat-feedback-readability-plan.md`.
 - Per project rules, implementation uses `superpowers:executing-plans` together with `develop-web-game`.
 - Task 0 complete: moved `03-combat-feedback-readability-backlog.md` into `backlogs/in-progress/` and committed the backlog state transition.
+- Task 1 complete: added pure combat feedback mapping with coverage for damage, block, memory, draw, death, active expiration, and ticker limit.
+- Task 2-5 complete locally:
+  - `GameScene` now maps new combat events into `feedbackItems`.
+  - `window.render_game_to_text()` exposes `feedback.active`, `feedback.ticker`, and `feedback.center`.
+  - The right combat panel now renders a six-row ticker instead of a long raw log.
+  - Enemy death shows a center feedback banner during the victory transition.
+  - Combat FX now includes block, memory, draw, and death local feedback in addition to damage.
+  - E2E asserts enemy damage feedback, player damage feedback, and death feedback.
+- Verification so far:
+  - Red: `npm test -- tests/phaser/combatFeedback.test.ts` failed before `src/phaser/fx/combatFeedback.ts` existed.
+  - Green: `npm test -- tests/phaser/combatFeedback.test.ts` passed.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
 
 ## 2026-05-05 MVP Implementation
 
