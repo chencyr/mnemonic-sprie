@@ -22,6 +22,43 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Add focused gameplay tests once the first real feature is implemented.
 - Add asset pipeline conventions when art/audio direction is chosen.
 
+## 2026-05-06 Phaser Game Feel
+
+- Continuing in `.worktrees/phaser-game-feel` on branch `feature/phaser-game-feel`.
+- User chose Inline Execution and explicitly requested `develop-web-game` + `superpowers:executing-plans`.
+- Current goal: implement `docs/superpowers/plans/2026-05-06-phaser-game-feel-plan.md`.
+- Priority behavior: combat feedback first, including fixing combat-time player HP display from `combat.player.hp`.
+- Task 1 complete locally: added `consumeNewCombatEvents` pure helper and Vitest coverage for new combat reset, appended events, and truncated event recovery.
+- Verification: `npm test -- tests/phaser/combatEventDiff.test.ts` passed.
+- Task 2 complete locally: E2E now asserts `combat.playerHp/playerMaxHp`; `renderPlayerPanel` uses combat HP during combat and snapshot exposes player HP/block plus structured event payloads.
+- Verification: `npm run test:e2e` and `npm test` passed.
+- Task 3 complete locally: added Phaser combat FX helpers for flash, shake, floating text, camera shake, and death fade.
+- Verification: `npm run build` passed.
+- Task 4 complete locally: `GameScene` now consumes new combat events once per combat id, tracks player/enemy render anchors, and plays damage/player feedback FX after combat render.
+- Verification: `npm run build` and `npm run test:e2e` passed.
+- Task 5 complete locally: added `screenFx` and staggered reward card entry animation while preserving immediate reward button descriptors.
+- Verification: `npm run build` and `npm run test:e2e` passed.
+- Task 6 verification so far:
+  - `npm test`, `npm run build`, and `npm run test:e2e` passed.
+  - Started worktree dev server on `http://127.0.0.1:5175/`.
+  - Ran develop-web-game Playwright client against `http://127.0.0.1:5175/?e2e=1`; screenshots and text state were written to `output/web-game-game-feel/` with no error files.
+  - Manual Playwright screenshots written to `output/manual-review-game-feel/`.
+  - Visual review confirmed enemy damage float text, player HP panel changing to 66/72 after enemy damage, `-6 HP` float text, and reward card stagger entry.
+
+## 2026-05-06 Block Fix
+
+- User reported block was ineffective during combat.
+- Root cause: `endPlayerTurn()` cleared `combat.player.block` before `resolveEnemyTurn()`, so enemy attacks never saw player block.
+- Added core regression test: playing `guard` against a fixed 6-damage enemy intent should leave player HP at 71 from 72.
+- Fix: keep block during enemy turn, then clear block after enemy turn before `startPlayerTurn()`.
+- Verification:
+  - `npm test -- tests/core/combatEngine.test.ts` passed.
+  - `npm test` passed: 8 files / 30 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - develop-web-game client run wrote screenshots/state to `output/web-game-block-fix/`.
+  - Manual Playwright block scenario confirmed 5 block reduces 6 incoming damage to 1; screenshot/report in `output/manual-review-block-fix/`.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.

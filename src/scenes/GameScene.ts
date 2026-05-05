@@ -18,9 +18,12 @@ import {
   startRun,
   type AssetRegistry,
   type CardInstance,
+  type CombatEvent,
   type GameData,
   type RunEngine
 } from "../core";
+import { cameraHit, fadeOutOnDeath, flashTarget, floatText, shakeTarget, type FxTarget } from "../phaser/fx/combatFx";
+import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/combatEventDiff";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { renderEventView } from "../phaser/ui/EventView";
@@ -36,6 +39,17 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 
 type Selection = { cardInstanceId: string } | undefined;
+
+interface RenderAnchor {
+  x: number;
+  y: number;
+  target: FxTarget;
+}
+
+interface CombatRenderAnchors {
+  player?: RenderAnchor;
+  enemies: Map<string, RenderAnchor>;
+}
 
 interface TextSnapshot {
   note: string;
@@ -68,6 +82,7 @@ export class GameScene extends Phaser.Scene {
   private selected: Selection;
   private buttons: ButtonDescriptor[] = [];
   private visibleAssets: VisibleAssetDescriptor[] = [];
+  private combatEventCursor: CombatEventCursor = { eventCount: 0 };
   private readonly quick = new URLSearchParams(window.location.search).has("e2e");
   private muted = true;
 
@@ -158,6 +173,7 @@ export class GameScene extends Phaser.Scene {
     this.button("start", "開始一局", 704, 506, 220, 56, () => {
       this.startAudio();
       startRun(this.engine);
+      this.combatEventCursor = { eventCount: 0 };
       this.render();
     }, true, 0x39d98a);
   }
@@ -183,24 +199,40 @@ export class GameScene extends Phaser.Scene {
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
-    this.root?.add(renderPlayerPanel(this, this.engine.run, combat.player.energy, combat.player.block));
+    const anchors: CombatRenderAnchors = { enemies: new Map() };
+    const playerPanel = renderPlayerPanel(this, this.engine.run, {
+      hp: combat.player.hp,
+      maxHp: combat.player.maxHp,
+      energy: combat.player.energy,
+      block: combat.player.block
+    });
+    this.root?.add(playerPanel);
+    anchors.player = {
+      x: layout.leftPanel.x + layout.leftPanel.w / 2,
+      y: layout.leftPanel.y + 106,
+      target: playerPanel as FxTarget
+    };
     this.root?.add(panel(this, layout.battlefield.x, layout.battlefield.y, layout.battlefield.w, layout.battlefield.h, `戰鬥場域 T${combat.turn}`));
     combat.enemies.forEach((enemy, index) => {
       const x = layout.battlefield.x + 180 + index * 230;
       const y = layout.battlefield.y + 150;
-      this.root?.add(
-        renderEnemyView({
-          scene: this,
-          context: this.uiContext(),
-          data: this.dataModel,
-          assets: this.assets,
-          enemy,
-          x,
-          y,
-          selectedTargetEnabled: Boolean(this.selected),
-          onTarget: () => this.playSelectedOnEnemy(enemy.instanceId)
-        })
-      );
+      const enemyView = renderEnemyView({
+        scene: this,
+        context: this.uiContext(),
+        data: this.dataModel,
+        assets: this.assets,
+        enemy,
+        x,
+        y,
+        selectedTargetEnabled: Boolean(this.selected),
+        onTarget: () => this.playSelectedOnEnemy(enemy.instanceId)
+      });
+      this.root?.add(enemyView);
+      anchors.enemies.set(enemy.instanceId, {
+        x,
+        y,
+        target: enemyView as FxTarget
+      });
     });
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
     const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
@@ -241,6 +273,9 @@ export class GameScene extends Phaser.Scene {
         this.render();
       }, true, 0x39d98a);
     }
+    const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
+    this.combatEventCursor = diff.cursor;
+    this.playCombatFx(diff.events, anchors);
   }
 
   private drawReward() {
@@ -344,8 +379,38 @@ export class GameScene extends Phaser.Scene {
     this.button("restart", "重新開始", 654, 486, 184, 54, () => {
       this.engine = createRun(this.dataModel, { seed: 20260505, quick: this.quick });
       this.selected = undefined;
+      this.combatEventCursor = { eventCount: 0 };
       this.render();
     }, true, color);
+  }
+
+  private playCombatFx(events: readonly CombatEvent[], anchors: CombatRenderAnchors) {
+    for (const event of events) {
+      if (event.type === "DAMAGE_DEALT") {
+        const payload = event.payload as { enemy?: string; damage?: number } | undefined;
+        const anchor = payload?.enemy ? anchors.enemies.get(payload.enemy) : undefined;
+        if (payload?.damage && payload.damage > 0) {
+          shakeTarget(this, anchor?.target, 7, 160);
+          flashTarget(this, anchor?.target, 0xffffff, 90);
+          floatText(this, anchor?.x ?? 620, (anchor?.y ?? 240) - 86, `-${payload.damage}`, { color: "#ff6b6b" });
+        }
+        const enemy = payload?.enemy ? this.engine.run.currentCombat?.enemies.find((item) => item.instanceId === payload.enemy) : undefined;
+        if (enemy?.hp === 0) fadeOutOnDeath(this, anchor?.target);
+      }
+
+      if (event.type === "PLAYER_DAMAGED") {
+        const payload = event.payload as { damage?: number } | undefined;
+        const damage = payload?.damage ?? 0;
+        if (damage > 0) {
+          shakeTarget(this, anchors.player?.target, 5, 140);
+          flashTarget(this, anchors.player?.target, 0xee4266, 100);
+          floatText(this, anchors.player?.x ?? 130, anchors.player?.y ?? 190, `-${damage} HP`, { color: "#ff6b6b" });
+          cameraHit(this, 0.004, 120);
+        } else {
+          floatText(this, anchors.player?.x ?? 130, anchors.player?.y ?? 190, "格擋", { color: "#8be9d1", fontSize: 18 });
+        }
+      }
+    }
   }
 
   private selectOrPlayCard(cardInstanceId: string) {
@@ -404,13 +469,20 @@ export class GameScene extends Phaser.Scene {
             turn: combat.turn,
             energy: combat.player.energy,
             block: combat.player.block,
+            playerHp: combat.player.hp,
+            playerMaxHp: combat.player.maxHp,
+            playerBlock: combat.player.block,
             hand: combat.hand.map((id) => {
               const card = combat.cards.find((item) => item.instanceId === id)!;
               const def = this.dataModel.cards.find((item) => item.id === card.cardId)!;
               return { id, cardId: card.cardId, name: card.mutation?.name ?? def.name, cost: effectiveCardCost(this.dataModel, card), type: def.type };
             }),
             enemies: combat.enemies.map((enemy) => ({ id: enemy.instanceId, enemyId: enemy.enemyId, hp: enemy.hp, maxHp: enemy.maxHp, intent: enemy.intent.type })),
-            events: combat.events.slice(-5).map((event) => event.message)
+            events: combat.events.slice(-8).map((event) => ({
+              type: event.type,
+              message: event.message,
+              payload: event.payload
+            }))
           }
         : undefined,
       map: run.mode === "map" ? { reachable: run.reachableNodeIds, nodes: run.map.map((node) => ({ id: node.id, floor: node.floor, type: node.type })) } : undefined,

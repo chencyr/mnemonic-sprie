@@ -73,10 +73,10 @@ export function endPlayerTurn(combat: CombatState, data: GameData, rng: Rng) {
     combat.discardPile.push(cardId);
   }
   combat.hand = combat.hand.filter((id) => !combat.discardPile.includes(id));
-  combat.player.block = 0;
   combat.phase = "enemy";
   resolveEnemyTurn(combat, data, rng);
   if (combat.phase !== "enemy") return;
+  combat.player.block = 0;
   startPlayerTurn(combat, rng);
 }
 
