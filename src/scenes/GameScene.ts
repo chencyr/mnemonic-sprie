@@ -24,7 +24,7 @@ import {
 } from "../core";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { ENEMY_SIZE } from "../phaser/ui/EnemyView";
-import { HUD_FONT } from "../phaser/ui/HudView";
+import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
 import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
 import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
 import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
@@ -141,13 +141,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawHud() {
-    const run = this.engine.run;
-    this.text(24, 18, `記憶牌塔  F${run.floor || 0}/12`, 24, "#fff8d8", 0, 0.5);
-    this.text(290, 18, `HP ${run.playerHp}/${run.playerMaxHp}`, 19, "#ffffff", 0, 0.5);
-    this.text(420, 18, `金幣 ${run.gold}`, 19, "#ffd166", 0, 0.5);
-    this.text(530, 18, `牌組 ${run.deck.length}`, 19, "#a7f3d0", 0, 0.5);
-    this.text(670, 18, `遺物 ${run.relics.length}`, 19, "#c4b5fd", 0, 0.5);
-    this.button("mute", this.muted ? "音訊關" : "音訊開", 1130, 18, 110, 36, () => this.toggleMute(), true);
+    this.root?.add(renderHudShell(this, this.uiContext(), this.dataModel, this.assets, this.engine.run, this.muted, () => this.toggleMute()));
   }
 
   private drawTitle() {
@@ -205,7 +199,8 @@ export class GameScene extends Phaser.Scene {
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
-    this.text(48, 104, `戰鬥 T${combat.turn}  能量 ${combat.player.energy}/3  格擋 ${combat.player.block}`, 24, "#fff8d8");
+    this.root?.add(renderPlayerPanel(this, this.engine.run, combat.player.energy, combat.player.block));
+    this.text(270, 104, `戰鬥 T${combat.turn}`, 24, "#fff8d8");
     combat.enemies.forEach((enemy, index) => {
       const enemyDef = this.dataModel.enemies.find((item) => item.id === enemy.enemyId)!;
       const x = 360 + index * 260;
