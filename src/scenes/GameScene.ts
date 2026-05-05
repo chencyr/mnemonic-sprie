@@ -31,6 +31,7 @@ import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type Car
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import {
   combatLayout,
+  enemyPose,
   handCardPose,
   renderCombatBackground,
   renderCombatHandTray,
@@ -315,8 +316,9 @@ export class GameScene extends Phaser.Scene {
       target: playerPanel as FxTarget
     };
     combat.enemies.forEach((enemy, index) => {
-      const x = layout.battlefield.x + 180 + index * 230;
-      const y = layout.battlefield.y + 150;
+      const pose = enemyPose(index, combat.enemies.length);
+      const x = pose.x;
+      const y = pose.y;
       const enemyView = renderEnemyView({
         scene: this,
         context: this.uiContext(),
@@ -326,6 +328,8 @@ export class GameScene extends Phaser.Scene {
         x,
         y,
         selectedTargetEnabled: Boolean(this.selected),
+        platformKey: this.assets.getCombatUiAsset("enemyPlatform").key,
+        targetRingKey: this.assets.getCombatUiAsset("targetRing").key,
         onTarget: () => this.playSelectedOnEnemy(enemy.instanceId)
       });
       this.root?.add(enemyView);
@@ -334,7 +338,7 @@ export class GameScene extends Phaser.Scene {
         y,
         target: enemyView as FxTarget
       });
-      if (isEnemyAlive(enemy)) this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 96, y: y - 138, w: 192, h: 300 });
+      if (isEnemyAlive(enemy)) this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 110, y: y - 122, w: 220, h: 260 });
     });
     const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
     this.combatEventCursor = diff.cursor;
@@ -398,14 +402,14 @@ export class GameScene extends Phaser.Scene {
 
     const visibleRows = rows.slice(-6);
     if (visibleRows.length === 0) {
-      logPanel.add(label(this, 14, 54, "等待行動", 14, "#d1d5db", layout.rightPanel.w - 28));
+      logPanel.add(label(this, 20, 64, "等待行動", 13, "#d1d5db", combatLayout.ticker.w - 36));
       return;
     }
 
     visibleRows.forEach((row, index) => {
-      const y = 50 + index * 34;
+      const y = 62 + index * 42;
       const dot = this.add.circle(22, y + 7, 4, Phaser.Display.Color.HexStringToColor(row.color).color, 0.95);
-      const text = label(this, 34, y, row.text, 13, row.color, layout.rightPanel.w - 52);
+      const text = label(this, 34, y, row.text, 12, row.color, combatLayout.ticker.w - 48);
       logPanel.add([dot, text]);
     });
   }
