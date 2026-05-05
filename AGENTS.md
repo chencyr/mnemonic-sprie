@@ -1,0 +1,83 @@
+# AGENTS.md
+
+## 溝通語言
+
+- 僅使用中文作為溝通語言。
+
+## 專案定位
+
+- 本專案是 `Mnemonic Spire / 記憶牌塔`。
+- 技術架構是 Phaser 3 + TypeScript + Vite。
+- 核心規則應維持 framework-neutral，放在 `src/core/`；Phaser 只負責呈現、互動、動畫、音訊與測試 hook。
+
+## 已確認 UI 方向
+
+- 整體遊戲 UI 重設計方向已確認為 **B：爬塔戰鬥介面 UI**。
+- 目標是保留 deckbuilder 玩家熟悉的清楚版面，同時大量使用現有素材，而不是只用文字按鈕。
+- 後續 UI redesign 應優先使用：
+  - `public/assets/cards/*`
+  - `public/assets/enemies/*`
+  - `public/assets/events/*`
+  - `public/assets/relics/*`
+  - `public/assets/stickers/*`
+  - `public/assets/ui/nodes/*`
+  - `public/assets/ui/intents/*`
+  - `public/assets/ui/contracts/*`
+
+## 文件與流程規則
+
+### `docs/superpowers/`
+
+- `docs/superpowers/` 是所有設計與實作計畫的主要位置。
+- 設計文件，也就是 spec design，應放在 `docs/superpowers/specs/`。
+- 實作計畫，也就是 implementation plan，應放在 `docs/superpowers/plans/`。
+- 不要把正式設計決策只留在對話中；可追蹤的設計與計畫必須落到這裡。
+
+### `docs/assets/`
+
+- `docs/assets/` 是素材生成規格與生成方式的主要位置。
+- 這裡的內容用於重新生成、修正錯誤素材、檢查素材槽規格。
+- 給 image generation / image2 使用的 prompt、規格、風格限制、檔名與尺寸要求都應寫在這裡。
+- 程式碼引用素材時，應優先透過資料表與 asset registry，不要硬編素材路徑。
+
+### `backlogs/`
+
+- `backlogs/*` 記載所有尚未開始開發的進程與提案。
+- 每一個 backlog 應切成適合單獨開 worktree 的大小。
+- 每份 backlog 應至少包含：
+  - Backlog ID
+  - Worktree Size
+  - Player Problem
+  - Scope
+  - Out Of Scope
+  - Acceptance Criteria
+  - Tests
+  - Likely Files
+
+### `backlogs/in-progress/`
+
+- `backlogs/in-progress/*` 記載目前進行中的開發進程。
+- 開始實作某個 backlog 前，應先把對應檔案從 `backlogs/` 移動到 `backlogs/in-progress/`。
+- 實作時應開獨立 worktree 與 feature branch，不直接在 `main` 上開發功能。
+
+### `backlogs/done/`
+
+- `backlogs/done/*` 記載已完成的開發進程。
+- backlog 完成、驗證通過、合回 `main` 後，應把對應檔案從 `backlogs/in-progress/` 移動到 `backlogs/done/`。
+- 移動到 done 前，應確認該 backlog 的 Acceptance Criteria 與 Tests 已完成或明確記錄例外。
+
+## Backlog 狀態轉換
+
+1. 尚未開始：`backlogs/<name>-backlog.md`
+2. 開始開發：移動到 `backlogs/in-progress/<name>-backlog.md`
+3. 完成並合回 main：移動到 `backlogs/done/<name>-backlog.md`
+
+## 實作驗證規則
+
+- 完成功能前至少執行：
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+- 若修改 UI，必須用瀏覽器或 Playwright 截圖檢查相關畫面。
+- 若修改遊戲流程，必須更新 `window.render_game_to_text()` 或 E2E，讓測試能觀察新增狀態。
+
