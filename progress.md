@@ -32,6 +32,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Verification: `npm test -- tests/phaser/combatEventDiff.test.ts` passed.
 - Task 2 complete locally: E2E now asserts `combat.playerHp/playerMaxHp`; `renderPlayerPanel` uses combat HP during combat and snapshot exposes player HP/block plus structured event payloads.
 - Verification: `npm run test:e2e` and `npm test` passed.
+- Task 3 complete locally: added Phaser combat FX helpers for flash, shake, floating text, camera shake, and death fade.
+- Verification: `npm run build` passed.
 
 ## 2026-05-05 MVP Implementation
 
