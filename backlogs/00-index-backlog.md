@@ -31,7 +31,7 @@
 2. `01-phaser-game-feel-backlog.md`
 3. `02-drag-drop-card-play-backlog.md`
 4. `03-combat-feedback-readability-backlog.md`
-5. `18-combat-scene-design-reference-backlog.md`
+5. `18-combat-scene-ui-implementation-backlog.md`
 6. `04-turn-flow-pacing-backlog.md`
 7. `05-enemy-intent-status-clarity-backlog.md`
 8. `06-memory-visibility-mutation-backlog.md`
