@@ -1,1 +1,54 @@
-export const ENEMY_SIZE = 150;
+import Phaser from "phaser";
+import type { AssetRegistry, EnemyDefinition, EnemyInstance, GameData, IntentIconType } from "../../core";
+import { button, image, label } from "./uiPrimitives";
+import { colors } from "./uiTheme";
+import type { UiRenderContext } from "./uiTypes";
+import { renderHpBar, renderStatPill } from "./StatusView";
+
+export const ENEMY_SIZE = 176;
+
+export interface EnemyViewOptions {
+  scene: Phaser.Scene;
+  context: UiRenderContext;
+  data: GameData;
+  assets: AssetRegistry;
+  enemy: EnemyInstance;
+  x: number;
+  y: number;
+  selectedTargetEnabled: boolean;
+  onTarget: () => void;
+}
+
+export function renderEnemyView(options: EnemyViewOptions) {
+  const { scene, context, data, assets, enemy, x, y, selectedTargetEnabled, onTarget } = options;
+  const def = data.enemies.find((item) => item.id === enemy.enemyId) as EnemyDefinition;
+  const root = scene.add.container(0, 0);
+  root.add(scene.add.ellipse(x, y + 72, 176, 34, 0x000000, 0.34));
+  const sprite = image(scene, context, x, y, assets.getEnemySprite(enemy.enemyId).key, ENEMY_SIZE, ENEMY_SIZE, `enemy:${enemy.enemyId}`);
+  if (sprite) root.add(sprite);
+  root.add(renderHpBar(scene, x - 82, y + 96, 164, enemy.hp, enemy.maxHp, def.name));
+  if (enemy.block > 0) root.add(renderStatPill(scene, x - 82, y + 142, `格擋 ${enemy.block}`, 0x39d98a));
+  root.add(renderIntent(scene, context, assets, enemy.intent.type, enemy.intent.amount ?? 0, x + 36, y + 132));
+  root.add(
+    button(scene, context, `enemy:${enemy.instanceId}`, "目標", x - 54, y + 168, 108, 34, onTarget, selectedTargetEnabled && enemy.hp > 0, selectedTargetEnabled ? colors.red : colors.disabled)
+  );
+  if (selectedTargetEnabled) {
+    root.add(scene.add.rectangle(x - 92, y - 92, 184, 244, 0xf4e04d, 0).setOrigin(0).setStrokeStyle(3, 0xf4e04d, 0.85));
+  }
+  return root;
+}
+
+function renderIntent(scene: Phaser.Scene, context: UiRenderContext, assets: AssetRegistry, intentType: IntentIconType, amount: number, x: number, y: number) {
+  const root = scene.add.container(x, y);
+  const icon = image(scene, context, 0, 0, assets.getIntentIcon(intentType).key, 34, 34, `intent:${intentType}`);
+  if (icon) root.add(icon);
+  root.add(label(scene, 24, -10, amount > 0 ? String(amount) : intentLabel(intentType), 14, colors.gold));
+  return root;
+}
+
+function intentLabel(intentType: IntentIconType) {
+  if (intentType === "attack") return "攻擊";
+  if (intentType === "block") return "格擋";
+  if (intentType === "debuff") return "狀態";
+  return "混合";
+}

@@ -23,12 +23,14 @@ import {
   type RunEngine
 } from "../core";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
-import { ENEMY_SIZE } from "../phaser/ui/EnemyView";
+import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
 import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
 import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
 import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
 import { EVENT_PANEL_WIDTH } from "../phaser/ui/EventView";
+import { label, panel } from "../phaser/ui/uiPrimitives";
+import { layout } from "../phaser/ui/uiTheme";
 import type { ButtonDescriptor, UiRenderContext, VisibleAssetDescriptor } from "../phaser/ui/uiTypes";
 
 const WIDTH = 1280;
@@ -200,21 +202,35 @@ export class GameScene extends Phaser.Scene {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
     this.root?.add(renderPlayerPanel(this, this.engine.run, combat.player.energy, combat.player.block));
-    this.text(270, 104, `戰鬥 T${combat.turn}`, 24, "#fff8d8");
+    this.root?.add(panel(this, layout.battlefield.x, layout.battlefield.y, layout.battlefield.w, layout.battlefield.h, `戰鬥場域 T${combat.turn}`));
     combat.enemies.forEach((enemy, index) => {
-      const enemyDef = this.dataModel.enemies.find((item) => item.id === enemy.enemyId)!;
-      const x = 360 + index * 260;
-      const y = 230;
-      this.image(x, y, this.assets.getEnemySprite(enemy.enemyId).key, ENEMY_SIZE, ENEMY_SIZE);
-      this.text(x, y + 96, `${enemyDef.name} ${enemy.hp}/${enemy.maxHp}`, 18, "#ffffff", 0.5, 0.5);
-      this.text(x, y + 122, `意圖 ${intentLabel(enemy.intent.type)} ${enemy.intent.amount ?? ""}`, 15, "#ffd166", 0.5, 0.5);
-      this.button(`enemy:${enemy.instanceId}`, "目標", x - 54, y + 146, 108, 34, () => this.playSelectedOnEnemy(enemy.instanceId), Boolean(this.selected) && enemy.hp > 0, 0xee4266);
+      const x = layout.battlefield.x + 180 + index * 230;
+      const y = layout.battlefield.y + 150;
+      this.root?.add(
+        renderEnemyView({
+          scene: this,
+          context: this.uiContext(),
+          data: this.dataModel,
+          assets: this.assets,
+          enemy,
+          x,
+          y,
+          selectedTargetEnabled: Boolean(this.selected),
+          onTarget: () => this.playSelectedOnEnemy(enemy.instanceId)
+        })
+      );
     });
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
+    const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
+    logPanel.add(label(this, 14, 48, combat.events.map((event) => event.message).slice(-8).join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
+    this.root?.add(logPanel);
+    const handPanel = panel(this, layout.hand.x, layout.hand.y, layout.hand.w, layout.hand.h, "手牌");
+    this.root?.add(handPanel);
+    const startX = layout.hand.x + 18;
+    const y = layout.hand.y + 28;
     hand.forEach((card, index) => {
       const cardDef = this.dataModel.cards.find((item) => item.id === card.cardId)!;
-      const x = 88 + index * 144;
-      const y = 492;
+      const x = startX + index * 138;
       const selected = this.selected?.cardInstanceId === card.instanceId;
       const cardView = renderCardView({
         scene: this,
@@ -232,18 +248,17 @@ export class GameScene extends Phaser.Scene {
       this.root?.add(cardView);
       this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340, 0.02);
     });
-    this.button("end-turn", "結束回合", 1080, 544, 142, 48, () => {
+    this.button("end-turn", "結束回合", layout.endTurn.x, layout.endTurn.y, layout.endTurn.w, layout.endTurn.h, () => {
       endRunTurn(this.engine);
       this.selected = undefined;
       this.render();
     });
     if (this.quick) {
-      this.button("auto-win", "測試勝利", 1080, 602, 142, 42, () => {
+      this.button("auto-win", "測試勝利", layout.endTurn.x, layout.endTurn.y - 56, layout.endTurn.w, 42, () => {
         autoWinCombat(this.engine);
         this.render();
       }, true, 0x39d98a);
     }
-    this.drawLog();
   }
 
   private drawReward() {
@@ -485,21 +500,6 @@ function nodeTypeLabel(type: string): string {
       return "店";
     case "boss":
       return "王";
-    default:
-      return type;
-  }
-}
-
-function intentLabel(type: string): string {
-  switch (type) {
-    case "attack":
-      return "攻擊";
-    case "block":
-      return "格擋";
-    case "debuff":
-      return "狀態";
-    case "mixed":
-      return "混合";
     default:
       return type;
   }
