@@ -450,23 +450,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   private registerCardInput(cardView: Phaser.GameObjects.Container, cardInstanceId: string, x: number, y: number, enabled: boolean) {
-    this.buttons.push({ id: `card:${cardInstanceId}`, label: "", x: x + CARD_WIDTH / 2, y: y + CARD_HEIGHT / 2, w: CARD_WIDTH, h: CARD_HEIGHT, enabled });
+    const hitRect = this.button(`card:${cardInstanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => undefined, enabled, 0x2b3340, 0.02);
     if (!enabled) return;
-    cardView.setSize(CARD_WIDTH, CARD_HEIGHT);
-    cardView.setInteractive(new Phaser.Geom.Rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT), Phaser.Geom.Rectangle.Contains);
-    this.input.setDraggable(cardView);
-    cardView.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+    this.input.setDraggable(hitRect);
+    hitRect.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       this.cardPointerDown = { cardInstanceId, x: pointer.x, y: pointer.y };
     });
-    cardView.on("pointerup", (pointer: Phaser.Input.Pointer) => {
+    hitRect.on("pointerup", (pointer: Phaser.Input.Pointer) => {
       const down = this.cardPointerDown;
       this.cardPointerDown = undefined;
-      if (!down || down.cardInstanceId !== cardInstanceId || this.dragCard.active) return;
-      if (Phaser.Math.Distance.Between(down.x, down.y, pointer.x, pointer.y) <= 8) this.selectOrPlayCard(cardInstanceId);
+      if (!down || down.cardInstanceId !== cardInstanceId) return;
+      if (Phaser.Math.Distance.Between(down.x, down.y, pointer.x, pointer.y) <= 8) {
+        this.dragCard = { active: false };
+        this.clearDragFeedback();
+        this.selectOrPlayCard(cardInstanceId);
+      }
     });
-    cardView.on("dragstart", () => this.beginCardDrag(cardInstanceId, x, y));
-    cardView.on("drag", (_pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => this.updateCardDrag(cardView, cardInstanceId, dragX, dragY));
-    cardView.on("dragend", (pointer: Phaser.Input.Pointer) => this.finishCardDrag(cardInstanceId, pointer.x, pointer.y));
+    hitRect.on("dragstart", () => this.beginCardDrag(cardInstanceId, x, y));
+    hitRect.on("drag", (_pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => this.updateCardDrag(cardView, hitRect, cardInstanceId, dragX, dragY));
+    hitRect.on("dragend", (pointer: Phaser.Input.Pointer) => this.finishCardDrag(cardInstanceId, pointer.x, pointer.y));
   }
 
   private beginCardDrag(cardInstanceId: string, originX: number, originY: number) {
@@ -483,10 +485,12 @@ export class GameScene extends Phaser.Scene {
     this.playSfx("audio:cardDragStart", 0.42);
   }
 
-  private updateCardDrag(cardView: Phaser.GameObjects.Container, cardInstanceId: string, dragX: number, dragY: number) {
+  private updateCardDrag(cardView: Phaser.GameObjects.Container, hitRect: Phaser.GameObjects.Rectangle, cardInstanceId: string, dragX: number, dragY: number) {
     if (this.dragCard.cardInstanceId !== cardInstanceId) return;
     cardView.setPosition(dragX, dragY);
+    hitRect.setPosition(dragX, dragY);
     cardView.setDepth(20);
+    hitRect.setDepth(21);
     const drop = this.dropResultAt(dragX + CARD_WIDTH / 2, dragY + CARD_HEIGHT / 2);
     this.dragCard = {
       ...this.dragCard,
@@ -500,6 +504,14 @@ export class GameScene extends Phaser.Scene {
 
   private finishCardDrag(cardInstanceId: string, pointerX: number, pointerY: number) {
     if (this.dragCard.cardInstanceId !== cardInstanceId) return;
+    const down = this.cardPointerDown;
+    if (down?.cardInstanceId === cardInstanceId && Phaser.Math.Distance.Between(down.x, down.y, pointerX, pointerY) <= 8) {
+      this.clearDragFeedback();
+      this.cardPointerDown = undefined;
+      this.dragCard = { active: false };
+      this.selectOrPlayCard(cardInstanceId);
+      return;
+    }
     const combat = this.engine.run.currentCombat;
     const drop = this.dropResultAt(pointerX, pointerY);
     this.clearDragFeedback();

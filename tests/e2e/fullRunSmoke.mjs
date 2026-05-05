@@ -29,16 +29,21 @@ await withGamePage(async ({ page }) => {
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
 
+  await assertInvalidDragCancels(page);
+  await assertDragAttackAutoTargets(page);
+  current = await state(page);
+  assert.equal(current.mode, "combat");
+
   await assertCombatHpTracksEnemyTurn(page);
   current = await state(page);
   assert.equal(current.mode, "combat");
 
   await playOneCardIfPossible(page);
   current = await state(page);
-  assert.equal(current.mode, "combat");
-  assert.ok(current.combat.energy <= 3);
+  assert.ok(current.mode === "combat" || current.mode === "reward", `Expected combat or reward after card play, got ${current.mode}`);
+  if (current.mode === "combat") assert.ok(current.combat.energy <= 3);
 
-  current = await clickButton(page, "auto-win");
+  if (current.mode === "combat") current = await clickButton(page, "auto-win");
   assert.equal(current.mode, "reward");
   assert.equal(current.audio?.currentMusic, "audio:bgm");
   assertVisibleAssetPrefix(current, "card:", "reward");
@@ -103,8 +108,13 @@ await withGamePage(async ({ page }) => {
 });
 
 async function playOneCardIfPossible(page) {
-  let current = await state(page);
+  let current = await waitForTurnReady(page);
   for (let attempt = 0; attempt < exploratory.maxNoOpChecks; attempt += 1) {
+    const nonAttack = current.combat.hand.find((card) => card.type !== "attack" && card.cost <= current.combat.energy);
+    if (nonAttack) {
+      await clickButton(page, `card:${nonAttack.id}`);
+      return;
+    }
     const attack = current.combat.hand.find((card) => card.type === "attack");
     if (attack) {
       await clickButton(page, `card:${attack.id}`);
@@ -114,19 +124,73 @@ async function playOneCardIfPossible(page) {
       await clickButton(page, enemy.id);
       return;
     }
-    await clickButton(page, "end-turn");
-    current = await state(page);
+    current = await endTurnAndWait(page);
   }
   throw new Error("Could not draw an attack card during combat smoke.");
 }
 
-async function assertCombatHpTracksEnemyTurn(page) {
+async function dragButtonTo(page, buttonId, x, y) {
+  const current = await state(page);
+  const button = current.buttons.find((item) => item.id === buttonId);
+  assert.ok(button, `Button not found: ${buttonId}`);
+  assert.ok(button.enabled, `Button disabled: ${buttonId}`);
+  await page.mouse.move(button.x, button.y);
+  await page.mouse.down();
+  await page.waitForTimeout(80);
+  await page.mouse.move(x, y, { steps: 8 });
+  await page.waitForTimeout(80);
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  return state(page);
+}
+
+async function assertDragAttackAutoTargets(page) {
   let current = await state(page);
+  const attack = current.combat.hand.find((card) => card.type === "attack" && card.cost <= current.combat.energy);
+  if (!attack) return;
+  const enemyBefore = current.combat.enemies.find((enemy) => enemy.hp > 0);
+  assert.ok(enemyBefore, "Expected a living enemy before drag attack.");
+  current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
+  const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
+  assert.ok(enemyAfter && enemyAfter.hp < enemyBefore.hp, "Dragging attack to battlefield should damage auto target.");
+}
+
+async function assertInvalidDragCancels(page) {
+  let current = await state(page);
+  const playable = current.combat.hand.find((card) => card.cost <= current.combat.energy);
+  if (!playable) return;
+  const beforeEnergy = current.combat.energy;
+  const beforeHand = current.combat.hand.length;
+  current = await dragButtonTo(page, `card:${playable.id}`, 1220, 120);
+  assert.equal(current.combat.energy, beforeEnergy);
+  assert.equal(current.combat.hand.length, beforeHand);
+}
+
+async function assertAutoEndTurnMessage(page) {
+  let current = await state(page);
+  for (let attempt = 0; attempt < 6 && current.mode === "combat" && !current.turnTransition; attempt += 1) {
+    const playable = current.combat.hand.find((card) => card.cost <= current.combat.energy);
+    if (!playable) break;
+    const dropX = playable.type === "attack" ? 620 : 132;
+    const dropY = playable.type === "attack" ? 260 : 210;
+    current = await dragButtonTo(page, `card:${playable.id}`, dropX, dropY);
+  }
+  if (current.mode !== "combat") return;
+  if (current.turnTransition?.kind === "autoNoPlayableCards") {
+    assert.match(current.turnTransition.message, /自動結束回合/);
+    await page.waitForTimeout(850);
+    current = await state(page);
+    assert.equal(current.turnTransition, undefined);
+  }
+}
+
+async function assertCombatHpTracksEnemyTurn(page) {
+  let current = await waitForTurnReady(page);
   assert.ok(Number.isFinite(current.combat.playerHp), "combat snapshot should include playerHp");
   assert.ok(Number.isFinite(current.combat.playerMaxHp), "combat snapshot should include playerMaxHp");
   const beforeHp = current.combat.playerHp;
 
-  current = await clickButton(page, "end-turn");
+  current = await endTurnAndWait(page);
   assert.equal(current.mode, "combat");
   assert.ok(Number.isFinite(current.combat.playerHp), "combat playerHp should remain finite after enemy turn");
   assert.ok(current.combat.playerHp <= beforeHp, "enemy turn should not increase combat player HP");
@@ -135,6 +199,24 @@ async function assertCombatHpTracksEnemyTurn(page) {
   if (damageEvent && damageEvent.payload?.damage > 0) {
     assert.ok(current.combat.playerHp < beforeHp, "combat playerHp should decrease when PLAYER_DAMAGED has positive damage");
   }
+}
+
+async function endTurnAndWait(page) {
+  let current = await clickButton(page, "end-turn");
+  if (current.turnTransition) {
+    await page.waitForTimeout(350);
+    current = await state(page);
+  }
+  return current;
+}
+
+async function waitForTurnReady(page) {
+  let current = await state(page);
+  if (current.turnTransition) {
+    await page.waitForTimeout(850);
+    current = await state(page);
+  }
+  return current;
 }
 
 async function boundaryProbe(page) {
@@ -147,6 +229,8 @@ async function boundaryProbe(page) {
   current = await clickButton(page, "start");
   assert.equal(current.mode, "map");
   assert.ok(current.buttons.filter((button) => button.id.startsWith("map:") && button.enabled).length >= 1);
+  current = await clickButton(page, firstEnabledButton(current, "map:").id);
+  if (current.mode === "combat") await assertAutoEndTurnMessage(page);
 }
 
 function assertNoInvalidNumbers(current) {
