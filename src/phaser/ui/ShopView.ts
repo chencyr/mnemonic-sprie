@@ -20,7 +20,7 @@ export function renderShopView(
   const root = scene.add.container(0, 0);
   root.add(panel(scene, 64, 104, 1120, 514, `商人  金幣 ${gold}`));
   items.forEach((item, index) => {
-    const x = 100 + index * 214;
+    const x = 100 + index * 178;
     const y = 188;
     const soldOrPoor = item.sold || gold < item.price;
     if (item.kind === "card") {

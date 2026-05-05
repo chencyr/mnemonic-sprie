@@ -178,7 +178,6 @@ export class GameScene extends Phaser.Scene {
         }
       })
     );
-    this.drawLog();
   }
 
   private drawCombat() {
@@ -347,11 +346,6 @@ export class GameScene extends Phaser.Scene {
       this.selected = undefined;
       this.render();
     }, true, color);
-  }
-
-  private drawLog() {
-    const lines = this.engine.run.currentCombat?.events.map((event) => event.message).slice(-5) ?? this.engine.run.log.slice(-5);
-    this.text(944, 104, lines.join("\n"), 15, "#d1d5db", 0, 0, 294);
   }
 
   private selectOrPlayCard(cardInstanceId: string) {

@@ -55,7 +55,7 @@ export function renderCardView(options: CardViewOptions) {
   container.add(label(scene, 22, 22, String(cost), 18, "#101318").setOrigin(0.5));
   container.add(label(scene, 12, Math.floor(h * 0.53), instance?.mutation?.name ?? card.name, mode === "hand" ? 14 : 16, colors.ink, w - 24));
   container.add(scene.add.rectangle(12, Math.floor(h * 0.67), w - 24, 4, costColor(card.type), 0.92).setOrigin(0));
-  container.add(label(scene, 12, Math.floor(h * 0.72), card.description, mode === "hand" ? 10 : 12, "#e5e7eb", w - 24));
+  container.add(label(scene, 12, Math.floor(h * 0.72), card.description, mode === "reward" ? 12 : 10, "#e5e7eb", w - 24));
   renderMemoryRow(scene, container, context, assets, instance, 12, h - 26, w - 24);
   return container;
 }
