@@ -144,6 +144,11 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Confirmed screenshot coverage for draw-on-combat-start, enemy damage, player block, memory, and enemy death center feedback.
   - Manual state checks confirmed `feedback.active`, `feedback.ticker`, `feedback.center`, `victoryTransition`, and no console/page errors.
   - Adjusted player block float position after screenshot review so it no longer overlaps the energy/block badges.
+- Final verification passed:
+  - `npm test`: 11 files / 52 tests passed.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+- Task complete: moved `03-combat-feedback-readability-backlog.md` from `backlogs/in-progress/` to `backlogs/done/`.
 
 ## 2026-05-05 MVP Implementation
 
