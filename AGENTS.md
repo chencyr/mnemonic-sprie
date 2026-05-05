@@ -26,6 +26,26 @@
 
 ## 文件與流程規則
 
+## Backlog 開始前 Brainstorm Gate
+
+- 開始進行任何 backlog 前，必須先進行 brainstorm。
+- brainstorm 的結果必須落成設計文件，放在 `docs/superpowers/specs/`。
+- spec 檔名應能對應 backlog，例如：
+  - backlog：`backlogs/17-overall-game-ui-redesign-backlog.md`
+  - spec：`docs/superpowers/specs/2026-05-05-overall-game-ui-redesign-design.md`
+- spec 至少應包含：
+  - 背景與目前問題。
+  - 已確認方向。
+  - 曾考慮的替代方案與取捨。
+  - 設計目標與非目標。
+  - 主要畫面或系統設計。
+  - 測試與驗收策略。
+  - 風險。
+- 未完成 brainstorm/design spec 前，不得：
+  - 把 backlog 移到 `backlogs/in-progress/`。
+  - 撰寫 implementation plan。
+  - 開始修改功能程式碼。
+
 ### `docs/superpowers/`
 
 - `docs/superpowers/` 是所有設計與實作計畫的主要位置。
@@ -58,6 +78,9 @@
 
 - `backlogs/in-progress/*` 記載目前進行中的開發進程。
 - 開始實作某個 backlog 前，應先把對應檔案從 `backlogs/` 移動到 `backlogs/in-progress/`。
+- 每一份 backlog 進入實作前，都必須先完成 brainstorm/design spec，並放在 `docs/superpowers/specs/`。
+- brainstorm/design spec 應記錄已確認方向、替代方案、取捨、畫面/系統設計、驗收方式。
+- 沒有對應 spec 的 backlog 不得直接撰寫 implementation plan 或開始改程式。
 - 實作時應開獨立 worktree 與 feature branch，不直接在 `main` 上開發功能。
 
 ### `backlogs/done/`
@@ -69,8 +92,10 @@
 ## Backlog 狀態轉換
 
 1. 尚未開始：`backlogs/<name>-backlog.md`
-2. 開始開發：移動到 `backlogs/in-progress/<name>-backlog.md`
-3. 完成並合回 main：移動到 `backlogs/done/<name>-backlog.md`
+2. Brainstorm：為該 backlog 產出 `docs/superpowers/specs/<date>-<name>-design.md`
+3. 開始開發：確認 spec 已存在後，移動到 `backlogs/in-progress/<name>-backlog.md`
+4. 實作計畫：撰寫 `docs/superpowers/plans/<date>-<name>-plan.md`
+5. 完成並合回 main：移動到 `backlogs/done/<name>-backlog.md`
 
 ## 實作驗證規則
 
@@ -80,4 +105,3 @@
   - `npm run test:e2e`
 - 若修改 UI，必須用瀏覽器或 Playwright 截圖檢查相關畫面。
 - 若修改遊戲流程，必須更新 `window.render_game_to_text()` 或 E2E，讓測試能觀察新增狀態。
-

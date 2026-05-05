@@ -19,16 +19,18 @@ import {
   type AssetRegistry,
   type CardInstance,
   type GameData,
-  type MapNode,
   type RunEngine
 } from "../core";
-import { CARD_HEIGHT, CARD_WIDTH, type ButtonDescriptor } from "../phaser/ui/CardView";
-import { ENEMY_SIZE } from "../phaser/ui/EnemyView";
-import { HUD_FONT } from "../phaser/ui/HudView";
-import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
-import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
-import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
-import { EVENT_PANEL_WIDTH } from "../phaser/ui/EventView";
+import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
+import { renderEnemyView } from "../phaser/ui/EnemyView";
+import { renderEventView } from "../phaser/ui/EventView";
+import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
+import { renderMapView } from "../phaser/ui/MapView";
+import { renderRewardView } from "../phaser/ui/RewardView";
+import { renderShopView } from "../phaser/ui/ShopView";
+import { label, panel } from "../phaser/ui/uiPrimitives";
+import { layout } from "../phaser/ui/uiTheme";
+import type { ButtonDescriptor, UiRenderContext, VisibleAssetDescriptor } from "../phaser/ui/uiTypes";
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -46,6 +48,7 @@ interface TextSnapshot {
   reward?: unknown;
   shop?: unknown;
   event?: unknown;
+  visibleAssets: VisibleAssetDescriptor[];
   log: string[];
 }
 
@@ -64,6 +67,7 @@ export class GameScene extends Phaser.Scene {
   private root?: Phaser.GameObjects.Container;
   private selected: Selection;
   private buttons: ButtonDescriptor[] = [];
+  private visibleAssets: VisibleAssetDescriptor[] = [];
   private readonly quick = new URLSearchParams(window.location.search).has("e2e");
   private muted = true;
 
@@ -90,6 +94,7 @@ export class GameScene extends Phaser.Scene {
   private render() {
     this.root?.destroy(true);
     this.buttons = [];
+    this.visibleAssets = [];
     this.root = this.add.container(0, 0);
     this.drawBackground();
     this.drawHud();
@@ -137,185 +142,210 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawHud() {
-    const run = this.engine.run;
-    this.text(24, 18, `記憶牌塔  F${run.floor || 0}/12`, 24, "#fff8d8", 0, 0.5);
-    this.text(290, 18, `HP ${run.playerHp}/${run.playerMaxHp}`, 19, "#ffffff", 0, 0.5);
-    this.text(420, 18, `金幣 ${run.gold}`, 19, "#ffd166", 0, 0.5);
-    this.text(530, 18, `牌組 ${run.deck.length}`, 19, "#a7f3d0", 0, 0.5);
-    this.text(670, 18, `遺物 ${run.relics.length}`, 19, "#c4b5fd", 0, 0.5);
-    this.button("mute", this.muted ? "音訊關" : "音訊開", 1130, 18, 110, 36, () => this.toggleMute(), true);
+    this.root?.add(renderHudShell(this, this.uiContext(), this.dataModel, this.assets, this.engine.run, this.muted, () => this.toggleMute()));
   }
 
   private drawTitle() {
-    const art = this.assets.getPlaceholder("character");
-    this.image(640, 330, art.key, 260, 260, 0.9);
-    this.text(640, 112, "記憶牌塔", 64, "#fff8d8", 0.5, 0.5);
-    this.text(640, 166, "Phaser 3 + TypeScript MVP", 22, "#8be9d1", 0.5, 0.5);
-    this.button("start", "開始一局", 548, 548, 184, 54, () => {
+    const hero = this.assets.getPlaceholder("character");
+    this.root?.add(panel(this, 72, 104, 1136, 512));
+    this.image(410, 360, hero.key, 330, 330, 0.96, "title:seeker");
+    this.text(670, 190, "記憶牌塔", 64, "#fff8d8");
+    this.text(674, 270, "爬上 12 層牌塔，讓每一張牌記住它的戰鬥方式。", 22, "#d1d5db", 0, 0, 440);
+    const notebook = this.assets.getRelicIcon("broken_notes");
+    this.image(700, 390, notebook.key, 70, 70, 1, "title:starter-relic");
+    this.text(748, 364, "起始遺物：破碎筆記", 18, "#c4b5fd", 0, 0, 300);
+    this.text(748, 394, "戰鬥後，使用最多的牌獲得記憶進度。", 14, "#d1d5db", 0, 0, 300);
+    this.button("start", "開始一局", 704, 506, 220, 56, () => {
       this.startAudio();
       startRun(this.engine);
       this.render();
-    });
-    this.text(640, 635, "每張牌會記住本局經驗，休息點可將有記憶的牌變異。", 20, "#ffffff", 0.5, 0.5);
+    }, true, 0x39d98a);
   }
 
   private drawMap() {
-    this.text(58, 110, "選擇下一層節點", 28, "#fff8d8");
-    const nodesByFloor = new Map<number, MapNode[]>();
-    for (const node of this.engine.run.map) {
-      nodesByFloor.set(node.floor, [...(nodesByFloor.get(node.floor) ?? []), node]);
-    }
-    for (const node of this.engine.run.map) {
-      for (const nextId of node.next) {
-        const next = this.engine.run.map.find((item) => item.id === nextId);
-        if (!next) continue;
-        const p1 = this.mapNodePoint(node);
-        const p2 = this.mapNodePoint(next);
-        const line = this.add.line(0, 0, p1.x, p1.y, p2.x, p2.y, 0xffffff, 0.12).setOrigin(0);
-        this.root?.add(line);
-      }
-    }
-    for (const node of this.engine.run.map) {
-      const point = this.mapNodePoint(node);
-      const reachable = this.engine.run.reachableNodeIds.includes(node.id);
-      this.button(
-        `map:${node.id}`,
-        nodeTypeLabel(node.type),
-        point.x - MAP_NODE_RADIUS,
-        point.y - MAP_NODE_RADIUS,
-        MAP_NODE_RADIUS * 2,
-        MAP_NODE_RADIUS * 2,
-        () => {
-          selectMapNode(this.engine, node.id);
+    this.root?.add(
+      renderMapView({
+        scene: this,
+        context: this.uiContext(),
+        assets: this.assets,
+        nodes: this.engine.run.map,
+        reachableNodeIds: this.engine.run.reachableNodeIds,
+        currentNodeId: this.engine.run.currentNodeId,
+        onSelectNode: (nodeId) => {
+          selectMapNode(this.engine, nodeId);
           this.selected = undefined;
           this.render();
-        },
-        reachable,
-        reachable ? 0x2dd4bf : 0x394150
-      );
-      this.text(point.x, point.y + 42, `F${node.floor}`, 13, "#ffffff", 0.5, 0.5);
-    }
-    this.drawLog();
+        }
+      })
+    );
   }
 
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
-    this.text(48, 104, `戰鬥 T${combat.turn}  能量 ${combat.player.energy}/3  格擋 ${combat.player.block}`, 24, "#fff8d8");
+    this.root?.add(renderPlayerPanel(this, this.engine.run, combat.player.energy, combat.player.block));
+    this.root?.add(panel(this, layout.battlefield.x, layout.battlefield.y, layout.battlefield.w, layout.battlefield.h, `戰鬥場域 T${combat.turn}`));
     combat.enemies.forEach((enemy, index) => {
-      const enemyDef = this.dataModel.enemies.find((item) => item.id === enemy.enemyId)!;
-      const x = 360 + index * 260;
-      const y = 230;
-      this.image(x, y, this.assets.getEnemySprite(enemy.enemyId).key, ENEMY_SIZE, ENEMY_SIZE);
-      this.text(x, y + 96, `${enemyDef.name} ${enemy.hp}/${enemy.maxHp}`, 18, "#ffffff", 0.5, 0.5);
-      this.text(x, y + 122, `意圖 ${intentLabel(enemy.intent.type)} ${enemy.intent.amount ?? ""}`, 15, "#ffd166", 0.5, 0.5);
-      this.button(`enemy:${enemy.instanceId}`, "目標", x - 54, y + 146, 108, 34, () => this.playSelectedOnEnemy(enemy.instanceId), Boolean(this.selected) && enemy.hp > 0, 0xee4266);
+      const x = layout.battlefield.x + 180 + index * 230;
+      const y = layout.battlefield.y + 150;
+      this.root?.add(
+        renderEnemyView({
+          scene: this,
+          context: this.uiContext(),
+          data: this.dataModel,
+          assets: this.assets,
+          enemy,
+          x,
+          y,
+          selectedTargetEnabled: Boolean(this.selected),
+          onTarget: () => this.playSelectedOnEnemy(enemy.instanceId)
+        })
+      );
     });
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
+    const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
+    logPanel.add(label(this, 14, 48, combat.events.map((event) => event.message).slice(-8).join("\n"), 13, "#d1d5db", layout.rightPanel.w - 28));
+    this.root?.add(logPanel);
+    const handPanel = panel(this, layout.hand.x, layout.hand.y, layout.hand.w, layout.hand.h, "手牌");
+    this.root?.add(handPanel);
+    const startX = layout.hand.x + 18;
+    const y = layout.hand.y + 28;
     hand.forEach((card, index) => {
       const cardDef = this.dataModel.cards.find((item) => item.id === card.cardId)!;
-      const x = 88 + index * 144;
-      const y = 492;
+      const x = startX + index * 138;
       const selected = this.selected?.cardInstanceId === card.instanceId;
-      this.image(x + CARD_WIDTH / 2, y + 66, this.assets.getCardArt(card.cardId).key, CARD_WIDTH - 20, 96, selected ? 1 : 0.72);
-      this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340);
-      this.text(x + 12, y + 12, `${card.mutation?.name ?? cardDef.name} [${effectiveCardCost(this.dataModel, card)}]`, 15, "#ffffff");
-      this.text(x + 12, y + 118, cardDef.type, 13, "#8be9d1");
-      this.text(x + 12, y + 140, memoryShort(card), 13, "#ffd166");
+      const cardView = renderCardView({
+        scene: this,
+        context: this.uiContext(),
+        data: this.dataModel,
+        assets: this.assets,
+        x,
+        y,
+        card: cardDef,
+        instance: card,
+        selected,
+        playable: effectiveCardCost(this.dataModel, card) <= combat.player.energy,
+        mode: "hand"
+      });
+      this.root?.add(cardView);
+      this.button(`card:${card.instanceId}`, "", x, y, CARD_WIDTH, CARD_HEIGHT, () => this.selectOrPlayCard(card.instanceId), true, selected ? 0xf4e04d : 0x2b3340, 0.02);
     });
-    this.button("end-turn", "結束回合", 1080, 544, 142, 48, () => {
+    this.button("end-turn", "結束回合", layout.endTurn.x, layout.endTurn.y, layout.endTurn.w, layout.endTurn.h, () => {
       endRunTurn(this.engine);
       this.selected = undefined;
       this.render();
     });
     if (this.quick) {
-      this.button("auto-win", "測試勝利", 1080, 602, 142, 42, () => {
+      this.button("auto-win", "測試勝利", layout.endTurn.x, layout.endTurn.y - 56, layout.endTurn.w, 42, () => {
         autoWinCombat(this.engine);
         this.render();
       }, true, 0x39d98a);
     }
-    this.drawLog();
   }
 
   private drawReward() {
     const reward = this.engine.run.reward;
     if (!reward) return;
-    this.text(58, 118, "戰鬥獎勵：選一張牌或跳過拿金幣", 28, "#fff8d8");
-    reward.cards.forEach((card, index) => {
-      const x = 230 + index * REWARD_CARD_GAP;
-      this.image(x + 90, 252, this.assets.getCardArt(card.id).key, CARD_WIDTH, 112);
-      this.button(`reward:${card.id}`, card.name, x, 368, 180, 54, () => {
-        chooseCardReward(this.engine, card.id);
-        this.render();
-      });
-      this.text(x, 440, card.description, 13, "#ffffff", 0, 0, 190);
-    });
-    if (reward.relic) {
-      this.text(850, 212, `精英遺物：${reward.relic.name}`, 20, "#c4b5fd");
-    }
-    this.button("reward:skip", `跳過 +${reward.gold} 金幣`, 520, 560, 240, 54, () => {
-      skipCardReward(this.engine);
-      this.render();
-    }, true, 0x39d98a);
+    this.root?.add(
+      renderRewardView(
+        this,
+        this.uiContext(),
+        this.dataModel,
+        this.assets,
+        reward,
+        (cardId) => {
+          chooseCardReward(this.engine, cardId);
+          this.render();
+        },
+        () => {
+          skipCardReward(this.engine);
+          this.render();
+        }
+      )
+    );
   }
 
   private drawRest() {
-    this.text(64, 130, "休息點", 34, "#fff8d8");
-    this.button("rest:heal", "回血 30%", 230, 300, 220, 64, () => {
+    this.root?.add(panel(this, 82, 112, 1100, 500, "休息點"));
+    const restIcon = this.assets.getNodeIcon("rest");
+    this.image(208, 286, restIcon.key, 150, 150, 1, "rest:icon");
+    this.text(324, 170, "整理記憶，或先保住性命。", 24, "#fff8d8", 0, 0, 520);
+    this.button("rest:heal", "回血 30%", 330, 298, 220, 64, () => {
       restHeal(this.engine);
       this.render();
     }, true, 0x39d98a);
     const mutable = this.engine.run.deck.find((card) => canMutate(card));
-    this.button("rest:mutate", mutable ? "變異一張有記憶的牌" : "沒有可變異的牌", 520, 300, 300, 64, () => {
+    if (mutable) {
+      const cardDef = this.dataModel.cards.find((card) => card.id === mutable.cardId);
+      if (cardDef) {
+        this.root?.add(
+          renderCardView({
+            scene: this,
+            context: this.uiContext(),
+            data: this.dataModel,
+            assets: this.assets,
+            x: 704,
+            y: 204,
+            w: 160,
+            h: 222,
+            card: cardDef,
+            instance: mutable,
+            mode: "preview"
+          })
+        );
+      }
+    }
+    this.button("rest:mutate", mutable ? "變異記憶牌" : "沒有可變異的牌", 682, 456, 220, 56, () => {
       restMutate(this.engine, mutable?.instanceId);
       this.render();
     }, Boolean(mutable), 0xf4e04d);
   }
 
   private drawShop() {
-    this.text(64, 112, "商人", 34, "#fff8d8");
-    this.engine.run.shop?.forEach((item, index) => {
-      const x = 80 + index * (SHOP_ITEM_WIDTH + 18);
-      const label = item.kind === "card" ? this.dataModel.cards.find((card) => card.id === item.itemId)?.name : item.kind === "relic" ? this.dataModel.relics.find((relic) => relic.id === item.itemId)?.name : "移除一張牌";
-      this.button(`shop:${item.id}`, `${label} ${item.price}G`, x, 220, SHOP_ITEM_WIDTH, 70, () => {
-        buyShopItem(this.engine, item.id);
-        this.render();
-      }, !item.sold && this.engine.run.gold >= item.price);
-    });
-    this.button("shop:leave", "離開商店", 520, 560, 220, 54, () => {
-      leaveShop(this.engine);
-      this.render();
-    }, true, 0x39d98a);
+    if (!this.engine.run.shop) return;
+    this.root?.add(
+      renderShopView(
+        this,
+        this.uiContext(),
+        this.dataModel,
+        this.assets,
+        this.engine.run.shop,
+        this.engine.run.gold,
+        (itemId) => {
+          buyShopItem(this.engine, itemId);
+          this.render();
+        },
+        () => {
+          leaveShop(this.engine);
+          this.render();
+        }
+      )
+    );
   }
 
   private drawEvent() {
     const event = this.engine.run.activeEvent;
     if (!event) return;
-    this.image(314, 306, this.assets.getEventImage(event.id).key, 320, 240);
-    this.text(520, 148, event.name, 34, "#fff8d8");
-    this.text(520, 198, event.body, 20, "#ffffff", 0, 0, EVENT_PANEL_WIDTH);
-    event.options.forEach((option, index) => {
-      this.button(`event:${option.id}`, option.label, 520, 294 + index * 92, 360, 54, () => {
-        chooseEventOption(this.engine, option.id);
+    this.root?.add(
+      renderEventView(this, this.uiContext(), this.dataModel, this.assets, event, (optionId) => {
+        chooseEventOption(this.engine, optionId);
         this.render();
-      });
-      this.text(900, 300 + index * 92, option.description, 15, "#d1d5db", 0, 0, 290);
-    });
+      })
+    );
   }
 
   private drawEnd(title: string, subtitle: string, color: number) {
-    this.text(640, 250, title, 56, "#fff8d8", 0.5, 0.5);
-    this.text(640, 310, subtitle, 22, "#ffffff", 0.5, 0.5);
-    this.button("restart", "重新開始", 548, 420, 184, 54, () => {
+    this.root?.add(panel(this, 112, 112, 1056, 480));
+    const visualKey = this.engine.run.mode === "victory" ? this.assets.getEnemySprite("tower_heart").key : this.assets.getPlaceholder("character").key;
+    this.image(402, 346, visualKey, this.engine.run.mode === "victory" ? 300 : 260, 240, 0.9, `end:${this.engine.run.mode}`);
+    this.text(650, 232, title, 54, "#fff8d8");
+    this.text(654, 306, subtitle, 22, "#d1d5db", 0, 0, 360);
+    this.text(654, 358, `抵達樓層：${this.engine.run.floor}/12\n金幣：${this.engine.run.gold}\n牌組：${this.engine.run.deck.length}`, 16, "#ffffff", 0, 0, 320);
+    this.button("restart", "重新開始", 654, 486, 184, 54, () => {
       this.engine = createRun(this.dataModel, { seed: 20260505, quick: this.quick });
       this.selected = undefined;
       this.render();
     }, true, color);
-  }
-
-  private drawLog() {
-    const lines = this.engine.run.currentCombat?.events.map((event) => event.message).slice(-5) ?? this.engine.run.log.slice(-5);
-    this.text(944, 104, lines.join("\n"), 15, "#d1d5db", 0, 0, 294);
   }
 
   private selectOrPlayCard(cardInstanceId: string) {
@@ -387,19 +417,20 @@ export class GameScene extends Phaser.Scene {
       reward: run.reward ? { cards: run.reward.cards.map((card) => card.id), gold: run.reward.gold, relic: run.reward.relic?.id } : undefined,
       shop: run.shop?.map((item) => ({ id: item.id, kind: item.kind, itemId: item.itemId, price: item.price, sold: item.sold })),
       event: run.activeEvent ? { id: run.activeEvent.id, options: run.activeEvent.options.map((option) => option.id) } : undefined,
+      visibleAssets: this.visibleAssets,
       log: run.log.slice(-5)
     };
   }
 
-  private mapNodePoint(node: MapNode) {
+  uiContext(): UiRenderContext {
     return {
-      x: 126 + (node.floor - 1) * 96,
-      y: 176 + node.x * 330
+      buttons: this.buttons,
+      visibleAssets: this.visibleAssets
     };
   }
 
-  private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf) {
-    const rectAlpha = label === "" ? 0.38 : enabled ? 0.92 : 0.45;
+  private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf, alpha?: number) {
+    const rectAlpha = alpha ?? (label === "" ? 0.38 : enabled ? 0.92 : 0.45);
     const rect = this.add.rectangle(x, y, w, h, enabled ? color : 0x4b5563, rectAlpha).setOrigin(0);
     rect.setStrokeStyle(2, enabled ? 0xffffff : 0x6b7280, enabled ? 0.42 : 0.2);
     if (enabled) {
@@ -435,48 +466,10 @@ export class GameScene extends Phaser.Scene {
     return text;
   }
 
-  private image(x: number, y: number, key: string, w: number, h: number, alpha = 1) {
+  private image(x: number, y: number, key: string, w: number, h: number, alpha = 1, role = "image") {
     if (!this.textures.exists(key)) return;
     const image = this.add.image(x, y, key).setDisplaySize(w, h).setAlpha(alpha);
+    this.visibleAssets.push({ key, role });
     this.root?.add(image);
   }
-}
-
-function nodeTypeLabel(type: string): string {
-  switch (type) {
-    case "normalCombat":
-      return "戰";
-    case "eliteCombat":
-      return "菁";
-    case "event":
-      return "事";
-    case "rest":
-      return "息";
-    case "shop":
-      return "店";
-    case "boss":
-      return "王";
-    default:
-      return type;
-  }
-}
-
-function intentLabel(type: string): string {
-  switch (type) {
-    case "attack":
-      return "攻擊";
-    case "block":
-      return "格擋";
-    case "debuff":
-      return "狀態";
-    case "mixed":
-      return "混合";
-    default:
-      return type;
-  }
-}
-
-function memoryShort(card: CardInstance): string {
-  const memory = card.memory;
-  return `血${memory.bloodthirst} 絕${memory.desperation} 怨${memory.grudge} 執${memory.obsession} 見${memory.witness}`;
 }

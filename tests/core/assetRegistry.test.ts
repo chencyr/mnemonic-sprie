@@ -38,4 +38,52 @@ describe("asset registry", () => {
     expect(keys).toContain("enemy:tower_heart:sprite");
     expect(new Set(keys).size).toBe(keys.length);
   });
+
+  it("resolves map node icon texture keys from data", () => {
+    const registry = createAssetRegistry(loadGameData());
+
+    expect(registry.getNodeIcon("normalCombat")).toEqual({
+      key: "ui:nodeNormalCombat",
+      path: "/assets/ui/nodes/normal-combat.png"
+    });
+    expect(registry.getNodeIcon("boss")).toEqual({
+      key: "ui:nodeBoss",
+      path: "/assets/ui/nodes/boss.png"
+    });
+  });
+
+  it("resolves intent icon texture keys from data", () => {
+    const registry = createAssetRegistry(loadGameData());
+
+    expect(registry.getIntentIcon("attack")).toEqual({
+      key: "ui:intentAttack",
+      path: "/assets/ui/intents/attack.png"
+    });
+    expect(registry.getIntentIcon("mixed")).toEqual({
+      key: "ui:intentAttack",
+      path: "/assets/ui/intents/attack.png"
+    });
+  });
+
+  it("resolves contract and memory sticker texture keys", () => {
+    const registry = createAssetRegistry(loadGameData());
+
+    expect(registry.getContractIcon("blood_contract")).toEqual({
+      key: "contract:blood_contract:icon",
+      path: "/assets/ui/contracts/blood_contract.png"
+    });
+    expect(registry.getMemorySticker("witness")).toEqual({
+      key: "sticker:witness",
+      path: "/assets/stickers/witness.png"
+    });
+  });
+
+  it("resolves audio entries through the registry", () => {
+    const registry = createAssetRegistry(loadGameData());
+
+    expect(registry.getAudio("bgm")).toEqual({
+      key: "audio:bgm",
+      path: "/assets/audio/bgm/main-loop.ogg"
+    });
+  });
 });

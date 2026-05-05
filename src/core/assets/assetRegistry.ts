@@ -1,18 +1,51 @@
-import type { GameData } from "../types";
+import type { ContractDefinition, GameData, MemoryType, NodeType } from "../types";
 
 export interface AssetEntry {
   key: string;
   path: string;
 }
 
+export type IntentIconType = "attack" | "block" | "debuff" | "mixed";
+export type AudioAssetKey = keyof GameData["assets"]["audio"];
+
 export interface AssetRegistry {
   getCardArt(cardId: string): AssetEntry;
   getEnemySprite(enemyId: string): AssetEntry;
   getRelicIcon(relicId: string): AssetEntry;
   getEventImage(eventId: string): AssetEntry;
+  getNodeIcon(nodeType: NodeType): AssetEntry;
+  getIntentIcon(intentType: IntentIconType): AssetEntry;
+  getContractIcon(contractId: string): AssetEntry;
+  getMemorySticker(memoryType: MemoryType | "empty"): AssetEntry;
+  getAudio(audioKey: AudioAssetKey): AssetEntry;
   getPlaceholder(slot: string): AssetEntry;
   listPreloadEntries(): AssetEntry[];
 }
+
+const nodeIconKeys: Record<NodeType, keyof GameData["assets"]["ui"]> = {
+  normalCombat: "nodeNormalCombat",
+  eliteCombat: "nodeEliteCombat",
+  event: "nodeEvent",
+  rest: "nodeRest",
+  shop: "nodeShop",
+  boss: "nodeBoss"
+};
+
+const intentIconKeys: Record<IntentIconType, keyof GameData["assets"]["ui"]> = {
+  attack: "intentAttack",
+  block: "intentBlock",
+  debuff: "intentDebuff",
+  mixed: "intentAttack"
+};
+
+const memoryStickerPaths: Record<MemoryType | "empty", string> = {
+  bloodthirst: "stickers/bloodthirst.png",
+  desperation: "stickers/desperation.png",
+  grudge: "stickers/grudge.png",
+  obsession: "stickers/obsession.png",
+  witness: "stickers/witness.png",
+  empty: "stickers/memory-empty.png"
+};
 
 function assetPath(path: string): string {
   return `/assets/${path}`;
@@ -31,10 +64,20 @@ export function createAssetRegistry(data: GameData): AssetRegistry {
   const enemies = new Map(data.enemies.map((enemy) => [enemy.id, enemy]));
   const relics = new Map(data.relics.map((relic) => [relic.id, relic]));
   const events = new Map(data.events.map((event) => [event.id, event]));
+  const contracts = new Map(data.contracts.map((contract) => [contract.id, contract]));
 
   function placeholder(slot: string): AssetEntry {
     const path = data.assets.placeholders[slot] ?? data.assets.placeholders.uiIcon;
     return { key: `placeholder:${slot}`, path: assetPath(path) };
+  }
+
+  function uiEntry(id: keyof GameData["assets"]["ui"]): AssetEntry {
+    const path = data.assets.ui[id] ?? data.assets.placeholders.uiIcon;
+    return { key: `ui:${String(id)}`, path: assetPath(path) };
+  }
+
+  function contractEntry(contract: ContractDefinition | undefined, contractId: string): AssetEntry {
+    return contract?.assets.icon ? { key: `contract:${contractId}:icon`, path: assetPath(contract.assets.icon) } : placeholder("uiIcon");
   }
 
   return {
@@ -54,6 +97,26 @@ export function createAssetRegistry(data: GameData): AssetRegistry {
       const event = events.get(eventId);
       return event?.assets.eventImage ? { key: `event:${eventId}:image`, path: assetPath(event.assets.eventImage) } : placeholder("eventImage");
     },
+    getNodeIcon(nodeType) {
+      return uiEntry(nodeIconKeys[nodeType]);
+    },
+    getIntentIcon(intentType) {
+      return uiEntry(intentIconKeys[intentType]);
+    },
+    getContractIcon(contractId) {
+      return contractEntry(contracts.get(contractId), contractId);
+    },
+    getMemorySticker(memoryType) {
+      const path = memoryStickerPaths[memoryType];
+      return path ? { key: `sticker:${memoryType}`, path: assetPath(path) } : placeholder("memorySticker");
+    },
+    getAudio(audioKey) {
+      const path = data.assets.audio[audioKey];
+      if (!path) {
+        throw new Error(`Unknown audio asset key: ${String(audioKey)}`);
+      }
+      return { key: `audio:${String(audioKey)}`, path: assetPath(path) };
+    },
     getPlaceholder(slot) {
       return placeholder(slot);
     },
@@ -62,7 +125,11 @@ export function createAssetRegistry(data: GameData): AssetRegistry {
         ...data.cards.map((card) => this.getCardArt(card.id)),
         ...data.enemies.map((enemy) => this.getEnemySprite(enemy.id)),
         ...data.relics.map((relic) => this.getRelicIcon(relic.id)),
+        ...data.contracts.map((contract) => this.getContractIcon(contract.id)),
         ...data.events.map((event) => this.getEventImage(event.id)),
+        ...(["empty", "bloodthirst", "desperation", "grudge", "obsession", "witness"] as const).map((memoryType) =>
+          this.getMemorySticker(memoryType)
+        ),
         ...Object.keys(data.assets.placeholders).map((slot) => placeholder(slot)),
         ...Object.entries(data.assets.ui).map(([id, path]) => ({ key: `ui:${id}`, path: assetPath(path) })),
         ...Object.entries(data.assets.audio).map(([id, path]) => ({ key: `audio:${id}`, path: assetPath(path) }))
