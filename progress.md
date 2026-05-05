@@ -200,3 +200,6 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Manual Playwright wrote screenshots/state to `output/manual-combat-scene-ui/`.
   - Visual review confirmed proposal-3 combat layout direction, regenerated combat UI assets, readable dynamic text, intact drag attack, and intact death transition.
   - Console/page errors were empty.
+- Completed `18-combat-scene-ui-implementation-backlog.md`.
+- Backlog moved to `backlogs/done/18-combat-scene-ui-implementation-backlog.md`.
+- Branch is ready for merge after user visual review.
