@@ -25,6 +25,11 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetPrefix(current, "enemy:", "combat");
   assertVisibleAssetPrefix(current, "card:", "combat");
   assertVisibleAssetPrefix(current, "ui:intent", "combat");
+  assertVisibleAssetRole(current, "combat-ui:background", "combat");
+  assertVisibleAssetRole(current, "combat-ui:player-panel", "combat");
+  assertVisibleAssetRole(current, "combat-ui:turn-device", "combat");
+  assertVisibleAssetRole(current, "combat-ui:ticker-panel", "combat");
+  assertVisibleAssetRole(current, "combat-ui:hand-tray", "combat");
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");

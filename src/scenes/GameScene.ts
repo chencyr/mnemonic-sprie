@@ -29,9 +29,19 @@ import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/com
 import { activeFeedbackItems, mapCombatEventsToFeedback, tickerItems, type CombatFeedbackItem } from "../phaser/fx/combatFeedback";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
+import {
+  combatLayout,
+  handCardPose,
+  renderCombatBackground,
+  renderCombatHandTray,
+  renderCombatPlayerPanel,
+  renderCombatTickerSurface,
+  renderCombatTopResource,
+  renderCombatTurnDevice
+} from "../phaser/ui/CombatSceneView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { renderEventView } from "../phaser/ui/EventView";
-import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
+import { HUD_FONT, renderHudShell } from "../phaser/ui/HudView";
 import { renderMapView } from "../phaser/ui/MapView";
 import { renderRewardView } from "../phaser/ui/RewardView";
 import { renderShopView } from "../phaser/ui/ShopView";
@@ -237,6 +247,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawHud() {
+    if (this.engine.run.mode === "combat") return;
     this.root?.add(renderHudShell(this, this.uiContext(), this.dataModel, this.assets, this.engine.run, this.muted, () => this.toggleMute()));
   }
 
@@ -285,11 +296,13 @@ export class GameScene extends Phaser.Scene {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
     this.enemyDropZones = new Map();
-    this.battlefieldDropZone = { x: layout.battlefield.x, y: layout.battlefield.y, w: layout.battlefield.w, h: layout.battlefield.h };
-    this.playerDropZone = { x: layout.leftPanel.x, y: layout.leftPanel.y, w: layout.leftPanel.w, h: layout.leftPanel.h };
-    this.handDropZone = { x: layout.hand.x, y: layout.hand.y, w: layout.hand.w, h: layout.hand.h };
+    this.root?.add(renderCombatBackground(this, this.uiContext(), this.assets));
+    this.root?.add(renderCombatTopResource(this, this.uiContext(), this.assets, this.engine.run));
+    this.battlefieldDropZone = { x: combatLayout.battlefield.x, y: combatLayout.battlefield.y, w: combatLayout.battlefield.w, h: combatLayout.battlefield.h };
+    this.playerDropZone = { x: combatLayout.playerPanel.x, y: combatLayout.playerPanel.y, w: combatLayout.playerPanel.w, h: combatLayout.playerPanel.h };
+    this.handDropZone = { x: combatLayout.handTray.x, y: combatLayout.handTray.y, w: combatLayout.handTray.w, h: combatLayout.handTray.h };
     const anchors: CombatRenderAnchors = { enemies: new Map() };
-    const playerPanel = renderPlayerPanel(this, this.engine.run, {
+    const playerPanel = renderCombatPlayerPanel(this, this.uiContext(), this.assets, this.engine.run, {
       hp: combat.player.hp,
       maxHp: combat.player.maxHp,
       energy: combat.player.energy,
@@ -297,11 +310,10 @@ export class GameScene extends Phaser.Scene {
     });
     this.root?.add(playerPanel);
     anchors.player = {
-      x: layout.leftPanel.x + layout.leftPanel.w / 2,
-      y: layout.leftPanel.y + 106,
+      x: combatLayout.playerPanel.x + combatLayout.playerPanel.w / 2,
+      y: combatLayout.playerPanel.y + 110,
       target: playerPanel as FxTarget
     };
-    this.root?.add(panel(this, layout.battlefield.x, layout.battlefield.y, layout.battlefield.w, layout.battlefield.h, `戰鬥場域 T${combat.turn}`));
     combat.enemies.forEach((enemy, index) => {
       const x = layout.battlefield.x + 180 + index * 230;
       const y = layout.battlefield.y + 150;
@@ -328,38 +340,39 @@ export class GameScene extends Phaser.Scene {
     this.combatEventCursor = diff.cursor;
     this.ingestCombatFeedback(diff.events);
     const hand = combat.hand.map((id) => combat.cards.find((card) => card.instanceId === id)).filter(Boolean) as CardInstance[];
-    const logPanel = panel(this, layout.rightPanel.x, layout.rightPanel.y, layout.rightPanel.w, layout.rightPanel.h, "戰況");
+    const logPanel = renderCombatTickerSurface(this, this.uiContext(), this.assets);
     this.renderCombatTicker(logPanel);
     this.root?.add(logPanel);
-    const handPanel = panel(this, layout.hand.x, layout.hand.y, layout.hand.w, layout.hand.h, "手牌");
+    const handPanel = renderCombatHandTray(this, this.uiContext(), this.assets);
     this.root?.add(handPanel);
-    const startX = layout.hand.x + 18;
-    const y = layout.hand.y + 28;
     hand.forEach((card, index) => {
       const cardDef = this.dataModel.cards.find((item) => item.id === card.cardId)!;
-      const x = startX + index * 138;
+      const pose = handCardPose(index, hand.length);
       const selected = this.selected?.cardInstanceId === card.instanceId;
       const cardView = renderCardView({
         scene: this,
         context: this.uiContext(),
         data: this.dataModel,
         assets: this.assets,
-        x,
-        y,
+        x: pose.x,
+        y: pose.y,
         card: cardDef,
         instance: card,
         selected,
         playable: effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.victoryTransition,
         mode: "hand"
       });
+      cardView.setRotation(pose.rotation);
       this.root?.add(cardView);
-      this.registerCardInput(cardView, card.instanceId, x, y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition && !this.victoryTransition);
+      this.registerCardInput(cardView, card.instanceId, pose.x, pose.y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition && !this.victoryTransition);
     });
-    this.button("end-turn", "結束回合", layout.endTurn.x, layout.endTurn.y, layout.endTurn.w, layout.endTurn.h, () => {
+    const turnDevice = renderCombatTurnDevice(this, this.uiContext(), this.assets, combat.turn, combat.player.energy);
+    this.root?.add(turnDevice);
+    this.button("end-turn", "結束回合", combatLayout.turnDevice.x + 48, combatLayout.turnDevice.y + 92, 142, 54, () => {
       this.beginTurnTransition("manual");
     }, !this.turnTransition && !this.victoryTransition);
     if (this.quick) {
-      this.button("auto-win", "測試勝利", layout.endTurn.x, layout.endTurn.y - 56, layout.endTurn.w, 42, () => {
+      this.button("auto-win", "測試勝利", combatLayout.turnDevice.x + 64, combatLayout.turnDevice.y + 24, 110, 34, () => {
         autoWinCombat(this.engine);
         this.render();
       }, !this.victoryTransition, 0x39d98a);
