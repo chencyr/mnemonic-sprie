@@ -16,3 +16,4 @@ screenshots/
 output/
 .worktrees/
 .playwright-mcp/
+.superpowers/
