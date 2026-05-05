@@ -161,3 +161,13 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - E2E found and fixed one asset mapping bug: `placeholder.character` now points to `characters/seeker.png`.
 - Visual screenshot review found and fixed title overlap, overly dark card art, hard-to-read disabled map text, and overlapping reward descriptions.
 - Latest verification passed: `npm test`, `npm run build`, and `npm run test:e2e`.
+
+## 2026-05-06 Combat Scene UI Implementation
+
+- Continuing in `.worktrees/combat-scene-ui-implementation` on branch `feature/combat-scene-ui-implementation`.
+- Goal: implement `docs/superpowers/specs/2026-05-06-combat-scene-ui-implementation-design.md`.
+- Primary visual reference: `externals/battle-design-proposal-3.png`.
+- Secondary visual reference: `externals/battle-design-proposal-4.png`.
+- Required strategy: first audit/update combat UI assets and `docs/assets`, then implement Phaser combat UI.
+- User explicitly limited this pass to plan Task 1-2 only: asset audit/docs and combat UI asset image creation.
+- Use `imagegen` according to the written asset specifications for generated UI assets.
