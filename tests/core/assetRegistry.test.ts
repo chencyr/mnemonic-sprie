@@ -112,4 +112,31 @@ describe("asset registry", () => {
       path: "/assets/audio/bgm/combat-loop.ogg"
     });
   });
+
+  it("resolves combat UI assets through typed lookup", () => {
+    const registry = createAssetRegistry(loadGameData());
+
+    expect(registry.getCombatUiAsset("battleBg")).toEqual({
+      key: "ui:combatBattleBg",
+      path: "/assets/ui/combat/battle-bg.png"
+    });
+    expect(registry.getCombatUiAsset("turnDevice")).toEqual({
+      key: "ui:combatTurnDevice",
+      path: "/assets/ui/combat/turn-device.png"
+    });
+  });
+
+  it("preloads combat UI assets from asset data", () => {
+    const registry = createAssetRegistry(loadGameData());
+    const entries = registry.listPreloadEntries();
+
+    expect(entries).toContainEqual({
+      key: "ui:combatBattleBg",
+      path: "/assets/ui/combat/battle-bg.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatHandTray",
+      path: "/assets/ui/combat/hand-tray.png"
+    });
+  });
 });
