@@ -38,6 +38,12 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Verification: `npm run build` and `npm run test:e2e` passed.
 - Task 5 complete locally: added `screenFx` and staggered reward card entry animation while preserving immediate reward button descriptors.
 - Verification: `npm run build` and `npm run test:e2e` passed.
+- Task 6 verification so far:
+  - `npm test`, `npm run build`, and `npm run test:e2e` passed.
+  - Started worktree dev server on `http://127.0.0.1:5175/`.
+  - Ran develop-web-game Playwright client against `http://127.0.0.1:5175/?e2e=1`; screenshots and text state were written to `output/web-game-game-feel/` with no error files.
+  - Manual Playwright screenshots written to `output/manual-review-game-feel/`.
+  - Visual review confirmed enemy damage float text, player HP panel changing to 66/72 after enemy damage, `-6 HP` float text, and reward card stagger entry.
 
 ## 2026-05-05 MVP Implementation
 
