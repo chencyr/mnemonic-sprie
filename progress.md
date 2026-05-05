@@ -137,6 +137,13 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Green: `npm test -- tests/phaser/combatFeedback.test.ts` passed.
   - `npm run build` passed.
   - `npm run test:e2e` passed.
+- develop-web-game verification:
+  - Started Vite from this worktree on `http://127.0.0.1:5176/?e2e=1`.
+  - Ran `$WEB_GAME_CLIENT`; screenshot/state written to `output/web-game-combat-feedback-readability/` with no error files.
+  - Manual Playwright scenarios wrote screenshots/state to `output/manual-combat-feedback-readability/`.
+  - Confirmed screenshot coverage for draw-on-combat-start, enemy damage, player block, memory, and enemy death center feedback.
+  - Manual state checks confirmed `feedback.active`, `feedback.ticker`, `feedback.center`, `victoryTransition`, and no console/page errors.
+  - Adjusted player block float position after screenshot review so it no longer overlaps the energy/block badges.
 
 ## 2026-05-05 MVP Implementation
 

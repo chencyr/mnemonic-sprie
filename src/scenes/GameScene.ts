@@ -772,7 +772,7 @@ export class GameScene extends Phaser.Scene {
         if (block > 0) {
           this.playSfx("audio:blockGain", 0.42);
           flashTarget(this, anchors.player?.target, 0x8be9d1, 90);
-          floatText(this, anchors.player?.x ?? 130, (anchors.player?.y ?? 190) + 18, `+${block} 格擋`, { color: "#8be9d1", fontSize: 18, dy: 34 });
+          floatText(this, anchors.player?.x ?? 130, (anchors.player?.y ?? 190) + 76, `+${block} 格擋`, { color: "#8be9d1", fontSize: 18, dy: 34 });
         }
       }
 
