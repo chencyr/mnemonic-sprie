@@ -39,7 +39,8 @@ await withGamePage(async ({ page }) => {
     if (current.mode === "victory") break;
     if (current.mode === "map") {
       const next = chooseMapButton(current, visitedScreens);
-      if (next.label === "王") visitedActions.add("boss");
+      const selectedNode = new Map(current.map.nodes.map((node) => [`map:${node.id}`, node])).get(next.id);
+      if (selectedNode?.type === "boss") visitedActions.add("boss");
       current = await clickButton(page, next.id);
     } else if (current.mode === "combat") {
       current = await clickButton(page, "auto-win");

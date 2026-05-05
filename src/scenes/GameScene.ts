@@ -19,13 +19,12 @@ import {
   type AssetRegistry,
   type CardInstance,
   type GameData,
-  type MapNode,
   type RunEngine
 } from "../core";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
-import { MAP_NODE_RADIUS } from "../phaser/ui/MapView";
+import { renderMapView } from "../phaser/ui/MapView";
 import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
 import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
 import { EVENT_PANEL_WIDTH } from "../phaser/ui/EventView";
@@ -160,41 +159,21 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawMap() {
-    this.text(58, 110, "選擇下一層節點", 28, "#fff8d8");
-    const nodesByFloor = new Map<number, MapNode[]>();
-    for (const node of this.engine.run.map) {
-      nodesByFloor.set(node.floor, [...(nodesByFloor.get(node.floor) ?? []), node]);
-    }
-    for (const node of this.engine.run.map) {
-      for (const nextId of node.next) {
-        const next = this.engine.run.map.find((item) => item.id === nextId);
-        if (!next) continue;
-        const p1 = this.mapNodePoint(node);
-        const p2 = this.mapNodePoint(next);
-        const line = this.add.line(0, 0, p1.x, p1.y, p2.x, p2.y, 0xffffff, 0.12).setOrigin(0);
-        this.root?.add(line);
-      }
-    }
-    for (const node of this.engine.run.map) {
-      const point = this.mapNodePoint(node);
-      const reachable = this.engine.run.reachableNodeIds.includes(node.id);
-      this.button(
-        `map:${node.id}`,
-        nodeTypeLabel(node.type),
-        point.x - MAP_NODE_RADIUS,
-        point.y - MAP_NODE_RADIUS,
-        MAP_NODE_RADIUS * 2,
-        MAP_NODE_RADIUS * 2,
-        () => {
-          selectMapNode(this.engine, node.id);
+    this.root?.add(
+      renderMapView({
+        scene: this,
+        context: this.uiContext(),
+        assets: this.assets,
+        nodes: this.engine.run.map,
+        reachableNodeIds: this.engine.run.reachableNodeIds,
+        currentNodeId: this.engine.run.currentNodeId,
+        onSelectNode: (nodeId) => {
+          selectMapNode(this.engine, nodeId);
           this.selected = undefined;
           this.render();
-        },
-        reachable,
-        reachable ? 0x2dd4bf : 0x394150
-      );
-      this.text(point.x, point.y + 42, `F${node.floor}`, 13, "#ffffff", 0.5, 0.5);
-    }
+        }
+      })
+    );
     this.drawLog();
   }
 
@@ -434,13 +413,6 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  private mapNodePoint(node: MapNode) {
-    return {
-      x: 126 + (node.floor - 1) * 96,
-      y: 176 + node.x * 330
-    };
-  }
-
   private button(id: string, label: string, x: number, y: number, w: number, h: number, onClick: () => void, enabled = true, color = 0x2dd4bf, alpha?: number) {
     const rectAlpha = alpha ?? (label === "" ? 0.38 : enabled ? 0.92 : 0.45);
     const rect = this.add.rectangle(x, y, w, h, enabled ? color : 0x4b5563, rectAlpha).setOrigin(0);
@@ -483,24 +455,5 @@ export class GameScene extends Phaser.Scene {
     const image = this.add.image(x, y, key).setDisplaySize(w, h).setAlpha(alpha);
     this.visibleAssets.push({ key, role: "image" });
     this.root?.add(image);
-  }
-}
-
-function nodeTypeLabel(type: string): string {
-  switch (type) {
-    case "normalCombat":
-      return "戰";
-    case "eliteCombat":
-      return "菁";
-    case "event":
-      return "事";
-    case "rest":
-      return "息";
-    case "shop":
-      return "店";
-    case "boss":
-      return "王";
-    default:
-      return type;
   }
 }
