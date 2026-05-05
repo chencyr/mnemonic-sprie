@@ -30,6 +30,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Priority behavior: combat feedback first, including fixing combat-time player HP display from `combat.player.hp`.
 - Task 1 complete locally: added `consumeNewCombatEvents` pure helper and Vitest coverage for new combat reset, appended events, and truncated event recovery.
 - Verification: `npm test -- tests/phaser/combatEventDiff.test.ts` passed.
+- Task 2 complete locally: E2E now asserts `combat.playerHp/playerMaxHp`; `renderPlayerPanel` uses combat HP during combat and snapshot exposes player HP/block plus structured event payloads.
+- Verification: `npm run test:e2e` and `npm test` passed.
 
 ## 2026-05-05 MVP Implementation
 

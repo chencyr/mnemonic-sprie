@@ -28,6 +28,10 @@ await withGamePage(async ({ page }) => {
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
 
+  await assertCombatHpTracksEnemyTurn(page);
+  current = await state(page);
+  assert.equal(current.mode, "combat");
+
   await playOneCardIfPossible(page);
   current = await state(page);
   assert.equal(current.mode, "combat");
@@ -114,6 +118,23 @@ async function playOneCardIfPossible(page) {
   throw new Error("Could not draw an attack card during combat smoke.");
 }
 
+async function assertCombatHpTracksEnemyTurn(page) {
+  let current = await state(page);
+  assert.ok(Number.isFinite(current.combat.playerHp), "combat snapshot should include playerHp");
+  assert.ok(Number.isFinite(current.combat.playerMaxHp), "combat snapshot should include playerMaxHp");
+  const beforeHp = current.combat.playerHp;
+
+  current = await clickButton(page, "end-turn");
+  assert.equal(current.mode, "combat");
+  assert.ok(Number.isFinite(current.combat.playerHp), "combat playerHp should remain finite after enemy turn");
+  assert.ok(current.combat.playerHp <= beforeHp, "enemy turn should not increase combat player HP");
+
+  const damageEvent = current.combat.events.find((event) => event.type === "PLAYER_DAMAGED");
+  if (damageEvent && damageEvent.payload?.damage > 0) {
+    assert.ok(current.combat.playerHp < beforeHp, "combat playerHp should decrease when PLAYER_DAMAGED has positive damage");
+  }
+}
+
 async function boundaryProbe(page) {
   let current = await clickButton(page, "restart");
   assert.equal(current.mode, "title");
@@ -132,6 +153,9 @@ function assertNoInvalidNumbers(current) {
   assert.ok(current.run.gold >= 0, "gold should not be negative");
   if (current.combat) {
     assert.ok(current.combat.energy >= 0, "energy should not be negative");
+    assert.ok(Number.isFinite(current.combat.playerHp), "combat player HP should be finite");
+    assert.ok(current.combat.playerHp >= 0, "combat player HP should not be negative");
+    assert.ok(current.combat.playerHp <= current.combat.playerMaxHp, "combat player HP should not exceed max HP");
     for (const enemy of current.combat.enemies) {
       assert.ok(enemy.hp >= 0, `enemy HP should not be negative: ${enemy.id}`);
     }

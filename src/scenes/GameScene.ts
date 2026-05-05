@@ -183,7 +183,14 @@ export class GameScene extends Phaser.Scene {
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
-    this.root?.add(renderPlayerPanel(this, this.engine.run, combat.player.energy, combat.player.block));
+    this.root?.add(
+      renderPlayerPanel(this, this.engine.run, {
+        hp: combat.player.hp,
+        maxHp: combat.player.maxHp,
+        energy: combat.player.energy,
+        block: combat.player.block
+      })
+    );
     this.root?.add(panel(this, layout.battlefield.x, layout.battlefield.y, layout.battlefield.w, layout.battlefield.h, `戰鬥場域 T${combat.turn}`));
     combat.enemies.forEach((enemy, index) => {
       const x = layout.battlefield.x + 180 + index * 230;
@@ -404,13 +411,20 @@ export class GameScene extends Phaser.Scene {
             turn: combat.turn,
             energy: combat.player.energy,
             block: combat.player.block,
+            playerHp: combat.player.hp,
+            playerMaxHp: combat.player.maxHp,
+            playerBlock: combat.player.block,
             hand: combat.hand.map((id) => {
               const card = combat.cards.find((item) => item.instanceId === id)!;
               const def = this.dataModel.cards.find((item) => item.id === card.cardId)!;
               return { id, cardId: card.cardId, name: card.mutation?.name ?? def.name, cost: effectiveCardCost(this.dataModel, card), type: def.type };
             }),
             enemies: combat.enemies.map((enemy) => ({ id: enemy.instanceId, enemyId: enemy.enemyId, hp: enemy.hp, maxHp: enemy.maxHp, intent: enemy.intent.type })),
-            events: combat.events.slice(-5).map((event) => event.message)
+            events: combat.events.slice(-8).map((event) => ({
+              type: event.type,
+              message: event.message,
+              payload: event.payload
+            }))
           }
         : undefined,
       map: run.mode === "map" ? { reachable: run.reachableNodeIds, nodes: run.map.map((node) => ({ id: node.id, floor: node.floor, type: node.type })) } : undefined,

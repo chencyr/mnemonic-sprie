@@ -29,11 +29,22 @@ export function renderHudShell(
   return root;
 }
 
-export function renderPlayerPanel(scene: Phaser.Scene, run: RunState, combatEnergy?: number, combatBlock?: number) {
+export interface PlayerPanelVitals {
+  hp: number;
+  maxHp: number;
+  energy: number;
+  block: number;
+}
+
+export function renderPlayerPanel(scene: Phaser.Scene, run: RunState, vitals?: PlayerPanelVitals) {
+  const hp = vitals?.hp ?? run.playerHp;
+  const maxHp = vitals?.maxHp ?? run.playerMaxHp;
+  const energy = vitals?.energy ?? 0;
+  const block = vitals?.block ?? 0;
   const root = panel(scene, layout.leftPanel.x, layout.leftPanel.y, layout.leftPanel.w, layout.leftPanel.h, "拾憶者");
-  root.add(renderHpBar(scene, 14, 52, 184, run.playerHp, run.playerMaxHp, "HP"));
-  root.add(renderStatPill(scene, 14, 104, `能量 ${combatEnergy ?? 0}/3`, 0x2dd4bf));
-  root.add(renderStatPill(scene, 106, 104, `格擋 ${combatBlock ?? 0}`, 0x39d98a));
+  root.add(renderHpBar(scene, 14, 52, 184, hp, maxHp, "HP"));
+  root.add(renderStatPill(scene, 14, 104, `能量 ${energy}/3`, 0x2dd4bf));
+  root.add(renderStatPill(scene, 106, 104, `格擋 ${block}`, 0x39d98a));
   root.add(label(scene, 14, 154, `牌組 ${run.deck.length}`, 15, "#a7f3d0"));
   root.add(label(scene, 14, 184, `樓層 ${run.floor || 0}`, 15, colors.ink));
   return root;
