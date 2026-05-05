@@ -146,16 +146,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawTitle() {
-    const art = this.assets.getPlaceholder("character");
-    this.image(640, 330, art.key, 260, 260, 0.9);
-    this.text(640, 112, "記憶牌塔", 64, "#fff8d8", 0.5, 0.5);
-    this.text(640, 166, "Phaser 3 + TypeScript MVP", 22, "#8be9d1", 0.5, 0.5);
-    this.button("start", "開始一局", 548, 548, 184, 54, () => {
+    const hero = this.assets.getPlaceholder("character");
+    this.root?.add(panel(this, 72, 104, 1136, 512));
+    this.image(410, 360, hero.key, 330, 330, 0.96, "title:seeker");
+    this.text(670, 190, "記憶牌塔", 64, "#fff8d8");
+    this.text(674, 270, "爬上 12 層牌塔，讓每一張牌記住它的戰鬥方式。", 22, "#d1d5db", 0, 0, 440);
+    const notebook = this.assets.getRelicIcon("broken_notes");
+    this.image(700, 390, notebook.key, 70, 70, 1, "title:starter-relic");
+    this.text(748, 364, "起始遺物：破碎筆記", 18, "#c4b5fd", 0, 0, 300);
+    this.text(748, 394, "戰鬥後，使用最多的牌獲得記憶進度。", 14, "#d1d5db", 0, 0, 300);
+    this.button("start", "開始一局", 704, 506, 220, 56, () => {
       this.startAudio();
       startRun(this.engine);
       this.render();
-    });
-    this.text(640, 635, "每張牌會記住本局經驗，休息點可將有記憶的牌變異。", 20, "#ffffff", 0.5, 0.5);
+    }, true, 0x39d98a);
   }
 
   private drawMap() {
@@ -263,13 +267,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawRest() {
-    this.text(64, 130, "休息點", 34, "#fff8d8");
-    this.button("rest:heal", "回血 30%", 230, 300, 220, 64, () => {
+    this.root?.add(panel(this, 82, 112, 1100, 500, "休息點"));
+    const restIcon = this.assets.getNodeIcon("rest");
+    this.image(208, 286, restIcon.key, 150, 150, 1, "rest:icon");
+    this.text(324, 170, "整理記憶，或先保住性命。", 24, "#fff8d8", 0, 0, 520);
+    this.button("rest:heal", "回血 30%", 330, 298, 220, 64, () => {
       restHeal(this.engine);
       this.render();
     }, true, 0x39d98a);
     const mutable = this.engine.run.deck.find((card) => canMutate(card));
-    this.button("rest:mutate", mutable ? "變異一張有記憶的牌" : "沒有可變異的牌", 520, 300, 300, 64, () => {
+    if (mutable) {
+      const cardDef = this.dataModel.cards.find((card) => card.id === mutable.cardId);
+      if (cardDef) {
+        this.root?.add(
+          renderCardView({
+            scene: this,
+            context: this.uiContext(),
+            data: this.dataModel,
+            assets: this.assets,
+            x: 704,
+            y: 204,
+            w: 160,
+            h: 222,
+            card: cardDef,
+            instance: mutable,
+            mode: "preview"
+          })
+        );
+      }
+    }
+    this.button("rest:mutate", mutable ? "變異記憶牌" : "沒有可變異的牌", 682, 456, 220, 56, () => {
       restMutate(this.engine, mutable?.instanceId);
       this.render();
     }, Boolean(mutable), 0xf4e04d);
@@ -309,9 +336,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawEnd(title: string, subtitle: string, color: number) {
-    this.text(640, 250, title, 56, "#fff8d8", 0.5, 0.5);
-    this.text(640, 310, subtitle, 22, "#ffffff", 0.5, 0.5);
-    this.button("restart", "重新開始", 548, 420, 184, 54, () => {
+    this.root?.add(panel(this, 112, 112, 1056, 480));
+    const visualKey = this.engine.run.mode === "victory" ? this.assets.getEnemySprite("tower_heart").key : this.assets.getPlaceholder("character").key;
+    this.image(402, 346, visualKey, this.engine.run.mode === "victory" ? 300 : 260, 240, 0.9, `end:${this.engine.run.mode}`);
+    this.text(650, 232, title, 54, "#fff8d8");
+    this.text(654, 306, subtitle, 22, "#d1d5db", 0, 0, 360);
+    this.text(654, 358, `抵達樓層：${this.engine.run.floor}/12\n金幣：${this.engine.run.gold}\n牌組：${this.engine.run.deck.length}`, 16, "#ffffff", 0, 0, 320);
+    this.button("restart", "重新開始", 654, 486, 184, 54, () => {
       this.engine = createRun(this.dataModel, { seed: 20260505, quick: this.quick });
       this.selected = undefined;
       this.render();
@@ -441,10 +472,10 @@ export class GameScene extends Phaser.Scene {
     return text;
   }
 
-  private image(x: number, y: number, key: string, w: number, h: number, alpha = 1) {
+  private image(x: number, y: number, key: string, w: number, h: number, alpha = 1, role = "image") {
     if (!this.textures.exists(key)) return;
     const image = this.add.image(x, y, key).setDisplaySize(w, h).setAlpha(alpha);
-    this.visibleAssets.push({ key, role: "image" });
+    this.visibleAssets.push({ key, role });
     this.root?.add(image);
   }
 }
