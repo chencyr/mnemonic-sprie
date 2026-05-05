@@ -73,6 +73,15 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Red: `npm run test:e2e` failed before snapshot/runtime music exposed `audio:combatBgm`.
   - Green: targeted asset registry test and E2E passed after implementation.
 
+## 2026-05-06 Drag Drop Card Play
+
+- Implemented drag/drop card play for combat while preserving click fallback.
+- Added auto enemy targeting for attack cards dropped on battlefield.
+- Added no-playable-card auto end-turn transition messaging.
+- Added distinct combat interaction audio cue keys.
+- Verified with npm tests, build, E2E, and develop-web-game screenshot/state inspection.
+- develop-web-game client wrote artifacts to `output/web-game-drag-drop-card-play/`; no `errors-*.json` files were produced.
+
 ## 2026-05-05 MVP Implementation
 
 - Six implementation plans are now committed on main and execution continues in `.worktrees/mvp-e2e` on branch `feature/mvp-e2e`.
