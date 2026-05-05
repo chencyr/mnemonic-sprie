@@ -23,11 +23,11 @@ import {
 } from "../core";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
+import { renderEventView } from "../phaser/ui/EventView";
 import { HUD_FONT, renderHudShell, renderPlayerPanel } from "../phaser/ui/HudView";
 import { renderMapView } from "../phaser/ui/MapView";
-import { REWARD_CARD_GAP } from "../phaser/ui/RewardView";
-import { SHOP_ITEM_WIDTH } from "../phaser/ui/ShopView";
-import { EVENT_PANEL_WIDTH } from "../phaser/ui/EventView";
+import { renderRewardView } from "../phaser/ui/RewardView";
+import { renderShopView } from "../phaser/ui/ShopView";
 import { label, panel } from "../phaser/ui/uiPrimitives";
 import { layout } from "../phaser/ui/uiTheme";
 import type { ButtonDescriptor, UiRenderContext, VisibleAssetDescriptor } from "../phaser/ui/uiTypes";
@@ -243,34 +243,23 @@ export class GameScene extends Phaser.Scene {
   private drawReward() {
     const reward = this.engine.run.reward;
     if (!reward) return;
-    this.text(58, 118, "戰鬥獎勵：選一張牌或跳過拿金幣", 28, "#fff8d8");
-    reward.cards.forEach((card, index) => {
-      const x = 230 + index * REWARD_CARD_GAP;
-      const cardView = renderCardView({
-        scene: this,
-        context: this.uiContext(),
-        data: this.dataModel,
-        assets: this.assets,
-        x,
-        y: 188,
-        w: 178,
-        h: 248,
-        card,
-        mode: "reward"
-      });
-      this.root?.add(cardView);
-      this.button(`reward:${card.id}`, card.name, x, 368, 180, 54, () => {
-        chooseCardReward(this.engine, card.id);
-        this.render();
-      });
-    });
-    if (reward.relic) {
-      this.text(850, 212, `精英遺物：${reward.relic.name}`, 20, "#c4b5fd");
-    }
-    this.button("reward:skip", `跳過 +${reward.gold} 金幣`, 520, 560, 240, 54, () => {
-      skipCardReward(this.engine);
-      this.render();
-    }, true, 0x39d98a);
+    this.root?.add(
+      renderRewardView(
+        this,
+        this.uiContext(),
+        this.dataModel,
+        this.assets,
+        reward,
+        (cardId) => {
+          chooseCardReward(this.engine, cardId);
+          this.render();
+        },
+        () => {
+          skipCardReward(this.engine);
+          this.render();
+        }
+      )
+    );
   }
 
   private drawRest() {
@@ -287,34 +276,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawShop() {
-    this.text(64, 112, "商人", 34, "#fff8d8");
-    this.engine.run.shop?.forEach((item, index) => {
-      const x = 80 + index * (SHOP_ITEM_WIDTH + 18);
-      const label = item.kind === "card" ? this.dataModel.cards.find((card) => card.id === item.itemId)?.name : item.kind === "relic" ? this.dataModel.relics.find((relic) => relic.id === item.itemId)?.name : "移除一張牌";
-      this.button(`shop:${item.id}`, `${label} ${item.price}G`, x, 220, SHOP_ITEM_WIDTH, 70, () => {
-        buyShopItem(this.engine, item.id);
-        this.render();
-      }, !item.sold && this.engine.run.gold >= item.price);
-    });
-    this.button("shop:leave", "離開商店", 520, 560, 220, 54, () => {
-      leaveShop(this.engine);
-      this.render();
-    }, true, 0x39d98a);
+    if (!this.engine.run.shop) return;
+    this.root?.add(
+      renderShopView(
+        this,
+        this.uiContext(),
+        this.dataModel,
+        this.assets,
+        this.engine.run.shop,
+        this.engine.run.gold,
+        (itemId) => {
+          buyShopItem(this.engine, itemId);
+          this.render();
+        },
+        () => {
+          leaveShop(this.engine);
+          this.render();
+        }
+      )
+    );
   }
 
   private drawEvent() {
     const event = this.engine.run.activeEvent;
     if (!event) return;
-    this.image(314, 306, this.assets.getEventImage(event.id).key, 320, 240);
-    this.text(520, 148, event.name, 34, "#fff8d8");
-    this.text(520, 198, event.body, 20, "#ffffff", 0, 0, EVENT_PANEL_WIDTH);
-    event.options.forEach((option, index) => {
-      this.button(`event:${option.id}`, option.label, 520, 294 + index * 92, 360, 54, () => {
-        chooseEventOption(this.engine, option.id);
+    this.root?.add(
+      renderEventView(this, this.uiContext(), this.dataModel, this.assets, event, (optionId) => {
+        chooseEventOption(this.engine, optionId);
         this.render();
-      });
-      this.text(900, 300 + index * 92, option.description, 15, "#d1d5db", 0, 0, 290);
-    });
+      })
+    );
   }
 
   private drawEnd(title: string, subtitle: string, color: number) {
