@@ -186,3 +186,12 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Preserve exact runtime filenames, dimensions, and transparency requirements.
   - Keep all gameplay text dynamic in Phaser; generated images must not include readable gameplay labels.
 - After regeneration, continue executing the plan from Task 3 through completion with `superpowers:executing-plans` plus `develop-web-game`.
+- Task 3 complete: registered combat UI assets in `src/data/assets.json` and `createAssetRegistry().getCombatUiAsset(...)`.
+- Task 4 complete: added combat scene layout helpers and layout tests.
+- Task 5 complete: rendered combat background, player panel, top resource frame, ticker surface, hand tray, and turn device.
+- Task 6 complete: added enemy platform, target ring, proposal-style enemy poses, hand card arc placement, and narrow ticker rows.
+- Task 7 complete: `window.render_game_to_text()` now exposes `combatUi.reference` and combat UI asset roles.
+- Combat scene UI automated verification passed:
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
