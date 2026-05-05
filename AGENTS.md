@@ -97,6 +97,18 @@
 4. 實作計畫：撰寫 `docs/superpowers/plans/<date>-<name>-plan.md`
 5. 完成並合回 main：移動到 `backlogs/done/<name>-backlog.md`
 
+## 技能使用規則
+
+- 使用 `superpowers:executing-plans` 執行任何 implementation plan 時，必須同時使用 `develop-web-game` 工作流。
+- 對本專案而言，`superpowers:executing-plans` 負責照計畫逐項實作與驗證；`develop-web-game` 負責每個有意義的 web game 變更後進行實機瀏覽器檢查。
+- 執行期間必須：
+  - 讀取並更新 `progress.md`。
+  - 使用 `$WEB_GAME_CLIENT` 或等效 develop-web-game Playwright client 驅動本機遊戲。
+  - 檢查最新 screenshot。
+  - 檢查 `window.render_game_to_text()` 回傳狀態。
+  - 檢查 console/page errors。
+- 若改動 UI、互動、遊戲流程、音訊、動畫或 Phaser scene，不得只用 `npm test`、`npm run build`、`npm run test:e2e` 作為完成依據；必須補上 develop-web-game 的瀏覽器驗證。
+
 ## 實作驗證規則
 
 - 完成功能前至少執行：
