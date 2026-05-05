@@ -171,3 +171,12 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Required strategy: first audit/update combat UI assets and `docs/assets`, then implement Phaser combat UI.
 - User explicitly limited this pass to plan Task 1-2 only: asset audit/docs and combat UI asset image creation.
 - Use `imagegen` according to the written asset specifications for generated UI assets.
+- Task 0 complete: moved backlog 18 into `backlogs/in-progress/` and committed the state transition.
+- Task 1 complete: added `docs/assets/combat-ui-asset-audit.md`, combat UI surface specs, and nine image-generation prompt entries.
+- Task 2 complete: created nine runtime combat UI PNGs under `public/assets/ui/combat/`.
+- Generation note: local `magick` was unavailable, so the contact sheet was generated with Pillow at `output/combat-ui-assets-contact-sheet.png`.
+- Verification:
+  - `sips -g pixelWidth -g pixelHeight public/assets/ui/combat/*.png` confirmed the expected image sizes.
+  - Pillow alpha validation confirmed `battle-bg.png` is opaque and the eight panel/overlay assets have transparent corners and non-empty alpha.
+  - Contact sheet visual review confirmed the assets contain no embedded gameplay text.
+- Stopping here by user request; Task 3 asset registry and Phaser UI implementation are intentionally not started.
