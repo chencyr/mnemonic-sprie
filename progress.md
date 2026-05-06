@@ -237,3 +237,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - no generated UI surface assets for player status, progress status, battle ticker, turn actions, or hand area.
   - black translucent Phaser regions for those five areas.
   - Codex in-app browser verification requirement.
+
+## 2026-05-06 Combat Enemy Arena Region
+
+- Continuing in `.worktrees/combat-enemy-arena-region` on branch `feature/combat-enemy-arena-region`.
+- Goal: implement `docs/superpowers/specs/2026-05-06-combat-enemy-arena-region-design.md`.
+- Direction: core enemy gameplay state stays `alive | dead`; Phaser owns presentation state `alive | dying | dead`.
+- Victory/reward must wait for all enemy death presentation transitions to complete.
