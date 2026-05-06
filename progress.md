@@ -22,6 +22,18 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Add focused gameplay tests once the first real feature is implemented.
 - Add asset pipeline conventions when art/audio direction is chosen.
 
+## 2026-05-07 Combat Player Status Region
+
+- Continuing in `.worktrees/feature-combat-player-status-region` on branch `feature/combat-player-status-region`.
+- Current target: implement `docs/superpowers/plans/2026-05-06-combat-player-status-region-plan.md`.
+- Per project rules, implementation uses `superpowers:executing-plans` together with `develop-web-game`.
+- Accepted visual asset: `public/assets/ui/combat/player-status-base.png`, a 420x240 transparent style-teradadara-like redraw with HP aperture transparent and block/energy plates opaque.
+- Starting Task 1: register the player status UI assets through `src/data/assets.json` and the typed asset registry.
+- Task 1 red/green complete:
+  - Red: `npm test -- tests/core/assetRegistry.test.ts` failed before `combatPlayerStatusBase` and related keys were registered.
+  - Green: added player status UI asset keys to `src/data/assets.json` and `src/core/assets/assetRegistry.ts`.
+  - Verification: `npm test -- tests/core/assetRegistry.test.ts` passed.
+
 ## 2026-05-06 Phaser Game Feel
 
 - Continuing in `.worktrees/phaser-game-feel` on branch `feature/phaser-game-feel`.
