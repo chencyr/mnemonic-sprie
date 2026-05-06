@@ -203,3 +203,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Completed `18-combat-scene-ui-implementation-backlog.md`.
 - Backlog moved to `backlogs/done/18-combat-scene-ui-implementation-backlog.md`.
 - Branch is ready for merge after user visual review.
+- User rejected the regenerated combat background as too visually noisy.
+- Replaced only `public/assets/ui/combat/battle-bg.png` with a proposal-1-inspired dark street corridor background:
+  - Cleaner central combat stage.
+  - Subdued side graffiti.
+  - Dark lower card readability zone.
+  - No crowded mascot sticker collage in the playable field.
+- Updated `docs/assets/image-generation-prompts.jsonl` and `docs/assets/combat-ui-asset-audit.md` so future regeneration keeps the quieter proposal-1 background direction.
