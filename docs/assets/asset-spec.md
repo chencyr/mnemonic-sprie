@@ -170,7 +170,7 @@ Rules:
 
 | File | Size | Transparency | Purpose |
 | --- | ---: | --- | --- |
-| `public/assets/ui/combat/player-status-base.png` | 420x240 | Yes | Accepted original style-teradadara-like complete left-top player status base; use as-is without HP cutout or opacity post-processing. |
+| `public/assets/ui/combat/player-status-base.png` | 420x240 | Yes | Accepted original style-teradadara-like complete left-top player status base with alpha cleanup only: HP lane is transparent for runtime fill, block plate is opaque. |
 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | Yes | Local HP fill slot aligned to the base HP lane. |
 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | Yes | Local cyan energy value area aligned to the base energy plate. |
 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | Yes | Local green block value area aligned to the base block plate. |
