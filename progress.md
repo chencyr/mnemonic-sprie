@@ -211,3 +211,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - No crowded mascot sticker collage in the playable field.
 - Updated `docs/assets/image-generation-prompts.jsonl` and `docs/assets/combat-ui-asset-audit.md` so future regeneration keeps the quieter proposal-1 background direction.
 - User requested the next generation session use proposal-1 as the primary reference and recreate the same background plate. Updated the `battle-bg.png` JSONL prompt to reference `externals/battle-design-proposal-1.png` directly and remove gameplay UI/enemies/cards/text from the generated background.
+- Regenerated `public/assets/ui/combat/battle-bg.png` with the built-in `imagegen` workflow using the `docs/assets/image-generation-prompts.jsonl` battle background prompt and `externals/battle-design-proposal-1.png` as the visible reference.
+- Verified regenerated background:
+  - Resized/saved runtime asset to 1920x1080 opaque PNG.
+  - Manual Playwright screenshot written to `output/manual-imagegen-battle-bg/combat.png`.
+  - Manual state confirmed `combat-ui:background` is visible and console/page errors were empty.
