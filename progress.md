@@ -33,6 +33,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Red: `npm test -- tests/core/assetRegistry.test.ts` failed before `combatPlayerStatusBase` and related keys were registered.
   - Green: added player status UI asset keys to `src/data/assets.json` and `src/core/assets/assetRegistry.ts`.
   - Verification: `npm test -- tests/core/assetRegistry.test.ts` passed.
+- Task 2 red/green complete:
+  - Red: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` failed before `src/phaser/ui/combatPlayerStatusUi.ts` existed.
+  - Green: added `createCombatPlayerStatusUiState()` with HP ratio/state, block/energy, and pile counts.
+  - Verification: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
