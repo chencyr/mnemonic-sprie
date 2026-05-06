@@ -35,6 +35,22 @@ export interface TurnActionUiSnapshot {
   endTurnDisabledReason?: string;
 }
 
+export interface UiBounds {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface TurnActionUiLayoutSnapshot {
+  statusFrame: UiBounds;
+  statusContent: {
+    turnText: UiBounds;
+    energyText: UiBounds;
+    energyIcons: UiBounds[];
+  };
+}
+
 export interface RenderTurnActionViewOptions {
   scene: Phaser.Scene;
   context: UiRenderContext;
@@ -53,10 +69,70 @@ const BUTTON_LEFT_X = BUTTON_CENTER_X - BUTTON_DISPLAY_W / 2;
 const BUTTON_ROTATION = (-20 * Math.PI) / 180;
 const LABEL_DISPLAY_W = 169;
 const LABEL_DISPLAY_H = 55;
-const STATE_FRAME_W = 150;
-const STATE_FRAME_H = 48;
+const STATE_FRAME_W = 156;
+const STATE_FRAME_H = 54;
 const STATE_FRAME_CENTER_X = BUTTON_LEFT_X + STATE_FRAME_W / 2;
-const STATE_FRAME_CENTER_Y = 31;
+const STATE_FRAME_CENTER_Y = 72;
+const STATUS_FRAME_LEFT_X = STATE_FRAME_CENTER_X - STATE_FRAME_W / 2;
+const STATUS_FRAME_TOP_Y = STATE_FRAME_CENTER_Y - STATE_FRAME_H / 2;
+const TURN_TEXT_X = STATUS_FRAME_LEFT_X + 16;
+const TURN_TEXT_Y = STATUS_FRAME_TOP_Y + 8;
+const TURN_TEXT_W = 58;
+const TURN_TEXT_H = 16;
+const ENERGY_TEXT_X = STATUS_FRAME_LEFT_X + 16;
+const ENERGY_TEXT_Y = STATUS_FRAME_TOP_Y + 29;
+const ENERGY_TEXT_W = 34;
+const ENERGY_TEXT_H = 16;
+const ENERGY_ICON_SIZE = 18;
+const ENERGY_ICON_X = STATUS_FRAME_LEFT_X + 66;
+const ENERGY_ICON_Y = STATUS_FRAME_TOP_Y + 37;
+const ENERGY_ICON_GAP = 17;
+
+function absoluteBounds(rootX: number, rootY: number, bounds: UiBounds): UiBounds {
+  return {
+    x: rootX + bounds.x,
+    y: rootY + bounds.y,
+    w: bounds.w,
+    h: bounds.h
+  };
+}
+
+function imageBounds(centerX: number, centerY: number, size: number): UiBounds {
+  return {
+    x: centerX - size / 2,
+    y: centerY - size / 2,
+    w: size,
+    h: size
+  };
+}
+
+export function getTurnActionUiLayout(x: number, y: number, snapshot: TurnActionUiSnapshot): TurnActionUiLayoutSnapshot {
+  return {
+    statusFrame: absoluteBounds(x, y, {
+      x: STATUS_FRAME_LEFT_X,
+      y: STATUS_FRAME_TOP_Y,
+      w: STATE_FRAME_W,
+      h: STATE_FRAME_H
+    }),
+    statusContent: {
+      turnText: absoluteBounds(x, y, {
+        x: TURN_TEXT_X,
+        y: TURN_TEXT_Y,
+        w: TURN_TEXT_W,
+        h: TURN_TEXT_H
+      }),
+      energyText: absoluteBounds(x, y, {
+        x: ENERGY_TEXT_X,
+        y: ENERGY_TEXT_Y,
+        w: ENERGY_TEXT_W,
+        h: ENERGY_TEXT_H
+      }),
+      energyIcons: Array.from({ length: snapshot.maxEnergy }, (_, index) =>
+        absoluteBounds(x, y, imageBounds(ENERGY_ICON_X + index * ENERGY_ICON_GAP, ENERGY_ICON_Y, ENERGY_ICON_SIZE))
+      )
+    }
+  };
+}
 
 export function deriveTurnActionUiSnapshot(
   coreState: CombatTurnActionState,
@@ -174,20 +250,27 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
     "combat-ui:turn-energy-frame"
   );
   if (frame) root.add(frame);
-  else root.add(scene.add.rectangle(BUTTON_LEFT_X, 7, STATE_FRAME_W, STATE_FRAME_H, 0x000000, 0.64).setOrigin(0).setStrokeStyle(2, 0xf4c542, 0.86));
+  else root.add(scene.add.rectangle(STATUS_FRAME_LEFT_X, STATUS_FRAME_TOP_Y, STATE_FRAME_W, STATE_FRAME_H, 0x000000, 0.64).setOrigin(0).setStrokeStyle(2, 0xf4c542, 0.86));
 
-  root.add(label(scene, BUTTON_LEFT_X + 17, 15, `回合 ${snapshot.turn}`, 10, colors.ink, 58));
-  root.add(label(scene, BUTTON_LEFT_X + 17, 34, `能量`, 10, colors.cyanText, 42));
+  const turnText = label(scene, TURN_TEXT_X, TURN_TEXT_Y, `回合 ${snapshot.turn}`, 13, "#fff3a6", TURN_TEXT_W);
+  turnText.setFontStyle("900");
+  turnText.setShadow(1, 1, "#111827", 2, true, true);
+  root.add(turnText);
+
+  const energyText = label(scene, ENERGY_TEXT_X, ENERGY_TEXT_Y, `能量`, 12, colors.cyanText, ENERGY_TEXT_W);
+  energyText.setFontStyle("900");
+  energyText.setShadow(1, 1, "#111827", 2, true, true);
+  root.add(energyText);
 
   for (let index = 0; index < snapshot.maxEnergy; index += 1) {
     const icon = image(
       scene,
       context,
-      BUTTON_LEFT_X + 89 + index * 18,
-      39,
+      ENERGY_ICON_X + index * ENERGY_ICON_GAP,
+      ENERGY_ICON_Y,
       assets.getCombatUiAsset("energyLightningIcon").key,
-      14,
-      14,
+      ENERGY_ICON_SIZE,
+      ENERGY_ICON_SIZE,
       `combat-ui:energy-lightning-icon-${index}`,
       index < snapshot.energy ? 1 : 0.26
     );
@@ -210,7 +293,7 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
 
   const labelRole = snapshot.labelAsset === "enemyTurnLabel" ? "combat-ui:enemy-turn-label" : "combat-ui:end-turn-label";
   const labelSprite = image(scene, context, BUTTON_CENTER_X, BUTTON_CENTER_Y, assets.getCombatUiAsset(snapshot.labelAsset).key, LABEL_DISPLAY_W, LABEL_DISPLAY_H, labelRole, plateAlpha);
-  if (labelSprite) root.add(labelSprite);
+  if (labelSprite) root.add(labelSprite.setRotation(BUTTON_ROTATION));
 
   const hitZone = scene.add.zone(38, 90, 264, 88).setOrigin(0).setInteractive({ useHandCursor: snapshot.endTurnEnabled });
   hitZone.setName("end-turn");

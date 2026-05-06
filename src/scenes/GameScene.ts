@@ -48,7 +48,7 @@ import {
   renderCombatTickerSurface,
   renderCombatTopResource
 } from "../phaser/ui/CombatSceneView";
-import { deriveTurnActionUiSnapshot, renderTurnActionView, type TurnActionUiSnapshot } from "../phaser/ui/TurnActionView";
+import { deriveTurnActionUiSnapshot, getTurnActionUiLayout, renderTurnActionView, type TurnActionUiLayoutSnapshot, type TurnActionUiSnapshot } from "../phaser/ui/TurnActionView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { renderEventView } from "../phaser/ui/EventView";
 import { HUD_FONT, renderHudShell } from "../phaser/ui/HudView";
@@ -125,6 +125,7 @@ interface TextSnapshot {
   };
   combatEnemyArena?: ReturnType<typeof createEnemyPresentationSnapshot>;
   turnActionUi?: TurnActionUiSnapshot;
+  turnActionLayout?: TurnActionUiLayoutSnapshot;
   feedback: {
     active: CombatFeedbackItem[];
     ticker: CombatFeedbackItem[];
@@ -975,6 +976,7 @@ export class GameScene extends Phaser.Scene {
       victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
       combatEnemyArena: combat ? createEnemyPresentationSnapshot(this.enemyPresentationStates, combat.enemies) : undefined,
       turnActionUi: run.mode === "combat" ? this.currentTurnActionUiSnapshot() : undefined,
+      turnActionLayout: run.mode === "combat" ? getTurnActionUiLayout(WIDTH - 330, 492, this.currentTurnActionUiSnapshot()) : undefined,
       feedback: this.feedbackSnapshot(),
       combatUi:
         run.mode === "combat"

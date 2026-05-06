@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CombatTurnActionState } from "../../src/core";
-import { deriveTurnActionUiSnapshot } from "../../src/phaser/ui/TurnActionView";
+import { deriveTurnActionUiSnapshot, getTurnActionUiLayout, type UiBounds } from "../../src/phaser/ui/TurnActionView";
 
 const playerReady: CombatTurnActionState = {
   mode: "combat",
@@ -95,4 +95,18 @@ describe("turn action view", () => {
       endTurnEnabled: false
     });
   });
+
+  it("keeps turn and energy status content inside the status frame", () => {
+    const layout = getTurnActionUiLayout(950, 492, deriveTurnActionUiSnapshot(playerReady));
+
+    expect(isInside(layout.statusContent.turnText, layout.statusFrame)).toBe(true);
+    expect(isInside(layout.statusContent.energyText, layout.statusFrame)).toBe(true);
+    for (const icon of layout.statusContent.energyIcons) {
+      expect(isInside(icon, layout.statusFrame)).toBe(true);
+    }
+  });
 });
+
+function isInside(inner: UiBounds, outer: UiBounds) {
+  return inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.w <= outer.x + outer.w && inner.y + inner.h <= outer.y + outer.h;
+}

@@ -40,6 +40,7 @@ await withGamePage(async ({ page }) => {
   ]) {
     assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
   }
+  assertTurnActionStatusContentInsideFrame(current);
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
@@ -338,6 +339,27 @@ function assertNoCombatPanelSurfaceAssets(current) {
   const removedRoles = new Set(["combat-ui:player-panel", "combat-ui:top-resource", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]);
   const stillRendered = current.visibleAssets?.filter((asset) => removedRoles.has(asset.role)) ?? [];
   assert.deepEqual(stillRendered, [], "combat status/progress/ticker/action/hand regions should use black translucent Phaser regions, not UI image assets.");
+}
+
+function assertTurnActionStatusContentInsideFrame(current) {
+  const layout = current.turnActionLayout;
+  assert.ok(layout?.statusFrame, "combat snapshot should expose turn action status frame bounds");
+  assert.ok(layout?.statusContent?.turnText, "combat snapshot should expose turn action turn text bounds");
+  assert.ok(layout?.statusContent?.energyText, "combat snapshot should expose turn action energy text bounds");
+  assert.ok(Array.isArray(layout?.statusContent?.energyIcons), "combat snapshot should expose turn action energy icon bounds");
+
+  assertBoundsInside(layout.statusContent.turnText, layout.statusFrame, "turn action turn text");
+  assertBoundsInside(layout.statusContent.energyText, layout.statusFrame, "turn action energy text");
+  for (const [index, icon] of layout.statusContent.energyIcons.entries()) {
+    assertBoundsInside(icon, layout.statusFrame, `turn action energy icon ${index}`);
+  }
+}
+
+function assertBoundsInside(inner, outer, label) {
+  assert.ok(inner.x >= outer.x, `${label} left should stay inside status frame`);
+  assert.ok(inner.y >= outer.y, `${label} top should stay inside status frame`);
+  assert.ok(inner.x + inner.w <= outer.x + outer.w, `${label} right should stay inside status frame`);
+  assert.ok(inner.y + inner.h <= outer.y + outer.h, `${label} bottom should stay inside status frame`);
 }
 
 function chooseMapButton(current, visitedScreens) {

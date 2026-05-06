@@ -324,3 +324,20 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-retune-combat/` with no console/page error files.
   - Manual transition screenshot/state check at `output/manual-turn-action-retune-transition/` confirmed `turnActionUi.labelAsset = enemyTurnLabel` during manual transition.
+- Follow-up tuning requested:
+  - Rotate the button label together with the large button plate.
+  - Move the turn/energy status frame closer to the button.
+  - Make status text/icons tighter and more prominent.
+  - Add E2E bounds checks so status text/icons cannot exceed the status frame.
+- Follow-up implementation complete:
+  - Button labels now rotate with the large button plate.
+  - Turn/energy frame moved closer to the button, with bolder status text and larger/tighter energy icons.
+  - `window.render_game_to_text()` now exposes `turnActionLayout` bounds for the status frame, text, and icons.
+  - E2E checks ensure status text/icons remain inside the status frame.
+- Follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-rotate/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-label-rotate-transition/` confirmed `enemyTurnLabel` during transition and bounds stayed inside the frame.
