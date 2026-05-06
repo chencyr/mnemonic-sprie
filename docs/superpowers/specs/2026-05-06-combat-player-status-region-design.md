@@ -17,9 +17,11 @@
 
 戰鬥主視覺採用 `externals/battle-design-proposal-1.png`。左上玩家狀態區應跟這個主視覺一致：暗色街頭戰鬥 HUD、低噪音、功能性優先，使用 cyan / magenta / yellow 作為少量狀態強調。
 
-本 backlog 採用 **低噪音混合式狀態儀表**：
+本 backlog 採用 **B1：功能裝置元件組**：
 
-- 主要版面仍由 Phaser shapes、bar、text 動態渲染。
+- 左上玩家狀態 UI 拆成多個可組合透明 PNG 元件。
+- 圖片負責外框、材質、槽位、裝置感與少量邊緣裝飾。
+- Phaser 負責排版、文字、數字、bar fill、能量亮起狀態與狀態變化。
 - 不使用目前的 `public/assets/ui/combat/player-panel.png` 作為 runtime 主面板，因為它的 chibi 貼紙面板風格太高噪音，會跟 proposal-1 背景、手牌與敵人搶視線。
 - 可使用現有 `public/assets/characters/seeker.png` 作為小型玩家 portrait 或剪影點綴，但它不是必要資訊承載物。
 - HP、格擋、能量、牌堆數字、狀態 label 都必須由 Phaser 動態文字渲染。
@@ -39,11 +41,23 @@
 
 決策：不作為本 backlog 主方向。若後續視覺驗收認為左上仍太素，可以在另一個素材 backlog 補一張低噪音外框，但不能嵌入動態文字。
 
-### 方案 3：低噪音混合式狀態儀表
+### 方案 3：B1 功能裝置元件組
 
-以 Phaser 繪製暗色 glass HUD，分出 HP 主列、格擋/能量次列、牌堆 counters。少量使用線條、狀態燈、簡單 icon 或玩家 portrait 強化辨識。這保留 proposal-1 的街頭暗色裝置感，也維持數值清楚與測試可觀測性。
+將左上 UI 拆成 panel shell、HP bar frame、block badge、energy pip strip、deck counter plate。素材只承載質感與槽位，Phaser 疊動態文字、數字與填充值。這保留 proposal-1 的街頭暗色裝置感，也維持數值清楚與測試可觀測性。
 
 決策：採用。
+
+### 方案 4：角色頭像導向元件組
+
+加重 `seeker.png` 的 portrait frame，讓左上 UI 更像角色狀態面板。優點是玩家身份感強；缺點是左上空間小，portrait 容易擠壓 HP / 格擋 / 能量。
+
+決策：不採用作為本 backlog 主方向；可在 B1 shell 中保留一個小 avatar 槽位，但不可讓 portrait 壓過狀態資訊。
+
+### 方案 5：極簡裝飾元件組
+
+只產生角飾、狀態燈、能量小圖示，主要面板仍由 Phaser shapes 畫。優點是最穩；缺點是美術完成度不如 B1。
+
+決策：不採用，因為本次目標包含實際產生左上 UI 素材元件。
 
 ## 設計目標
 
@@ -162,26 +176,38 @@ playerStatusUi: {
 
 這個 snapshot 是 UI contract，不取代既有 `combat.playerHp` / `combat.energy`。E2E 應同時確認兩者一致，避免 UI snapshot 與 core snapshot 分離。
 
-## 素材策略
+## 素材策略與產出清單
 
-本 backlog 預設不新增 image generation 素材。
+本 backlog 會新增 5 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記 prompt。
 
 可使用的既有素材：
 
 - `public/assets/characters/seeker.png`：可作為小 portrait，但不承載數值。
 - `public/assets/ui/combat/battle-bg.png`：主視覺背景參考。
 
+新增素材：
+
+| Runtime Use | Asset | Size | Role |
+| --- | --- | ---: | --- |
+| 左上面板外殼 | `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | 深色玻璃裝置外框，保留 HP / block / energy / counter 空槽。 |
+| HP bar 外框 | `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | HP bar frame，不含紅色填充值、不含文字。 |
+| 格擋 badge 底板 | `public/assets/ui/combat/player-block-badge.png` | 120x64 | Shield-like badge，不含數字與中文。 |
+| 能量槽 | `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | 三格能量槽，不含亮起狀態、不含數字。 |
+| 牌堆 counter 底板 | `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | 可重複用於抽牌 / 棄牌 / 手牌 counters。 |
+
 不建議 runtime 使用：
 
 - `public/assets/ui/combat/player-panel.png`：目前 prompt 是高彩度 chibi 狀態精靈面板，與本 backlog 的低噪音功能 HUD 方向不一致。
 
-若 implementation 過程決定新增低噪音外框素材，必須先更新：
+素材硬性規則：
 
-- `docs/assets/image-generation-prompts.jsonl`
-- 必要的 `docs/assets/*` 規格文件
-- asset registry / data path
-
-並明確要求素材不得包含 readable text、numbers、HP、能量、格擋 label。
+- 必須以 `externals/battle-design-proposal-1.png` / `public/assets/ui/combat/battle-bg.png` 的暗色街頭裝置感為主視覺。
+- 必須低噪音、功能性優先，不使用 chibi mascot-heavy panel。
+- 必須透明背景。
+- 必須保留足夠內部空白，讓 Phaser 疊文字與數字。
+- 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
+- 不得包含角色、敵人、卡牌、臉、眼睛 mascot、浮水印。
+- 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
 
 ## 測試與驗收策略
 
@@ -222,4 +248,4 @@ playerStatusUi: {
 - 玩家能一眼理解 HP、格擋與能量：透過 HP 主列、block pill、energy pip/text 達成。
 - 玩家狀態區不遮擋背景、敵人或手牌：沿用左上 bounded layout，限制尺寸。
 - HP/格擋/能量變化有清楚回饋且不重疊：使用穩定 bar/pill/pip 與可測 snapshot。
-- 若使用素材圖，素材規格與 prompt 必須寫入 `docs/assets/`：本 spec 預設不新增素材；若新增，implementation plan 必須先更新素材規格。
+- 若使用素材圖，素材規格與 prompt 必須寫入 `docs/assets/`：本 spec 已定義 5 張新增素材，並要求先更新 `docs/assets/` 與 JSONL prompt 後才可生圖。

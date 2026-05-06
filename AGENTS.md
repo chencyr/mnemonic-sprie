@@ -30,6 +30,7 @@
 ## Backlog 開始前 Brainstorm Gate
 
 - 開始進行任何 backlog 前，必須先進行 brainstorm。
+- brainstorm 階段永遠不使用瀏覽器顯示 mockup、wireframe、版面比較或視覺 companion；所有 brainstorm 應以文字討論與可追蹤文件完成。
 - brainstorm 的結果必須落成設計文件，放在 `docs/superpowers/specs/`。
 - spec 檔名應能對應 backlog，例如：
   - backlog：`backlogs/17-overall-game-ui-redesign-backlog.md`

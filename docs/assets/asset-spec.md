@@ -155,6 +155,26 @@ Rules:
 | `public/assets/ui/combat/hand-tray.png` | `combatHandTray` | 940x230 | Yes | Bottom card tray/rail. |
 | `public/assets/ui/combat/drop-zone.png` | `combatDropZone` | 280x210 | Yes | Drag/drop hint surface. |
 
+### Combat Player Status UI Component Assets
+
+These assets support the left-top combat player status region. They follow `externals/battle-design-proposal-1.png` and `public/assets/ui/combat/battle-bg.png`, using a low-noise dark street arcade device style.
+
+Rules:
+
+- Store final runtime files under `public/assets/ui/combat/`.
+- Keep every gameplay value Phaser-rendered. Do not embed HP, energy, block, deck counts, Chinese labels, numbers, or letters in the image.
+- Use transparent PNGs with clean empty slots for Phaser text, bars, pips, and counters.
+- Use dark glass, restrained cyan/magenta/yellow trim, subtle scuffs, and functional device framing.
+- Do not use characters, faces, eyes, mascots, cards, enemies, or watermark.
+
+| File | Size | Transparency | Purpose |
+| --- | ---: | --- | --- |
+| `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | Yes | Left-top player status shell with empty HP/block/energy/counter lanes. |
+| `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | Yes | HP bar frame; Phaser draws fill and text. |
+| `public/assets/ui/combat/player-block-badge.png` | 120x64 | Yes | Block badge base; Phaser draws number and label. |
+| `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | Yes | Three empty energy sockets; Phaser draws lit state. |
+| `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | Yes | Reusable small plate for draw/discard/hand counters. |
+
 ### Placeholders
 
 | File | Slot |
