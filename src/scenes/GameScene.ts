@@ -36,6 +36,7 @@ import {
   resolveEnemyPresentationTransitions,
   type EnemyPresentationStateMap
 } from "../phaser/combat/enemyPresentationState";
+import { createCombatPlayerStatusUiState, type CombatPlayerStatusUiState } from "../phaser/ui/combatPlayerStatusUi";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import {
@@ -109,6 +110,12 @@ interface CombatRenderAnchors {
   enemies: Map<string, RenderAnchor>;
 }
 
+interface CombatPlayerStatusUiSnapshot extends CombatPlayerStatusUiState {
+  visible: boolean;
+  reference: "battle-design-proposal-1";
+  assetRoles: string[];
+}
+
 interface TextSnapshot {
   note: string;
   mode: string;
@@ -135,6 +142,7 @@ interface TextSnapshot {
     reference: "battle-design-proposal-3";
     assetRoles: string[];
   };
+  playerStatusUi?: CombatPlayerStatusUiSnapshot;
   audio: {
     muted: boolean;
     started: boolean;
@@ -334,12 +342,8 @@ export class GameScene extends Phaser.Scene {
     this.playerDropZone = { x: combatLayout.playerPanel.x, y: combatLayout.playerPanel.y, w: combatLayout.playerPanel.w, h: combatLayout.playerPanel.h };
     this.handDropZone = { x: combatLayout.handTray.x, y: combatLayout.handTray.y, w: combatLayout.handTray.w, h: combatLayout.handTray.h };
     const anchors: CombatRenderAnchors = { enemies: new Map() };
-    const playerPanel = renderCombatPlayerPanel(this, this.engine.run, {
-      hp: combat.player.hp,
-      maxHp: combat.player.maxHp,
-      energy: combat.player.energy,
-      block: combat.player.block
-    });
+    const playerStatusUi = createCombatPlayerStatusUiState(combat);
+    const playerPanel = renderCombatPlayerPanel(this, this.uiContext(), this.assets, playerStatusUi);
     this.root?.add(playerPanel);
     anchors.player = {
       x: combatLayout.playerPanel.x + combatLayout.playerPanel.w / 2,
@@ -957,6 +961,7 @@ export class GameScene extends Phaser.Scene {
   private snapshot(): TextSnapshot {
     const run = this.engine.run;
     const combat = run.currentCombat;
+    const playerStatusUi = combat ? createCombatPlayerStatusUiState(combat) : undefined;
     return {
       note: "座標使用 Phaser Canvas 像素，原點在左上，x 往右，y 往下。buttons 內提供目前可點擊元素中心與尺寸。",
       mode: run.mode,
@@ -975,6 +980,15 @@ export class GameScene extends Phaser.Scene {
           ? {
               reference: "battle-design-proposal-3",
               assetRoles: this.visibleAssets.filter((asset) => asset.role.startsWith("combat-ui:")).map((asset) => asset.role)
+            }
+          : undefined,
+      playerStatusUi:
+        playerStatusUi && run.mode === "combat"
+          ? {
+              ...playerStatusUi,
+              visible: this.visibleAssets.some((asset) => asset.role === "combat-ui:player-status-base"),
+              reference: "battle-design-proposal-1",
+              assetRoles: this.visibleAssets.filter((asset) => asset.role.startsWith("combat-ui:player-status")).map((asset) => asset.role)
             }
           : undefined,
       audio: {

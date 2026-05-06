@@ -10,6 +10,10 @@ export type AudioAssetKey = keyof GameData["assets"]["audio"];
 export type CombatUiAssetKey =
   | "battleBg"
   | "playerPanel"
+  | "playerStatusBase"
+  | "playerStatusHpFillSlot"
+  | "playerStatusEnergyValueSlot"
+  | "playerStatusBlockValueSlot"
   | "topResourceFrame"
   | "turnDevice"
   | "endTurnButtonPlate"
@@ -57,6 +61,10 @@ const intentIconKeys: Record<IntentIconType, keyof GameData["assets"]["ui"]> = {
 const combatUiAssetKeys: Record<CombatUiAssetKey, keyof GameData["assets"]["ui"]> = {
   battleBg: "combatBattleBg",
   playerPanel: "combatPlayerPanel",
+  playerStatusBase: "combatPlayerStatusBase",
+  playerStatusHpFillSlot: "combatPlayerStatusHpFillSlot",
+  playerStatusEnergyValueSlot: "combatPlayerStatusEnergyValueSlot",
+  playerStatusBlockValueSlot: "combatPlayerStatusBlockValueSlot",
   topResourceFrame: "combatTopResourceFrame",
   turnDevice: "combatTurnDevice",
   endTurnButtonPlate: "combatEndTurnButtonPlate",

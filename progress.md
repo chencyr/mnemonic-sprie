@@ -22,6 +22,62 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Add focused gameplay tests once the first real feature is implemented.
 - Add asset pipeline conventions when art/audio direction is chosen.
 
+## 2026-05-07 Combat Player Status Region
+
+- Continuing in `.worktrees/feature-combat-player-status-region` on branch `feature/combat-player-status-region`.
+- Current target: implement `docs/superpowers/plans/2026-05-06-combat-player-status-region-plan.md`.
+- Per project rules, implementation uses `superpowers:executing-plans` together with `develop-web-game`.
+- Accepted visual asset: `public/assets/ui/combat/player-status-base.png`, a 420x240 transparent style-teradadara-like redraw with HP aperture transparent and block/energy plates opaque.
+- Starting Task 1: register the player status UI assets through `src/data/assets.json` and the typed asset registry.
+- Task 1 red/green complete:
+  - Red: `npm test -- tests/core/assetRegistry.test.ts` failed before `combatPlayerStatusBase` and related keys were registered.
+  - Green: added player status UI asset keys to `src/data/assets.json` and `src/core/assets/assetRegistry.ts`.
+  - Verification: `npm test -- tests/core/assetRegistry.test.ts` passed.
+- Task 2 red/green complete:
+  - Red: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` failed before `src/phaser/ui/combatPlayerStatusUi.ts` existed.
+  - Green: added `createCombatPlayerStatusUiState()` with HP ratio/state, block/energy, and pile counts.
+  - Verification: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` passed.
+- Task 3 complete:
+  - `renderCombatPlayerPanel()` now renders `player-status-base.png`, draws HP fill under the transparent aperture, and overlays Phaser text for HP, energy, block, and low-priority pile counts.
+  - `GameScene.drawCombat()` now passes `createCombatPlayerStatusUiState(combat)` into the renderer.
+  - Verification: `npm run build` passed.
+- Task 4 complete:
+  - `window.render_game_to_text()` now exposes `playerStatusUi` with values, visibility, reference, and player-status asset roles.
+  - E2E now asserts `combat-ui:player-status-base`, `playerStatusUi.reference === "battle-design-proposal-1"`, and consistency with combat HP/block/energy.
+  - Verification: `npm run test:e2e` passed.
+- Task 5 verification complete:
+  - `npm test` passed: 14 files / 66 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - Started Vite on `http://127.0.0.1:5177/?e2e=1`.
+  - Ran develop-web-game Playwright client; screenshots/state written to `output/web-game-combat-player-status-start/`.
+  - Manual Playwright combat verification wrote `output/manual-combat-player-status/combat.png`, `state.json`, and `errors.json`.
+  - Visual review confirmed the accepted redrawn left-top player status asset is visible, HP fill appears through the transparent aperture, and HP/energy/block text is readable without covering enemies, hand cards, or the turn device.
+  - Manual state confirmed `playerStatusUi.visible === true`, `reference === "battle-design-proposal-1"`, and no console/page errors.
+- Follow-up alignment fix:
+  - User reported energy and block values were not aligned in the running app.
+  - Root cause from screenshot: energy text was vertically low; block text was on the wrong horizontal center and too dark for the green value plate.
+  - Adjusted energy text to `158,137`; adjusted block text to `271,137` and a lighter readable color.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-final/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
+- Follow-up alignment/no-deck fix:
+  - User asked to move energy/block values left by the same 5px and remove the `牌 ...` deck info line.
+  - Adjusted energy text to `153,137`; adjusted block text to `266,137`; removed the low-priority pile count text from `renderCombatPlayerPanel()`.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-no-deck/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
+- Follow-up fine alignment:
+  - User asked to move energy/block values left/down by 2px, then left another 2px.
+  - Final positions: energy `149,139`, block `262,139`.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-4px/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
+- Integration with latest main:
+  - Merged `main` into `feature/combat-player-status-region` after main advanced with combat turn action work.
+  - Resolved conflicts in `docs/assets/image-generation-prompts.jsonl`, `tests/core/assetRegistry.test.ts`, and `tests/e2e/fullRunSmoke.mjs` by keeping both turn-action and player-status asset/test coverage.
+  - Verification after merge:
+    - `npm test` passed: 16 files / 78 tests.
+    - `npm run build` passed.
+    - `npm run test:e2e` passed.
+
 ## 2026-05-06 Phaser Game Feel
 
 - Continuing in `.worktrees/phaser-game-feel` on branch `feature/phaser-game-feel`.

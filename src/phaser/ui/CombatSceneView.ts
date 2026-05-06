@@ -1,7 +1,8 @@
 import Phaser from "phaser";
 import type { AssetRegistry, RunState } from "../../core";
-import { bar, image, label } from "./uiPrimitives";
+import { image, label } from "./uiPrimitives";
 import { colors, HUD_FONT } from "./uiTheme";
+import type { CombatPlayerStatusUiState } from "./combatPlayerStatusUi";
 import type { UiRenderContext } from "./uiTypes";
 
 export interface RectSpec {
@@ -16,7 +17,7 @@ export interface CardPose extends RectSpec {
 }
 
 export const combatLayout = {
-  playerPanel: { x: 24, y: 18, w: 318, h: 178 },
+  playerPanel: { x: 16, y: 12, w: 336, h: 192 },
   topResource: { x: 650, y: 18, w: 468, h: 54 },
   battlefield: { x: 250, y: 86, w: 846, h: 422 },
   ticker: { x: 1112, y: 86, w: 148, h: 430 },
@@ -68,18 +69,58 @@ export function renderCombatBackground(scene: Phaser.Scene, context: UiRenderCon
 
 export function renderCombatPlayerPanel(
   scene: Phaser.Scene,
-  run: RunState,
-  vitals: { hp: number; maxHp: number; energy: number; block: number }
+  context: UiRenderContext,
+  assets: AssetRegistry,
+  status: CombatPlayerStatusUiState
 ) {
   const root = scene.add.container(combatLayout.playerPanel.x, combatLayout.playerPanel.y);
-  root.add(translucentRegion(scene, combatLayout.playerPanel.w, combatLayout.playerPanel.h));
-  root.add(label(scene, 82, 18, "HP", 16, "#ff4f8b"));
-  root.add(label(scene, 82, 42, `${vitals.hp}/${vitals.maxHp}`, 22, colors.ink));
-  root.add(bar(scene, 82, 74, 210, 12, vitals.hp / vitals.maxHp, colors.red, 0x111827));
-  root.add(label(scene, 82, 100, `能量 ${vitals.energy}/3`, 17, colors.cyanText));
-  root.add(label(scene, 82, 130, `格擋 ${vitals.block}`, 17, "#9cff72"));
-  root.add(label(scene, 250, 130, `牌組 ${run.deck.length}`, 13, colors.muted));
+  const assetKey = assets.getCombatUiAsset("playerStatusBase").key;
+  const hpFill = playerStatusHpFill(status);
+  root.add(scene.add.rectangle(hpFill.x, hpFill.y, hpFill.w * status.hpRatio, hpFill.h, hpFill.color, 0.96).setOrigin(0));
+  const base = image(
+    scene,
+    context,
+    combatLayout.playerPanel.w / 2,
+    combatLayout.playerPanel.h / 2,
+    assetKey,
+    combatLayout.playerPanel.w,
+    combatLayout.playerPanel.h,
+    "combat-ui:player-status-base"
+  );
+  if (base) root.add(base);
+
+  root.add(statusText(scene, 212, 92, `${status.hp}/${status.maxHp}`, 21, "#fff8d8", 0.5));
+  root.add(statusText(scene, 149, 139, `${status.energy}/${status.maxEnergy}`, 20, "#062024", 0.5));
+  root.add(statusText(scene, 262, 139, `${status.block}`, 20, status.hasBlock ? "#f1ffe9" : "#c4d8bf", 0.5));
   return root;
+}
+
+function playerStatusHpFill(status: CombatPlayerStatusUiState) {
+  const colorByState: Record<CombatPlayerStatusUiState["hpState"], number> = {
+    healthy: 0xff335f,
+    wounded: 0xff7a2f,
+    critical: 0xff1f6d,
+    dead: 0x3f0b18
+  };
+  return {
+    x: 122,
+    y: 80,
+    w: 172,
+    h: 22,
+    color: colorByState[status.hpState]
+  };
+}
+
+function statusText(scene: Phaser.Scene, x: number, y: number, value: string, size: number, color: string, originX = 0) {
+  return scene.add
+    .text(x, y, value, {
+      color,
+      fontFamily: HUD_FONT,
+      fontSize: `${size}px`,
+      fontStyle: size >= 18 ? "800" : "650",
+      align: "center"
+    })
+    .setOrigin(originX, 0.5);
 }
 
 export function renderCombatTopResource(scene: Phaser.Scene, run: RunState) {

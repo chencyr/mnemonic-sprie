@@ -124,6 +124,22 @@ describe("asset registry", () => {
       key: "ui:combatTurnDevice",
       path: "/assets/ui/combat/turn-device.png"
     });
+    expect(registry.getCombatUiAsset("playerStatusBase")).toEqual({
+      key: "ui:combatPlayerStatusBase",
+      path: "/assets/ui/combat/player-status-base.png"
+    });
+    expect(registry.getCombatUiAsset("playerStatusHpFillSlot")).toEqual({
+      key: "ui:combatPlayerStatusHpFillSlot",
+      path: "/assets/ui/combat/player-status-hp-fill-slot.png"
+    });
+    expect(registry.getCombatUiAsset("playerStatusEnergyValueSlot")).toEqual({
+      key: "ui:combatPlayerStatusEnergyValueSlot",
+      path: "/assets/ui/combat/player-status-energy-value-slot.png"
+    });
+    expect(registry.getCombatUiAsset("playerStatusBlockValueSlot")).toEqual({
+      key: "ui:combatPlayerStatusBlockValueSlot",
+      path: "/assets/ui/combat/player-status-block-value-slot.png"
+    });
     expect(registry.getCombatUiAsset("endTurnButtonPlate")).toEqual({
       key: "ui:combatEndTurnButtonPlate",
       path: "/assets/ui/combat/end-turn-button-plate.png"
@@ -157,6 +173,10 @@ describe("asset registry", () => {
     expect(entries).toContainEqual({
       key: "ui:combatHandTray",
       path: "/assets/ui/combat/hand-tray.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatPlayerStatusBase",
+      path: "/assets/ui/combat/player-status-base.png"
     });
     expect(entries).toContainEqual({
       key: "ui:combatEndTurnButtonPlate",

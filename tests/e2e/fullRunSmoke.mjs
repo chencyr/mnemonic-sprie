@@ -26,13 +26,22 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetPrefix(current, "card:", "combat");
   assertVisibleAssetPrefix(current, "ui:intent", "combat");
   assertVisibleAssetRole(current, "combat-ui:background", "combat");
+  assertVisibleAssetRole(current, "combat-ui:player-status-base", "combat");
   assertNoCombatPanelSurfaceAssets(current);
   assert.equal(current.combatUi?.reference, "battle-design-proposal-3");
+  assert.equal(current.playerStatusUi?.reference, "battle-design-proposal-1");
+  assert.equal(current.playerStatusUi?.visible, true);
+  assert.equal(current.playerStatusUi?.hp, current.combat.playerHp);
+  assert.equal(current.playerStatusUi?.maxHp, current.combat.playerMaxHp);
+  assert.equal(current.playerStatusUi?.block, current.combat.block);
+  assert.equal(current.playerStatusUi?.energy, current.combat.energy);
+  assert.ok(current.playerStatusUi.assetRoles.includes("combat-ui:player-status-base"));
   assert.equal(current.turnActionUi?.state, "playerReady");
   assert.equal(current.turnActionUi?.labelAsset, "endTurnLabel");
   assert.equal(current.turnActionUi?.endTurnEnabled, true);
   for (const role of [
     "combat-ui:background",
+    "combat-ui:player-status-base",
     "combat-ui:turn-energy-frame",
     "combat-ui:energy-lightning-icon-0",
     "combat-ui:end-turn-button-plate",
@@ -280,6 +289,10 @@ async function assertCombatHpTracksEnemyTurn(page) {
   assert.equal(current.mode, "combat");
   assert.ok(Number.isFinite(current.combat.playerHp), "combat playerHp should remain finite after enemy turn");
   assert.ok(current.combat.playerHp <= beforeHp, "enemy turn should not increase combat player HP");
+  assert.equal(current.playerStatusUi?.hp, current.combat.playerHp);
+  assert.equal(current.playerStatusUi?.maxHp, current.combat.playerMaxHp);
+  assert.equal(current.playerStatusUi?.block, current.combat.block);
+  assert.equal(current.playerStatusUi?.energy, current.combat.energy);
 
   const damageEvent = current.combat.events.find((event) => event.type === "PLAYER_DAMAGED");
   if (damageEvent && damageEvent.payload?.damage > 0) {
@@ -339,7 +352,7 @@ function assertNoInvalidNumbers(current) {
 function assertNoCombatPanelSurfaceAssets(current) {
   const removedRoles = new Set(["combat-ui:player-panel", "combat-ui:top-resource", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]);
   const stillRendered = current.visibleAssets?.filter((asset) => removedRoles.has(asset.role)) ?? [];
-  assert.deepEqual(stillRendered, [], "combat status/progress/ticker/action/hand regions should use black translucent Phaser regions, not UI image assets.");
+  assert.deepEqual(stillRendered, [], "combat progress/ticker/action/hand regions should use black translucent Phaser regions; player status should use the accepted player-status-base asset.");
 }
 
 function assertTurnActionStatusContentInsideFrame(current) {

@@ -155,6 +155,26 @@ Rules:
 | `public/assets/ui/combat/hand-tray.png` | `combatHandTray` | 940x230 | Yes | Bottom card tray/rail. |
 | `public/assets/ui/combat/drop-zone.png` | `combatDropZone` | 280x210 | Yes | Drag/drop hint surface. |
 
+### Combat Player Status UI Component Assets
+
+These assets support the left-top combat player status region. They follow `externals/battle-design-proposal-1.png` and `public/assets/ui/combat/battle-bg.png`, using a low-noise dark street arcade device style.
+
+Rules:
+
+- Store final runtime files under `public/assets/ui/combat/`.
+- Redraw these files while looking at `externals/battle-design-proposal-1.png`; do not crop, mask, trace pixels, or process the source image into runtime assets. Do not reinterpret them as a new design.
+- Keep every gameplay value Phaser-rendered. Do not embed HP, energy, block, deck counts, Chinese labels, numbers, or letters in the image.
+- Use transparent PNGs with clean empty slots for Phaser text, bars, and any necessary low-priority runtime text.
+- Preserve proposal-1 dark glass, rough white outline, cyan energy plate, green block plate, magenta/yellow trim, and subtle scuffs.
+- The player shell should faithfully redraw the skull/crown emblem because it is part of the confirmed main visual. Do not introduce new characters, mascots, cards, enemies, or watermark.
+
+| File | Size | Transparency | Purpose |
+| --- | ---: | --- | --- |
+| `public/assets/ui/combat/player-status-base.png` | 420x240 | Yes | Accepted redrawn style-teradadara-like complete left-top player status base: HP lane is transparent for runtime fill, block plate is opaque. |
+| `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | Yes | Local HP fill slot aligned to the base HP lane. |
+| `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | Yes | Local cyan energy value area aligned to the base energy plate. |
+| `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | Yes | Local green block value area aligned to the base block plate. |
+
 ### Placeholders
 
 | File | Slot |
