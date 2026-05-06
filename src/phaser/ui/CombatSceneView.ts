@@ -90,8 +90,8 @@ export function renderCombatPlayerPanel(
   if (base) root.add(base);
 
   root.add(statusText(scene, 212, 92, `${status.hp}/${status.maxHp}`, 21, "#fff8d8", 0.5));
-  root.add(statusText(scene, 158, 146, `${status.energy}/${status.maxEnergy}`, 20, "#062024", 0.5));
-  root.add(statusText(scene, 274, 146, `${status.block}`, 20, status.hasBlock ? "#102112" : "#2b3429", 0.5));
+  root.add(statusText(scene, 158, 137, `${status.energy}/${status.maxEnergy}`, 20, "#062024", 0.5));
+  root.add(statusText(scene, 271, 137, `${status.block}`, 20, status.hasBlock ? "#f1ffe9" : "#c4d8bf", 0.5));
   root.add(statusText(scene, 255, 174, `牌 ${status.drawPileCount}/${status.discardPileCount}/${status.handCount}`, 11, colors.muted, 0.5));
   return root;
 }

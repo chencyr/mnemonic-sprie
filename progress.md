@@ -54,6 +54,12 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Manual Playwright combat verification wrote `output/manual-combat-player-status/combat.png`, `state.json`, and `errors.json`.
   - Visual review confirmed the accepted redrawn left-top player status asset is visible, HP fill appears through the transparent aperture, and HP/energy/block text is readable without covering enemies, hand cards, or the turn device.
   - Manual state confirmed `playerStatusUi.visible === true`, `reference === "battle-design-proposal-1"`, and no console/page errors.
+- Follow-up alignment fix:
+  - User reported energy and block values were not aligned in the running app.
+  - Root cause from screenshot: energy text was vertically low; block text was on the wrong horizontal center and too dark for the green value plate.
+  - Adjusted energy text to `158,137`; adjusted block text to `271,137` and a lighter readable color.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-final/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
