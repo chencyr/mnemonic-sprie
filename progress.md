@@ -248,3 +248,9 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Added pure `src/phaser/combat/enemyPresentationState.ts`.
   - Added Vitest coverage for newly dead enemies entering `dying`, due transitions becoming `dead`, stale dead enemies staying dead, new combat reset, and quick-mode duration.
   - Verified with `npm test -- tests/phaser/enemyPresentationState.test.ts`.
+- Task 2-5 complete:
+  - `EnemyView` now renders enemies from Phaser presentation state and disables target interaction for non-alive presentation states.
+  - `GameScene` now owns `enemyPresentationStates`, reconciles new deaths during combat render, and gates `completeCurrentCombat()` until death presentation transitions finish.
+  - `window.render_game_to_text()` exposes `combatEnemyArena` and each enemy's `gameplayState` / `presentationState`.
+  - Quick E2E death presentation duration is 250ms so tests can observe the `dying` state without slowing the run.
+  - Verified targeted tests, build, and `npm run test:e2e`.
