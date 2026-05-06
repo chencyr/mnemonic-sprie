@@ -17,7 +17,16 @@
     "nodeBoss": "ui/nodes/boss.png",
     "intentAttack": "ui/intents/attack.png",
     "intentBlock": "ui/intents/block.png",
-    "intentDebuff": "ui/intents/debuff.png"
+    "intentDebuff": "ui/intents/debuff.png",
+    "combatBattleBg": "ui/combat/battle-bg.png",
+    "combatPlayerPanel": "ui/combat/player-panel.png",
+    "combatTopResourceFrame": "ui/combat/top-resource-frame.png",
+    "combatTurnDevice": "ui/combat/turn-device.png",
+    "combatTickerPanel": "ui/combat/combat-ticker-panel.png",
+    "combatEnemyPlatform": "ui/combat/enemy-platform.png",
+    "combatTargetRing": "ui/combat/target-ring.png",
+    "combatHandTray": "ui/combat/hand-tray.png",
+    "combatDropZone": "ui/combat/drop-zone.png"
   },
   "audio": {
     "cardPlayed": "audio/sfx/card-played.ogg",

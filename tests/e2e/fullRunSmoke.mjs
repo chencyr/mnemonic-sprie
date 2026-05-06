@@ -25,6 +25,12 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetPrefix(current, "enemy:", "combat");
   assertVisibleAssetPrefix(current, "card:", "combat");
   assertVisibleAssetPrefix(current, "ui:intent", "combat");
+  assertVisibleAssetRole(current, "combat-ui:background", "combat");
+  assertNoCombatPanelSurfaceAssets(current);
+  assert.equal(current.combatUi?.reference, "battle-design-proposal-3");
+  for (const role of ["combat-ui:background"]) {
+    assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
+  }
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
@@ -204,6 +210,9 @@ async function assertDragAttackAutoTargets(page) {
   if (!attack) return;
   const enemyBefore = current.combat.enemies.find((enemy) => enemy.state === "alive");
   assert.ok(enemyBefore, "Expected a living enemy before drag attack.");
+  current = await clickButton(page, `card:${attack.id}`);
+  assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:enemy-platform"), "combat should render enemy platform assets.");
+  assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:target-ring"), "combat should render target ring assets when targeting.");
   current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
   const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
   assert.ok(enemyAfter && enemyAfter.hp < enemyBefore.hp, "Dragging attack to battlefield should damage auto target.");
@@ -304,6 +313,12 @@ function assertNoInvalidNumbers(current) {
       assert.ok(["alive", "dead"].includes(enemy.state), `enemy state should be lifecycle state: ${enemy.id}`);
     }
   }
+}
+
+function assertNoCombatPanelSurfaceAssets(current) {
+  const removedRoles = new Set(["combat-ui:player-panel", "combat-ui:top-resource", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]);
+  const stillRendered = current.visibleAssets?.filter((asset) => removedRoles.has(asset.role)) ?? [];
+  assert.deepEqual(stillRendered, [], "combat status/progress/ticker/action/hand regions should use black translucent Phaser regions, not UI image assets.");
 }
 
 function chooseMapButton(current, visitedScreens) {

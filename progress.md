@@ -174,3 +174,66 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `24-combat-enemy-arena-region-backlog.md`
   - `25-game-settings-audio-entry-backlog.md`
 - Updated `backlogs/00-index-backlog.md` so these region-focused UI backlogs are scheduled after `18-combat-scene-ui-implementation-backlog.md` and before the next gameplay-flow backlogs.
+
+## 2026-05-06 Combat Scene UI Implementation
+
+- Continuing in `.worktrees/combat-scene-ui-implementation` on branch `feature/combat-scene-ui-implementation`.
+- Goal: implement `docs/superpowers/specs/2026-05-06-combat-scene-ui-implementation-design.md`.
+- Primary visual reference: `externals/battle-design-proposal-3.png`.
+- Secondary visual reference: `externals/battle-design-proposal-4.png`.
+- Required strategy: first audit/update combat UI assets and `docs/assets`, then implement Phaser combat UI.
+- User explicitly limited this pass to plan Task 1-2 only: asset audit/docs and combat UI asset image creation.
+- Use `imagegen` according to the written asset specifications for generated UI assets.
+- Task 0 complete: moved backlog 18 into `backlogs/in-progress/` and committed the state transition.
+- Task 1 complete: added `docs/assets/combat-ui-asset-audit.md`, combat UI surface specs, and nine image-generation prompt entries.
+- Task 2 complete: created nine runtime combat UI PNGs under `public/assets/ui/combat/`.
+- Generation note: local `magick` was unavailable, so the contact sheet was generated with Pillow at `output/combat-ui-assets-contact-sheet.png`.
+- Verification:
+  - `sips -g pixelWidth -g pixelHeight public/assets/ui/combat/*.png` confirmed the expected image sizes.
+  - Pillow alpha validation confirmed `battle-bg.png` is opaque and the eight panel/overlay assets have transparent corners and non-empty alpha.
+  - Contact sheet visual review confirmed the assets contain no embedded gameplay text.
+- Stopping here by user request; Task 3 asset registry and Phaser UI implementation are intentionally not started.
+- User approved regenerating the nine combat UI PNGs with the `style-teradadara-like` direction.
+- Regeneration constraints:
+  - Use `externals/battle-design-proposal-3.png` and `externals/battle-design-proposal-4.png` as references only, not as source images to copy.
+  - Preserve exact runtime filenames, dimensions, and transparency requirements.
+  - Keep all gameplay text dynamic in Phaser; generated images must not include readable gameplay labels.
+- After regeneration, continue executing the plan from Task 3 through completion with `superpowers:executing-plans` plus `develop-web-game`.
+- Task 3 complete: registered combat UI assets in `src/data/assets.json` and `createAssetRegistry().getCombatUiAsset(...)`.
+- Task 4 complete: added combat scene layout helpers and layout tests.
+- Task 5 complete: rendered combat background, player panel, top resource frame, ticker surface, hand tray, and turn device.
+- Task 6 complete: added enemy platform, target ring, proposal-style enemy poses, hand card arc placement, and narrow ticker rows.
+- Task 7 complete: `window.render_game_to_text()` now exposes `combatUi.reference` and combat UI asset roles.
+- Combat scene UI automated verification passed:
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+- develop-web-game verification passed for combat scene UI:
+  - `$WEB_GAME_CLIENT` wrote screenshot/state to `output/web-game-combat-scene-ui/`.
+  - Manual Playwright wrote screenshots/state to `output/manual-combat-scene-ui/`.
+  - Visual review confirmed proposal-3 combat layout direction, regenerated combat UI assets, readable dynamic text, intact drag attack, and intact death transition.
+  - Console/page errors were empty.
+- Completed `18-combat-scene-ui-implementation-backlog.md`.
+- Backlog moved to `backlogs/done/18-combat-scene-ui-implementation-backlog.md`.
+- Branch is ready for merge after user visual review.
+- User rejected the regenerated combat background as too visually noisy.
+- Replaced only `public/assets/ui/combat/battle-bg.png` with a proposal-1-inspired dark street corridor background:
+  - Cleaner central combat stage.
+  - Subdued side graffiti.
+  - Dark lower card readability zone.
+  - No crowded mascot sticker collage in the playable field.
+- Updated `docs/assets/image-generation-prompts.jsonl` and `docs/assets/combat-ui-asset-audit.md` so future regeneration keeps the quieter proposal-1 background direction.
+- User requested the next generation session use proposal-1 as the primary reference and recreate the same background plate. Updated the `battle-bg.png` JSONL prompt to reference `externals/battle-design-proposal-1.png` directly and remove gameplay UI/enemies/cards/text from the generated background.
+- Regenerated `public/assets/ui/combat/battle-bg.png` with the built-in `imagegen` workflow using the `docs/assets/image-generation-prompts.jsonl` battle background prompt and `externals/battle-design-proposal-1.png` as the visible reference.
+- Verified regenerated background:
+  - Resized/saved runtime asset to 1920x1080 opaque PNG.
+  - Manual Playwright screenshot written to `output/manual-imagegen-battle-bg/combat.png`.
+  - Manual state confirmed `combat-ui:background` is visible and console/page errors were empty.
+- User requested simplifying combat panel surfaces:
+  - Player status, progress status, battle ticker, turn actions, and hand tray now use black translucent Phaser rectangles instead of UI surface image assets.
+  - `測試勝利` quick test button moved to the lower-left corner.
+- Rewrote `docs/superpowers/specs/2026-05-06-combat-scene-ui-implementation-design.md` and `docs/superpowers/plans/2026-05-06-combat-scene-ui-implementation-plan.md` to match the simplified combat UI direction:
+  - proposal-1 background as the primary background reference.
+  - no generated UI surface assets for player status, progress status, battle ticker, turn actions, or hand area.
+  - black translucent Phaser regions for those five areas.
+  - Codex in-app browser verification requirement.

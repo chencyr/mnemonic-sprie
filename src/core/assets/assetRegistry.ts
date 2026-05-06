@@ -7,6 +7,16 @@ export interface AssetEntry {
 
 export type IntentIconType = "attack" | "block" | "debuff" | "mixed";
 export type AudioAssetKey = keyof GameData["assets"]["audio"];
+export type CombatUiAssetKey =
+  | "battleBg"
+  | "playerPanel"
+  | "topResourceFrame"
+  | "turnDevice"
+  | "tickerPanel"
+  | "enemyPlatform"
+  | "targetRing"
+  | "handTray"
+  | "dropZone";
 
 export interface AssetRegistry {
   getCardArt(cardId: string): AssetEntry;
@@ -15,6 +25,7 @@ export interface AssetRegistry {
   getEventImage(eventId: string): AssetEntry;
   getNodeIcon(nodeType: NodeType): AssetEntry;
   getIntentIcon(intentType: IntentIconType): AssetEntry;
+  getCombatUiAsset(assetKey: CombatUiAssetKey): AssetEntry;
   getContractIcon(contractId: string): AssetEntry;
   getMemorySticker(memoryType: MemoryType | "empty"): AssetEntry;
   getAudio(audioKey: AudioAssetKey): AssetEntry;
@@ -36,6 +47,18 @@ const intentIconKeys: Record<IntentIconType, keyof GameData["assets"]["ui"]> = {
   block: "intentBlock",
   debuff: "intentDebuff",
   mixed: "intentAttack"
+};
+
+const combatUiAssetKeys: Record<CombatUiAssetKey, keyof GameData["assets"]["ui"]> = {
+  battleBg: "combatBattleBg",
+  playerPanel: "combatPlayerPanel",
+  topResourceFrame: "combatTopResourceFrame",
+  turnDevice: "combatTurnDevice",
+  tickerPanel: "combatTickerPanel",
+  enemyPlatform: "combatEnemyPlatform",
+  targetRing: "combatTargetRing",
+  handTray: "combatHandTray",
+  dropZone: "combatDropZone"
 };
 
 const memoryStickerPaths: Record<MemoryType | "empty", string> = {
@@ -102,6 +125,9 @@ export function createAssetRegistry(data: GameData): AssetRegistry {
     },
     getIntentIcon(intentType) {
       return uiEntry(intentIconKeys[intentType]);
+    },
+    getCombatUiAsset(assetKey) {
+      return uiEntry(combatUiAssetKeys[assetKey]);
     },
     getContractIcon(contractId) {
       return contractEntry(contracts.get(contractId), contractId);

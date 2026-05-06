@@ -58,6 +58,8 @@
 - `docs/assets/` 是素材生成規格與生成方式的主要位置。
 - 這裡的內容用於重新生成、修正錯誤素材、檢查素材槽規格。
 - 給 image generation / image2 使用的 prompt、規格、風格限制、檔名與尺寸要求都應寫在這裡。
+- 畫任何素材圖時，必須先讀取並遵守 `docs/assets/image-generation-prompts.jsonl` 中對應素材槽的定義；不得只依照對話中的臨時描述、個人判斷或未記錄 prompt 直接生成。
+- 若要變更素材風格、尺寸、透明度、參考圖、排除項或輸出路徑，必須先更新 `docs/assets/image-generation-prompts.jsonl` 與必要的 `docs/assets/*` 規格文件，再重新生成素材。
 - 程式碼引用素材時，應優先透過資料表與 asset registry，不要硬編素材路徑。
 
 ### `backlogs/`
@@ -115,5 +117,8 @@
   - `npm test`
   - `npm run build`
   - `npm run test:e2e`
-- 若修改 UI，必須用瀏覽器或 Playwright 截圖檢查相關畫面。
+- 若修改 UI，必須用 Codex app 的 in-app browser 或專案自動化 Playwright 截圖檢查相關畫面。
+- 所有互動式、人工視覺檢查、local URL 導頁與 browser smoke test，都必須使用 Codex app browser / browser-use / MCP Playwright 的 in-app browser target。
+- 不得使用 macOS `open`、Chrome、Safari、Firefox 或其他使用者自行安裝的外部瀏覽器來替代 Codex app browser 測試。
+- 若需要自動化瀏覽器測試，只能使用專案測試指令、`$WEB_GAME_CLIENT` 或等效的工具化/headless Playwright 流程；不得開啟 app 外部的使用者瀏覽器。
 - 若修改遊戲流程，必須更新 `window.render_game_to_text()` 或 E2E，讓測試能觀察新增狀態。
