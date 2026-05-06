@@ -254,3 +254,11 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `window.render_game_to_text()` exposes `combatEnemyArena` and each enemy's `gameplayState` / `presentationState`.
   - Quick E2E death presentation duration is 250ms so tests can observe the `dying` state without slowing the run.
   - Verified targeted tests, build, and `npm run test:e2e`.
+- develop-web-game / Codex in-app browser verification passed for combat enemy arena:
+  - `$WEB_GAME_CLIENT` wrote title screenshots/state to `output/web-game-combat-enemy-arena/`.
+  - Manual Playwright wrote death-transition screenshots/state to `output/manual-combat-enemy-arena/`.
+  - Enemy death enters `dying` presentation state.
+  - Dead/dying enemies are not targetable.
+  - Reward waits for enemy death presentation completion.
+  - `window.render_game_to_text()` exposes `combatEnemyArena`.
+  - Console/page errors were empty in the manual death-transition scenario.
