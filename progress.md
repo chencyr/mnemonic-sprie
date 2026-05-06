@@ -219,3 +219,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - User requested simplifying combat panel surfaces:
   - Player status, progress status, battle ticker, turn actions, and hand tray now use black translucent Phaser rectangles instead of UI surface image assets.
   - `測試勝利` quick test button moved to the lower-left corner.
+- Rewrote `docs/superpowers/specs/2026-05-06-combat-scene-ui-implementation-design.md` and `docs/superpowers/plans/2026-05-06-combat-scene-ui-implementation-plan.md` to match the simplified combat UI direction:
+  - proposal-1 background as the primary background reference.
+  - no generated UI surface assets for player status, progress status, battle ticker, turn actions, or hand area.
+  - black translucent Phaser regions for those five areas.
+  - Codex in-app browser verification requirement.
