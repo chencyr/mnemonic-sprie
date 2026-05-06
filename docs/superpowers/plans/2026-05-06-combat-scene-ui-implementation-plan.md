@@ -4,7 +4,7 @@
 
 **Goal:** Implement the confirmed readable combat UI direction: proposal-1 style combat background, Phaser-rendered black translucent regions for the five main UI zones, and preserved combat interactions/test observability.
 
-**Current Direction:** Do not render generated UI surface images for player status, progress status, combat ticker, turn action area, or hand area. Only the combat background, enemy platform, existing cards/enemies/intents/stickers should use image assets. Target selection uses invisible interaction zones rather than a visible target ring/frame.
+**Current Direction:** Do not render generated UI surface images for player status, progress status, combat ticker, turn action area, or hand area. Only the combat background and existing cards/enemies/intents/stickers should use image assets. Target selection uses invisible interaction zones rather than a visible target ring/frame, and enemies use a simple Phaser ellipse shadow instead of decorative platform art.
 
 **Tech Stack:** Phaser 3, TypeScript, Vite, Vitest, Playwright E2E, Codex in-app browser / MCP Playwright, develop-web-game client.
 
@@ -17,7 +17,7 @@
 - `docs/assets/combat-ui-asset-audit.md`: record combat asset decisions.
 - `public/assets/ui/combat/battle-bg.png`: runtime combat background.
 - `src/phaser/ui/CombatSceneView.ts`: combat layout constants and Phaser-rendered UI regions.
-- `src/phaser/ui/EnemyView.ts`: enemy platform rendering and invisible target interaction zones.
+- `src/phaser/ui/EnemyView.ts`: enemy shadow rendering, subtle alive idle motion, and invisible target interaction zones.
 - `src/scenes/GameScene.ts`: combat composition and button placement.
 - `tests/e2e/fullRunSmoke.mjs`: visible asset and interaction coverage.
 - `progress.md`: progress and verification notes.
@@ -351,7 +351,7 @@ Expected: feature branch is updated on GitHub.
 - `battle-bg.png` follows the `docs/assets/image-generation-prompts.jsonl` definition and proposal-1 reference direction.
 - Player status, progress status, battle ticker, turn actions, and hand area render as black translucent Phaser regions.
 - No generated UI surface image assets are rendered for those five regions.
-- Enemy platform may still use image assets; target selection frames/rings should not render.
+- Enemy platform and target selection frames/rings should not render.
 - `測試勝利` appears in the lower-left in `?e2e=1`.
 - `npm test`, `npm run build`, and `npm run test:e2e` pass.
 - Codex in-app browser verification is used for manual visual inspection.

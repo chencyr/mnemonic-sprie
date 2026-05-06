@@ -387,3 +387,20 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-aux-ui/` with no console/page error files.
   - Manual selected-attack screenshot/state check at `output/manual-remove-target-frame/` confirmed no `combat-ui:target-ring` and an enabled invisible enemy target zone.
+- Follow-up requested:
+  - Remove the remaining `手牌` text from the hand area.
+  - Remove drag drop-zone rectangle feedback while dragging cards.
+  - Remove decorative enemy platform art and use the original simple shadow.
+  - Add a small idle motion to living enemies so they do not feel like static images.
+- Follow-up implementation complete:
+  - `renderCombatHandTray()` now returns an empty container.
+  - Drag feedback no longer draws any drop-zone stroke rectangle.
+  - `EnemyView` always uses a Phaser ellipse shadow and does not render `combat-ui:enemy-platform`.
+  - Living enemy sprites get a subtle 4px yoyo idle tween.
+- Follow-up verification passed:
+  - `npm test -- tests/phaser/combatSceneLayout.test.ts tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-hand-target-platform/` confirmed no hand label, no enemy platform role, no target ring role, and no console/page error files.
+  - Manual dragging screenshot/state check at `output/manual-drag-no-rect/` confirmed active drag with no drop-zone rectangle visuals.

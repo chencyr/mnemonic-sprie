@@ -664,7 +664,7 @@ export class GameScene extends Phaser.Scene {
       validDropZone: drop.zone,
       hoverEnemyId: drop.enemyId
     };
-    this.updateDragFeedback(drop);
+    this.updateDragFeedback();
   }
 
   private finishCardDrag(cardInstanceId: string, pointerX: number, pointerY: number) {
@@ -710,16 +710,8 @@ export class GameScene extends Phaser.Scene {
     return { zone: "invalid" };
   }
 
-  private updateDragFeedback(drop: CardDropResult) {
-    if (!this.dragFeedback) {
-      this.dragFeedback = this.add.graphics();
-      this.root?.add(this.dragFeedback);
-    }
-    this.dragFeedback.clear();
-    const color = drop.zone === "invalid" || drop.zone === "hand" ? 0xee4266 : 0x39d98a;
-    const rect = drop.enemyId ? this.enemyDropZones.get(drop.enemyId) : drop.zone === "player" ? this.playerDropZone : drop.zone === "battlefield" ? this.battlefieldDropZone : undefined;
-    if (!rect) return;
-    this.dragFeedback.lineStyle(4, color, 0.78).strokeRect(rect.x, rect.y, rect.w, rect.h);
+  private updateDragFeedback() {
+    this.clearDragFeedback();
   }
 
   private clearDragFeedback() {
