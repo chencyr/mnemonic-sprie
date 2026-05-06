@@ -60,6 +60,11 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Adjusted energy text to `158,137`; adjusted block text to `271,137` and a lighter readable color.
   - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-final/player-status-crop.png` reviewed; console/page errors empty.
   - Verification: `npm run build` and `npm run test:e2e` passed.
+- Follow-up alignment/no-deck fix:
+  - User asked to move energy/block values left by the same 5px and remove the `牌 ...` deck info line.
+  - Adjusted energy text to `153,137`; adjusted block text to `266,137`; removed the low-priority pile count text from `renderCombatPlayerPanel()`.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-no-deck/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
