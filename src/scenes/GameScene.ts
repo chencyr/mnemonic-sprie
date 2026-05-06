@@ -27,6 +27,7 @@ import {
 import { cameraHit, fadeOutOnDeath, flashTarget, floatText, shakeTarget, type FxTarget } from "../phaser/fx/combatFx";
 import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/combatEventDiff";
 import { activeFeedbackItems, mapCombatEventsToFeedback, tickerItems, type CombatFeedbackItem } from "../phaser/fx/combatFeedback";
+import { enemyPresentationState, type EnemyPresentationStateMap } from "../phaser/combat/enemyPresentationState";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import {
@@ -167,6 +168,7 @@ export class GameScene extends Phaser.Scene {
   private dragFeedback?: Phaser.GameObjects.Graphics;
   private turnTransition?: TurnTransitionState;
   private victoryTransition?: VictoryTransitionState;
+  private enemyPresentationStates: EnemyPresentationStateMap = new Map();
   private feedbackItems: CombatFeedbackItem[] = [];
   private feedbackSequence = 0;
   private virtualNow = 0;
@@ -329,6 +331,7 @@ export class GameScene extends Phaser.Scene {
         data: this.dataModel,
         assets: this.assets,
         enemy,
+        presentationState: enemyPresentationState(this.enemyPresentationStates, enemy),
         x,
         y,
         selectedTargetEnabled: Boolean(this.selected),
