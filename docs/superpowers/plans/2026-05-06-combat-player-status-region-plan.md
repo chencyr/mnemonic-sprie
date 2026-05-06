@@ -27,7 +27,7 @@
 - Do not use `public/assets/ui/combat/player-panel.png` for this left-top runtime panel.
 - Do not render readable text from PNG assets; HP, energy, block, and pile counts remain Phaser text.
 - Do not add deck graphics into `player-status-base.png`; only Phaser text may show pile counts.
-- Use the documented alpha-cleaned `player-status-base.png`: HP lane is a transparent runtime fill aperture, and the block plate is opaque.
+- Use the documented accepted redrawn `player-status-base.png`: HP lane is a transparent runtime fill aperture, and the block plate is opaque.
 - Draw the red HP fill before drawing `player-status-base.png`.
 - Use Codex app browser / develop-web-game style verification for visual inspection; do not use an external browser.
 
@@ -639,7 +639,7 @@ Also inspect console/page errors. Expected: no console errors and no page errors
 Inspect the latest combat screenshot and confirm:
 
 - Left-top UI uses `player-status-base.png`.
-- The base asset matches the accepted original style-teradadara-like trial, except for the approved alpha cleanup.
+- The base asset matches the accepted style-teradadara-like redraw.
 - The HP fill appears through the transparent HP aperture and does not leak outside the framed slot.
 - Energy and block runtime text sit on the intended lanes, and the block plate does not look translucent.
 - HP, energy, and block text remain readable at 1280x720.

@@ -106,7 +106,7 @@
 
 - 面板底為深色 street HUD 裝置，PNG 背景透明。
 - 邊框使用 proposal-1 的低噪音 cyan / magenta / yellow 切角線，不使用高彩度角色面板。
-- HP bar、能量板與格擋板沿用已接受原始生成圖的幾何形狀；動態數值由 Phaser 疊文字。
+- HP bar、能量板與格擋板沿用已接受重畫圖的幾何形狀；動態數值由 Phaser 疊文字。
 - 低 HP warning 可使用短暫 pulse 或邊框色變，不使用大幅 shake。
 - 格擋增加時可沿用既有 combat feedback 的浮字語言，但玩家狀態區本身應顯示數值變化後的穩定狀態。
 
@@ -184,8 +184,8 @@ playerStatusUi: {
 
 目前已確認採用 `public/assets/ui/combat/player-status-base.png` 作為正式 runtime 底板。這張底板有三個重要約束：
 
-- 必須保留已接受的原始 `style-teradadara-like` trial 圖外觀，不再後處理成另一張不同設計。
-- 唯一允許的後處理是 alpha cleanup：HP 長條挖空成可由 Phaser 填色的透明孔，格擋板補成不半透明。
+- 必須使用已接受的 `style-teradadara-like` 重畫版，不回退到舊 trial 或舊 alpha-cleanup 版本。
+- HP 長條背景必須挖空成可由 Phaser 填色的透明孔，格擋板必須不半透明。
 - 牌堆資訊不放入這個底板，避免違背主視覺左上元件結構。
 
 可使用的既有素材：
@@ -197,7 +197,7 @@ playerStatusUi: {
 
 | Runtime Use | Asset | Size | Role |
 | --- | --- | ---: | --- |
-| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 採用已接受的原始 style-teradadara-like trial，只做 alpha cleanup：HP 長條透明可填色，格擋板不半透明。 |
+| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 採用已接受的 style-teradadara-like 重畫版：HP 長條透明可填色，格擋板不半透明。 |
 | HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的輔助槽位規格；runtime 不應為了填色修改正式底板本身。 |
 | 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的輔助規格；runtime 主要使用底板上的能量區並疊 Phaser 文字。 |
 | 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的輔助規格；runtime 主要使用底板上的格擋區並疊 Phaser 文字。 |
@@ -219,7 +219,7 @@ playerStatusUi: {
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
 - 不得包含敵人、卡牌、浮水印或新角色；shell 應忠實重畫主視覺左上原本的骷髏/皇冠 emblem，因為它是已確認主視覺的一部分。
 - 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
-- 正式底板必須保持已接受圖的原貌；除 HP 透明孔與格擋不半透明這兩項 alpha cleanup 外，不得改寫這張 base。
+- 正式底板必須保持已接受重畫圖的外觀；後續不得改回舊素材或重新設計另一套 UI。
 
 ## 測試與驗收策略
 
