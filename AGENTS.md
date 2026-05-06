@@ -13,6 +13,7 @@
 ## 已確認 UI 方向
 
 - 整體遊戲 UI 重設計方向已確認為 **B：爬塔戰鬥介面 UI**。
+- 戰鬥主視覺已確認為 `externals/battle-design-proposal-1.png`；後續戰鬥畫面 UI、背景與局部區域設計應以此作為主要視覺基準。
 - 目標是保留 deckbuilder 玩家熟悉的清楚版面，同時大量使用現有素材，而不是只用文字按鈕。
 - 後續 UI redesign 應優先使用：
   - `public/assets/cards/*`
