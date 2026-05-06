@@ -9,6 +9,7 @@ import {
   createRun,
   effectiveCardCost,
   endRunTurn,
+  getCombatTurnActionState,
   isEnemyAlive,
   leaveShop,
   playRunCard,
@@ -46,9 +47,9 @@ import {
   renderCombatHandTray,
   renderCombatPlayerPanel,
   renderCombatTickerSurface,
-  renderCombatTopResource,
-  renderCombatTurnDevice
+  renderCombatTopResource
 } from "../phaser/ui/CombatSceneView";
+import { deriveTurnActionUiSnapshot, getTurnActionUiLayout, renderTurnActionView, type TurnActionUiLayoutSnapshot, type TurnActionUiSnapshot } from "../phaser/ui/TurnActionView";
 import { renderEnemyView } from "../phaser/ui/EnemyView";
 import { renderEventView } from "../phaser/ui/EventView";
 import { HUD_FONT, renderHudShell } from "../phaser/ui/HudView";
@@ -130,6 +131,8 @@ interface TextSnapshot {
     message: string;
   };
   combatEnemyArena?: ReturnType<typeof createEnemyPresentationSnapshot>;
+  turnActionUi?: TurnActionUiSnapshot;
+  turnActionLayout?: TurnActionUiLayoutSnapshot;
   feedback: {
     active: CombatFeedbackItem[];
     ticker: CombatFeedbackItem[];
@@ -405,11 +408,18 @@ export class GameScene extends Phaser.Scene {
       this.root?.add(cardView);
       this.registerCardInput(cardView, card.instanceId, pose.x, pose.y, effectiveCardCost(this.dataModel, card) <= combat.player.energy && !this.turnTransition && !this.victoryTransition);
     });
-    const turnDevice = renderCombatTurnDevice(this, combat.turn, combat.player.energy);
-    this.root?.add(turnDevice);
-    this.button("end-turn", "結束回合", combatLayout.turnDevice.x + 48, combatLayout.turnDevice.y + 92, 142, 54, () => {
-      this.beginTurnTransition("manual");
-    }, !this.turnTransition && !this.victoryTransition);
+    const turnActionUi = this.currentTurnActionUiSnapshot();
+    this.root?.add(
+      renderTurnActionView({
+        scene: this,
+        context: this.uiContext(),
+        assets: this.assets,
+        x: WIDTH - 330,
+        y: 492,
+        snapshot: turnActionUi,
+        onEndTurn: () => this.beginTurnTransition("manual")
+      })
+    );
     if (this.quick) {
       this.button("auto-win", "測試勝利", 24, 656, 132, 40, () => {
         autoWinCombat(this.engine);
@@ -658,7 +668,7 @@ export class GameScene extends Phaser.Scene {
       validDropZone: drop.zone,
       hoverEnemyId: drop.enemyId
     };
-    this.updateDragFeedback(drop);
+    this.updateDragFeedback();
   }
 
   private finishCardDrag(cardInstanceId: string, pointerX: number, pointerY: number) {
@@ -704,16 +714,8 @@ export class GameScene extends Phaser.Scene {
     return { zone: "invalid" };
   }
 
-  private updateDragFeedback(drop: CardDropResult) {
-    if (!this.dragFeedback) {
-      this.dragFeedback = this.add.graphics();
-      this.root?.add(this.dragFeedback);
-    }
-    this.dragFeedback.clear();
-    const color = drop.zone === "invalid" || drop.zone === "hand" ? 0xee4266 : 0x39d98a;
-    const rect = drop.enemyId ? this.enemyDropZones.get(drop.enemyId) : drop.zone === "player" ? this.playerDropZone : drop.zone === "battlefield" ? this.battlefieldDropZone : undefined;
-    if (!rect) return;
-    this.dragFeedback.lineStyle(4, color, 0.78).strokeRect(rect.x, rect.y, rect.w, rect.h);
+  private updateDragFeedback() {
+    this.clearDragFeedback();
   }
 
   private clearDragFeedback() {
@@ -949,6 +951,13 @@ export class GameScene extends Phaser.Scene {
     this.activeMusic = nextMusic;
   }
 
+  private currentTurnActionUiSnapshot(): TurnActionUiSnapshot {
+    return deriveTurnActionUiSnapshot(getCombatTurnActionState(this.engine), {
+      turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
+      victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined
+    });
+  }
+
   private snapshot(): TextSnapshot {
     const run = this.engine.run;
     const combat = run.currentCombat;
@@ -963,6 +972,8 @@ export class GameScene extends Phaser.Scene {
       turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
       victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
       combatEnemyArena: combat ? createEnemyPresentationSnapshot(this.enemyPresentationStates, combat.enemies) : undefined,
+      turnActionUi: run.mode === "combat" ? this.currentTurnActionUiSnapshot() : undefined,
+      turnActionLayout: run.mode === "combat" ? getTurnActionUiLayout(WIDTH - 330, 492, this.currentTurnActionUiSnapshot()) : undefined,
       feedback: this.feedbackSnapshot(),
       combatUi:
         run.mode === "combat"

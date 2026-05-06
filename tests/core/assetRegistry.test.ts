@@ -140,6 +140,26 @@ describe("asset registry", () => {
       key: "ui:combatPlayerStatusBlockValueSlot",
       path: "/assets/ui/combat/player-status-block-value-slot.png"
     });
+    expect(registry.getCombatUiAsset("endTurnButtonPlate")).toEqual({
+      key: "ui:combatEndTurnButtonPlate",
+      path: "/assets/ui/combat/end-turn-button-plate.png"
+    });
+    expect(registry.getCombatUiAsset("endTurnLabel")).toEqual({
+      key: "ui:combatEndTurnLabel",
+      path: "/assets/ui/combat/end-turn-label.png"
+    });
+    expect(registry.getCombatUiAsset("enemyTurnLabel")).toEqual({
+      key: "ui:combatEnemyTurnLabel",
+      path: "/assets/ui/combat/enemy-turn-label.png"
+    });
+    expect(registry.getCombatUiAsset("turnEnergyFrame")).toEqual({
+      key: "ui:combatTurnEnergyFrame",
+      path: "/assets/ui/combat/turn-energy-frame.png"
+    });
+    expect(registry.getCombatUiAsset("energyLightningIcon")).toEqual({
+      key: "ui:combatEnergyLightningIcon",
+      path: "/assets/ui/combat/energy-lightning-icon.png"
+    });
   });
 
   it("preloads combat UI assets from asset data", () => {
@@ -157,6 +177,26 @@ describe("asset registry", () => {
     expect(entries).toContainEqual({
       key: "ui:combatPlayerStatusBase",
       path: "/assets/ui/combat/player-status-base.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatEndTurnButtonPlate",
+      path: "/assets/ui/combat/end-turn-button-plate.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatEndTurnLabel",
+      path: "/assets/ui/combat/end-turn-label.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatEnemyTurnLabel",
+      path: "/assets/ui/combat/enemy-turn-label.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatTurnEnergyFrame",
+      path: "/assets/ui/combat/turn-energy-frame.png"
+    });
+    expect(entries).toContainEqual({
+      key: "ui:combatEnergyLightningIcon",
+      path: "/assets/ui/combat/energy-lightning-icon.png"
     });
   });
 });

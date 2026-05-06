@@ -36,9 +36,20 @@ await withGamePage(async ({ page }) => {
   assert.equal(current.playerStatusUi?.block, current.combat.block);
   assert.equal(current.playerStatusUi?.energy, current.combat.energy);
   assert.ok(current.playerStatusUi.assetRoles.includes("combat-ui:player-status-base"));
-  for (const role of ["combat-ui:background", "combat-ui:player-status-base"]) {
+  assert.equal(current.turnActionUi?.state, "playerReady");
+  assert.equal(current.turnActionUi?.labelAsset, "endTurnLabel");
+  assert.equal(current.turnActionUi?.endTurnEnabled, true);
+  for (const role of [
+    "combat-ui:background",
+    "combat-ui:player-status-base",
+    "combat-ui:turn-energy-frame",
+    "combat-ui:energy-lightning-icon-0",
+    "combat-ui:end-turn-button-plate",
+    "combat-ui:end-turn-label"
+  ]) {
     assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
   }
+  assertTurnActionStatusContentInsideFrame(current);
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
   await screenshot(page, "combat");
   exploratory.requiredScreens.add("combat");
@@ -184,6 +195,7 @@ async function assertVictoryTransitionDelaysReward(page) {
   assert.ok(current.feedback?.center?.some((item) => item.type === "death"), "Enemy death should surface as center combat feedback.");
   assert.ok(current.feedback?.ticker?.some((item) => item.type === "death"), "Enemy death should surface in combat ticker.");
   assert.ok(current.victoryTransition, "Victory should wait for death presentation.");
+  assert.equal(current.turnActionUi?.state, "victoryPresentation");
   assert.equal(current.reward, undefined);
   assert.ok(!current.buttons.find((button) => button.id === "end-turn")?.enabled, "End turn should be disabled during victory presentation.");
   assert.ok(!current.buttons.find((button) => button.id === "auto-win")?.enabled, "Test win shortcut should be disabled during victory presentation.");
@@ -224,8 +236,9 @@ async function assertDragAttackAutoTargets(page) {
   const enemyBefore = current.combat.enemies.find((enemy) => enemy.state === "alive");
   assert.ok(enemyBefore, "Expected a living enemy before drag attack.");
   current = await clickButton(page, `card:${attack.id}`);
-  assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:enemy-platform"), "combat should render enemy platform assets.");
-  assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:target-ring"), "combat should render target ring assets when targeting.");
+  assert.ok(!current.visibleAssets?.some((asset) => asset.role === "combat-ui:enemy-platform"), "combat should not render decorative enemy platform assets.");
+  assert.ok(!current.visibleAssets?.some((asset) => asset.role === "combat-ui:target-ring"), "combat should not render target-ring selection visuals.");
+  assert.ok(current.buttons.some((button) => button.id.startsWith("enemy:") && button.enabled), "Selecting an attack should still expose invisible enemy target zones.");
   current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
   const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
   assert.ok(enemyAfter && enemyAfter.hp < enemyBefore.hp, "Dragging attack to battlefield should damage auto target.");
@@ -256,6 +269,10 @@ async function assertAutoEndTurnMessage(page) {
   if (current.mode !== "combat") return;
   if (current.turnTransition?.kind === "autoNoPlayableCards") {
     assert.match(current.turnTransition.message, /自動結束回合/);
+    assert.equal(current.turnActionUi?.state, "autoEndingNoPlayableCards");
+    assert.equal(current.turnActionUi?.labelAsset, "enemyTurnLabel");
+    assert.equal(current.turnActionUi?.endTurnEnabled, false);
+    assert.equal(current.turnActionUi?.endTurnDisabledReason, undefined);
     await page.waitForTimeout(850);
     current = await state(page);
     assert.equal(current.turnTransition, undefined);
@@ -336,6 +353,27 @@ function assertNoCombatPanelSurfaceAssets(current) {
   const removedRoles = new Set(["combat-ui:player-panel", "combat-ui:top-resource", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]);
   const stillRendered = current.visibleAssets?.filter((asset) => removedRoles.has(asset.role)) ?? [];
   assert.deepEqual(stillRendered, [], "combat progress/ticker/action/hand regions should use black translucent Phaser regions; player status should use the accepted player-status-base asset.");
+}
+
+function assertTurnActionStatusContentInsideFrame(current) {
+  const layout = current.turnActionLayout;
+  assert.ok(layout?.statusFrame, "combat snapshot should expose turn action status frame bounds");
+  assert.ok(layout?.statusContent?.turnText, "combat snapshot should expose turn action turn text bounds");
+  assert.ok(layout?.statusContent?.energyText, "combat snapshot should expose turn action energy text bounds");
+  assert.ok(Array.isArray(layout?.statusContent?.energyIcons), "combat snapshot should expose turn action energy icon bounds");
+
+  assertBoundsInside(layout.statusContent.turnText, layout.statusFrame, "turn action turn text");
+  assertBoundsInside(layout.statusContent.energyText, layout.statusFrame, "turn action energy text");
+  for (const [index, icon] of layout.statusContent.energyIcons.entries()) {
+    assertBoundsInside(icon, layout.statusFrame, `turn action energy icon ${index}`);
+  }
+}
+
+function assertBoundsInside(inner, outer, label) {
+  assert.ok(inner.x >= outer.x, `${label} left should stay inside status frame`);
+  assert.ok(inner.y >= outer.y, `${label} top should stay inside status frame`);
+  assert.ok(inner.x + inner.w <= outer.x + outer.w, `${label} right should stay inside status frame`);
+  assert.ok(inner.y + inner.h <= outer.y + outer.h, `${label} bottom should stay inside status frame`);
 }
 
 function chooseMapButton(current, visitedScreens) {

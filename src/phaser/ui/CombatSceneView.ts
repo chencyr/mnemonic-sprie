@@ -149,10 +149,7 @@ export function renderCombatTickerSurface(scene: Phaser.Scene) {
 }
 
 export function renderCombatHandTray(scene: Phaser.Scene) {
-  const root = scene.add.container(combatLayout.handTray.x, combatLayout.handTray.y);
-  root.add(translucentRegion(scene, combatLayout.handTray.w, combatLayout.handTray.h));
-  root.add(label(scene, 12, 12, "手牌", 18, colors.ink));
-  return root;
+  return scene.add.container(combatLayout.handTray.x, combatLayout.handTray.y);
 }
 
 export function combatText(scene: Phaser.Scene, x: number, y: number, text: string, size: number, color = colors.ink) {
