@@ -45,6 +45,15 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `window.render_game_to_text()` now exposes `playerStatusUi` with values, visibility, reference, and player-status asset roles.
   - E2E now asserts `combat-ui:player-status-base`, `playerStatusUi.reference === "battle-design-proposal-1"`, and consistency with combat HP/block/energy.
   - Verification: `npm run test:e2e` passed.
+- Task 5 verification complete:
+  - `npm test` passed: 14 files / 66 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - Started Vite on `http://127.0.0.1:5177/?e2e=1`.
+  - Ran develop-web-game Playwright client; screenshots/state written to `output/web-game-combat-player-status-start/`.
+  - Manual Playwright combat verification wrote `output/manual-combat-player-status/combat.png`, `state.json`, and `errors.json`.
+  - Visual review confirmed the accepted redrawn left-top player status asset is visible, HP fill appears through the transparent aperture, and HP/energy/block text is readable without covering enemies, hand cards, or the turn device.
+  - Manual state confirmed `playerStatusUi.visible === true`, `reference === "battle-design-proposal-1"`, and no console/page errors.
 
 ## 2026-05-06 Phaser Game Feel
 
