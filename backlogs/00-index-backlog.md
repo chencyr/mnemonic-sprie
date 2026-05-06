@@ -32,19 +32,26 @@
 3. `02-drag-drop-card-play-backlog.md`
 4. `03-combat-feedback-readability-backlog.md`
 5. `18-combat-scene-ui-implementation-backlog.md`
-6. `04-turn-flow-pacing-backlog.md`
-7. `05-enemy-intent-status-clarity-backlog.md`
-8. `06-memory-visibility-mutation-backlog.md`
-9. `07-map-route-choice-backlog.md`
-10. `08-reward-drafting-depth-backlog.md`
-11. `09-event-contract-risk-backlog.md`
-12. `10-shop-rest-usability-backlog.md`
-13. `11-balance-difficulty-curve-backlog.md`
-14. `12-audio-gamefeel-backlog.md`
-15. `13-onboarding-tutorial-backlog.md`
-16. `14-save-run-session-backlog.md`
-17. `15-accessibility-responsive-backlog.md`
-18. `16-e2e-exploration-coverage-backlog.md`
+6. `19-combat-player-status-region-backlog.md`
+7. `20-combat-progress-status-region-backlog.md`
+8. `21-combat-ticker-region-backlog.md`
+9. `22-combat-turn-action-region-backlog.md`
+10. `23-combat-hand-region-backlog.md`
+11. `24-combat-enemy-arena-region-backlog.md`
+12. `25-game-settings-audio-entry-backlog.md`
+13. `04-turn-flow-pacing-backlog.md`
+14. `05-enemy-intent-status-clarity-backlog.md`
+15. `06-memory-visibility-mutation-backlog.md`
+16. `07-map-route-choice-backlog.md`
+17. `08-reward-drafting-depth-backlog.md`
+18. `09-event-contract-risk-backlog.md`
+19. `10-shop-rest-usability-backlog.md`
+20. `11-balance-difficulty-curve-backlog.md`
+21. `12-audio-gamefeel-backlog.md`
+22. `13-onboarding-tutorial-backlog.md`
+23. `14-save-run-session-backlog.md`
+24. `15-accessibility-responsive-backlog.md`
+25. `16-e2e-exploration-coverage-backlog.md`
 
 ## 共通 Definition Of Done
 

@@ -161,3 +161,16 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - E2E found and fixed one asset mapping bug: `placeholder.character` now points to `characters/seeker.png`.
 - Visual screenshot review found and fixed title overlap, overly dark card art, hard-to-read disabled map text, and overlapping reward descriptions.
 - Latest verification passed: `npm test`, `npm run build`, and `npm run test:e2e`.
+
+## 2026-05-06 Combat Region Backlog Split
+
+- Opened independent backlog items for the temporary black translucent combat regions:
+  - `19-combat-player-status-region-backlog.md`
+  - `20-combat-progress-status-region-backlog.md`
+  - `21-combat-ticker-region-backlog.md`
+  - `22-combat-turn-action-region-backlog.md`
+  - `23-combat-hand-region-backlog.md`
+- Opened additional backlog items for:
+  - `24-combat-enemy-arena-region-backlog.md`
+  - `25-game-settings-audio-entry-backlog.md`
+- Updated `backlogs/00-index-backlog.md` so these region-focused UI backlogs are scheduled after `18-combat-scene-ui-implementation-backlog.md` and before the next gameplay-flow backlogs.
