@@ -51,7 +51,7 @@ Decision: do not use this style for structural UI surfaces.
 
 ### Proposal 1 Background Plus Minimal Phaser Panels
 
-This keeps the proposal-1 dark street mood while preserving readability. It reduces generated UI dependency to the background and a small number of gameplay overlays such as enemy platform and target ring.
+This keeps the proposal-1 dark street mood while preserving readability. It reduces generated UI dependency to the background and avoids decorative combat overlays that make the battlefield too busy.
 
 Decision: confirmed.
 
@@ -76,7 +76,9 @@ Decision: confirmed.
 - Do not make the combat background a full screenshot with embedded UI.
 - Do not embed gameplay labels, card names, enemy names, HP values, or button text inside images.
 - Do not use generated panel art for the five main combat UI regions listed above.
-- Do not remove card art, enemy sprites, intent icons, memory stickers, enemy platform, or target ring assets.
+- Do not remove card art, enemy sprites, intent icons, or memory stickers.
+- Do not render hand tray surface blocks or target selection frames; keep their interaction zones invisible.
+- Do not render decorative enemy platform assets; use a simple dark ellipse shadow under enemies.
 
 ## Asset Strategy
 
@@ -87,8 +89,8 @@ All image generation must follow `docs/assets/image-generation-prompts.jsonl`.
 | Runtime Use | Asset | Decision |
 | --- | --- | --- |
 | Combat background | `public/assets/ui/combat/battle-bg.png` | Use imagegen, based on `externals/battle-design-proposal-1.png`; runtime background only. |
-| Enemy platform | `public/assets/ui/combat/enemy-platform.png` | Keep as optional enemy grounding visual. |
-| Target ring | `public/assets/ui/combat/target-ring.png` | Keep as target selection overlay. |
+| Enemy platform | `public/assets/ui/combat/enemy-platform.png` | Keep file available, but do not render at runtime; enemies use a simple Phaser ellipse shadow. |
+| Target ring | `public/assets/ui/combat/target-ring.png` | Keep file available, but do not render at runtime; targeting uses invisible interaction zones. |
 | Player status panel | `public/assets/ui/combat/player-panel.png` | Do not use at runtime. |
 | Top resource frame | `public/assets/ui/combat/top-resource-frame.png` | Do not use at runtime. |
 | Turn device | `public/assets/ui/combat/turn-device.png` | Do not use at runtime. |

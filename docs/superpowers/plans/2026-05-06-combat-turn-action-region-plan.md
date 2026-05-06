@@ -8,6 +8,8 @@
 
 **Tech Stack:** Phaser 3, TypeScript, Vite, Vitest, Playwright E2E, Codex in-app browser / develop-web-game verification.
 
+**Current visual tuning rule:** During manual or auto turn transition, the main button swaps to the `敵方回合` label asset instead of showing debug-style transition text. The large button plate rotates left about 20 degrees; the label follows the diagonal but is corrected 5 degrees back toward upright and shifted inward on the cyan button body. The turn/energy frame is about half the previous visual size, left-aligns to the large button's left edge, sits close to the button, and exposes bounds so E2E can verify status text/icons remain inside the frame.
+
 ---
 
 ## File Structure
@@ -24,22 +26,23 @@
   - Tests query states for non-combat, player-ready, no-playable-card, enemy phase, victory phase, and defeat phase.
 - Create `src/phaser/ui/TurnActionView.ts`
   - Owns `deriveTurnActionUiSnapshot()` and `renderTurnActionView()`.
-  - Renders image-backed panel/button/pips/status light while Phaser keeps all dynamic text.
+  - Renders the proposal-1-inspired button plate, separate label sprites, turn/energy frame, and repeated energy lightning icons.
 - Create `tests/phaser/turnActionView.test.ts`
   - Tests presentation mapping for manual end, auto end, enemy phase, victory presentation, player ready, and no-playable states.
 - Modify `src/core/assets/assetRegistry.ts`
-  - Add typed combat UI asset keys for the four new turn action assets.
+  - Add typed combat UI asset keys for the five new turn action assets.
 - Modify `src/data/assets.json`
-  - Add the four new UI asset entries.
+  - Add the five new UI asset entries.
 - Modify `tests/core/assetRegistry.test.ts`
-  - Assert the four new entries resolve and preload.
+  - Assert the five new entries resolve and preload.
 - Modify `docs/assets/image-generation-prompts.jsonl`
-  - Add exact prompt lines for the four new assets.
+  - Add exact prompt lines for the five new assets.
 - Create image assets during execution:
-  - `public/assets/ui/combat/turn-action-panel.png`
   - `public/assets/ui/combat/end-turn-button-plate.png`
-  - `public/assets/ui/combat/energy-pip-strip.png`
-  - `public/assets/ui/combat/turn-status-light.png`
+  - `public/assets/ui/combat/end-turn-label.png`
+  - `public/assets/ui/combat/enemy-turn-label.png`
+  - `public/assets/ui/combat/turn-energy-frame.png`
+  - `public/assets/ui/combat/energy-lightning-icon.png`
 - Modify `src/scenes/GameScene.ts`
   - Replace `renderCombatTurnDevice()` and the direct `this.button("end-turn", ...)` call with `renderTurnActionView()`.
   - Add `turnActionUi` to `window.render_game_to_text()`.
@@ -471,13 +474,14 @@ git commit -m "feat: add combat turn action state query"
 
 - [ ] **Step 1: Add exact image generation prompt lines**
 
-Append these four JSONL lines to `docs/assets/image-generation-prompts.jsonl`:
+Append or update these five JSONL lines in `docs/assets/image-generation-prompts.jsonl`:
 
 ```jsonl
-{"output":"public/assets/ui/combat/turn-action-panel.png","size":"420x260","background":"transparent","reference":"public/assets/ui/combat/battle-bg.png","prompt":"Transparent right-bottom combat turn action panel shell matching the proposal-1 dark street battle background mood: functional black glass arcade control device, asymmetric modern Japanese street UI frame, restrained cyan magenta yellow edge accents, subtle graffiti scuffs, clean empty interior zones for Phaser turn status energy text and button. No readable text, no numbers, no icons that look like letters, no characters, no card art, no enemies, no watermark. Low-noise composition, crisp transparent edges, dark neutral base, flat graphic rendering with bold marker-like contour accents but not cute mascot-heavy."}
-{"output":"public/assets/ui/combat/end-turn-button-plate.png","size":"220x88","background":"transparent","reference":"public/assets/ui/combat/battle-bg.png","prompt":"Transparent end turn button plate for a Phaser-rendered text label: dark street arcade button base, rounded hard-surface plate, high-contrast cyan magenta yellow rim accents, subtle sticker scratches, center left empty and readable for dynamic text. No readable text, no numbers, no letters, no characters, no watermark. Clean transparent edge, low visual noise, modern Japanese street game UI, flat digital marker contour, functional rather than decorative."}
-{"output":"public/assets/ui/combat/energy-pip-strip.png","size":"180x48","background":"transparent","reference":"public/assets/ui/combat/battle-bg.png","prompt":"Transparent energy pip strip holding three empty energy sockets for Phaser overlays: dark glass rail, three circular or diamond sockets, restrained cyan yellow magenta accents, street arcade device style, crisp transparent edge, no text, no numbers, no letters, no characters, no watermark. Low-noise functional UI, readable at small size, flat graphic rendering with bold marker-like edge lines."}
-{"output":"public/assets/ui/combat/turn-status-light.png","size":"96x96","background":"transparent","reference":"public/assets/ui/combat/battle-bg.png","prompt":"Transparent turn status light asset for Phaser tinting: compact warning lamp or signal lens, dark housing, cyan magenta yellow accent marks, no text, no numbers, no letters, no face, no mascot, no watermark. Must read clearly at 32px, crisp transparent edges, low-noise modern Japanese street arcade UI, flat graphic rendering with bold contour."}
+{"output":"public/assets/ui/combat/end-turn-button-plate.png","size":"340x180","background":"transparent","reference":"externals/battle-design-proposal-1.png","prompt":"Draw a new complete large end-turn button asset inspired by the proposal-1 right-bottom UI, not a crop and not a sliced reuse. The asset is one coherent transparent UI plate with a taller vertical presence: big cyan skewed polygon button body, thick white inner border, rough black marker outline and scratches, hot magenta sticker backing offset behind it, and energetic surrounding explosion/sticker burst effects in yellow, white, black, and magenta around the outside edges. The button body should feel chunky and tall, not flat or thin, with enough vertical room for a large separate Phaser text sprite. The center must remain clean and empty. Composition should already include the full button and surrounding burst in one image with balanced padding; no later programmatic cropping should be required. No readable text, no numbers, no letters, no lightning icons, no faces, no mascots, no cards, no enemies, no watermark. Crisp transparent edges, same cyan/magenta/yellow/black street-arcade palette as proposal-1."}
+{"output":"public/assets/ui/combat/end-turn-label.png","size":"220x72","background":"transparent","reference":"externals/battle-design-proposal-1.png","prompt":"Transparent Chinese text sprite for the end-turn button, matching the right-bottom UI in proposal-1 almost exactly. Text must read exactly: 結束回合. Use bold heavy black Japanese arcade/graffiti lettering, slight rough marker distress, no background plate, no outline box, no extra words, no numbers, no icons, no watermark. Keep the text centered, crisp, readable at game UI size, with transparent padding for Phaser placement."}
+{"output":"public/assets/ui/combat/enemy-turn-label.png","size":"220x72","background":"transparent","reference":"externals/battle-design-proposal-1.png","prompt":"Transparent Chinese text sprite for enemy phase state, designed as a sibling of the proposal-1 end-turn label. Text must read exactly: 敵方回合. Use bold heavy black Japanese arcade/graffiti lettering, slight rough marker distress, no background plate, no outline box, no extra words, no numbers, no icons, no watermark. Keep the text centered, crisp, readable at game UI size, with transparent padding for Phaser placement."}
+{"output":"public/assets/ui/combat/turn-energy-frame.png","size":"300x96","background":"transparent","reference":"externals/battle-design-proposal-1.png","prompt":"Transparent top status frame extracted from the right-bottom proposal-1 UI: a black glass horizontal rounded-angled rectangle with thin gold/yellow border, small beveled corner cuts, subtle grunge scuffs, and empty interior space for Phaser-rendered 回合 and 能量 labels. Do not include lightning icons, text, numbers, letters, energy pips, button plate, characters, face, cards, enemies, or watermark. Match proposal-1 proportions and gold trim closely; crisp transparent edges."}
+{"output":"public/assets/ui/combat/energy-lightning-icon.png","size":"64x64","background":"transparent","reference":"externals/battle-design-proposal-1.png","prompt":"Transparent standalone energy lightning icon copied in visual language from proposal-1 right-bottom UI: sharp cyan electric bolt with dark navy shadow and subtle marker scuff edge. No text, no numbers, no letters, no circle socket, no background frame, no watermark. Readable at 24px, centered with transparent padding, crisp edges."}
 ```
 
 - [ ] **Step 2: Add runtime asset entries**
@@ -485,13 +489,14 @@ Append these four JSONL lines to `docs/assets/image-generation-prompts.jsonl`:
 Modify the `ui` object in `src/data/assets.json` so the combat section contains these entries:
 
 ```json
-"combatTurnActionPanel": "ui/combat/turn-action-panel.png",
 "combatEndTurnButtonPlate": "ui/combat/end-turn-button-plate.png",
-"combatEnergyPipStrip": "ui/combat/energy-pip-strip.png",
-"combatTurnStatusLight": "ui/combat/turn-status-light.png"
+"combatEndTurnLabel": "ui/combat/end-turn-label.png",
+"combatEnemyTurnLabel": "ui/combat/enemy-turn-label.png",
+"combatTurnEnergyFrame": "ui/combat/turn-energy-frame.png",
+"combatEnergyLightningIcon": "ui/combat/energy-lightning-icon.png"
 ```
 
-Place them after `"combatTurnDevice": "ui/combat/turn-device.png"` so the existing key remains available during migration.
+Place them near the existing combat UI entries. The older `"combatTurnDevice": "ui/combat/turn-device.png"` key may remain available during migration, but the new turn action renderer should use the five split assets above.
 
 - [ ] **Step 3: Extend typed registry keys**
 
@@ -503,10 +508,11 @@ export type CombatUiAssetKey =
   | "playerPanel"
   | "topResourceFrame"
   | "turnDevice"
-  | "turnActionPanel"
   | "endTurnButtonPlate"
-  | "energyPipStrip"
-  | "turnStatusLight"
+  | "endTurnLabel"
+  | "enemyTurnLabel"
+  | "turnEnergyFrame"
+  | "energyLightningIcon"
   | "tickerPanel"
   | "enemyPlatform"
   | "targetRing"
@@ -522,10 +528,11 @@ const combatUiAssetKeys: Record<CombatUiAssetKey, keyof GameData["assets"]["ui"]
   playerPanel: "combatPlayerPanel",
   topResourceFrame: "combatTopResourceFrame",
   turnDevice: "combatTurnDevice",
-  turnActionPanel: "combatTurnActionPanel",
   endTurnButtonPlate: "combatEndTurnButtonPlate",
-  energyPipStrip: "combatEnergyPipStrip",
-  turnStatusLight: "combatTurnStatusLight",
+  endTurnLabel: "combatEndTurnLabel",
+  enemyTurnLabel: "combatEnemyTurnLabel",
+  turnEnergyFrame: "combatTurnEnergyFrame",
+  energyLightningIcon: "combatEnergyLightningIcon",
   tickerPanel: "combatTickerPanel",
   enemyPlatform: "combatEnemyPlatform",
   targetRing: "combatTargetRing",
@@ -542,21 +549,25 @@ Append to `tests/core/assetRegistry.test.ts`:
 it("resolves turn action UI assets through typed lookup", () => {
   const registry = createAssetRegistry(loadGameData());
 
-  expect(registry.getCombatUiAsset("turnActionPanel")).toEqual({
-    key: "ui:combatTurnActionPanel",
-    path: "/assets/ui/combat/turn-action-panel.png"
-  });
   expect(registry.getCombatUiAsset("endTurnButtonPlate")).toEqual({
     key: "ui:combatEndTurnButtonPlate",
     path: "/assets/ui/combat/end-turn-button-plate.png"
   });
-  expect(registry.getCombatUiAsset("energyPipStrip")).toEqual({
-    key: "ui:combatEnergyPipStrip",
-    path: "/assets/ui/combat/energy-pip-strip.png"
+  expect(registry.getCombatUiAsset("endTurnLabel")).toEqual({
+    key: "ui:combatEndTurnLabel",
+    path: "/assets/ui/combat/end-turn-label.png"
   });
-  expect(registry.getCombatUiAsset("turnStatusLight")).toEqual({
-    key: "ui:combatTurnStatusLight",
-    path: "/assets/ui/combat/turn-status-light.png"
+  expect(registry.getCombatUiAsset("enemyTurnLabel")).toEqual({
+    key: "ui:combatEnemyTurnLabel",
+    path: "/assets/ui/combat/enemy-turn-label.png"
+  });
+  expect(registry.getCombatUiAsset("turnEnergyFrame")).toEqual({
+    key: "ui:combatTurnEnergyFrame",
+    path: "/assets/ui/combat/turn-energy-frame.png"
+  });
+  expect(registry.getCombatUiAsset("energyLightningIcon")).toEqual({
+    key: "ui:combatEnergyLightningIcon",
+    path: "/assets/ui/combat/energy-lightning-icon.png"
   });
 });
 
@@ -565,20 +576,24 @@ it("preloads turn action UI assets from asset data", () => {
   const entries = registry.listPreloadEntries();
 
   expect(entries).toContainEqual({
-    key: "ui:combatTurnActionPanel",
-    path: "/assets/ui/combat/turn-action-panel.png"
-  });
-  expect(entries).toContainEqual({
     key: "ui:combatEndTurnButtonPlate",
     path: "/assets/ui/combat/end-turn-button-plate.png"
   });
   expect(entries).toContainEqual({
-    key: "ui:combatEnergyPipStrip",
-    path: "/assets/ui/combat/energy-pip-strip.png"
+    key: "ui:combatEndTurnLabel",
+    path: "/assets/ui/combat/end-turn-label.png"
   });
   expect(entries).toContainEqual({
-    key: "ui:combatTurnStatusLight",
-    path: "/assets/ui/combat/turn-status-light.png"
+    key: "ui:combatEnemyTurnLabel",
+    path: "/assets/ui/combat/enemy-turn-label.png"
+  });
+  expect(entries).toContainEqual({
+    key: "ui:combatTurnEnergyFrame",
+    path: "/assets/ui/combat/turn-energy-frame.png"
+  });
+  expect(entries).toContainEqual({
+    key: "ui:combatEnergyLightningIcon",
+    path: "/assets/ui/combat/energy-lightning-icon.png"
   });
 });
 ```
@@ -597,21 +612,22 @@ Expected:
 PASS tests/core/assetRegistry.test.ts
 ```
 
-- [ ] **Step 6: Generate the four assets**
+- [ ] **Step 6: Generate the five assets**
 
-Use the `imagegen` skill and the four exact `docs/assets/image-generation-prompts.jsonl` rows from Step 1. Save the generated PNGs exactly to:
+Use the `imagegen` skill and the five exact `docs/assets/image-generation-prompts.jsonl` rows from Step 1. Save the generated PNGs exactly to:
 
 ```text
-public/assets/ui/combat/turn-action-panel.png
 public/assets/ui/combat/end-turn-button-plate.png
-public/assets/ui/combat/energy-pip-strip.png
-public/assets/ui/combat/turn-status-light.png
+public/assets/ui/combat/end-turn-label.png
+public/assets/ui/combat/enemy-turn-label.png
+public/assets/ui/combat/turn-energy-frame.png
+public/assets/ui/combat/energy-lightning-icon.png
 ```
 
 Verify files exist:
 
 ```bash
-file public/assets/ui/combat/turn-action-panel.png public/assets/ui/combat/end-turn-button-plate.png public/assets/ui/combat/energy-pip-strip.png public/assets/ui/combat/turn-status-light.png
+file public/assets/ui/combat/end-turn-button-plate.png public/assets/ui/combat/end-turn-label.png public/assets/ui/combat/enemy-turn-label.png public/assets/ui/combat/turn-energy-frame.png public/assets/ui/combat/energy-lightning-icon.png
 ```
 
 Expected:
@@ -625,7 +641,7 @@ PNG image data
 Run:
 
 ```bash
-git add docs/assets/image-generation-prompts.jsonl src/data/assets.json src/core/assets/assetRegistry.ts tests/core/assetRegistry.test.ts public/assets/ui/combat/turn-action-panel.png public/assets/ui/combat/end-turn-button-plate.png public/assets/ui/combat/energy-pip-strip.png public/assets/ui/combat/turn-status-light.png
+git add docs/assets/image-generation-prompts.jsonl src/data/assets.json src/core/assets/assetRegistry.ts tests/core/assetRegistry.test.ts public/assets/ui/combat/end-turn-button-plate.png public/assets/ui/combat/end-turn-label.png public/assets/ui/combat/enemy-turn-label.png public/assets/ui/combat/turn-energy-frame.png public/assets/ui/combat/energy-lightning-icon.png
 git commit -m "feat: add turn action ui assets"
 ```
 
@@ -763,7 +779,7 @@ Create `src/phaser/ui/TurnActionView.ts`:
 ```ts
 import Phaser from "phaser";
 import type { AssetRegistry, CombatTurnActionState } from "../../core";
-import { bar, button, image, label } from "./uiPrimitives";
+import { image, label } from "./uiPrimitives";
 import { colors } from "./uiTheme";
 import type { UiRenderContext } from "./uiTypes";
 
@@ -912,58 +928,60 @@ export function deriveTurnActionUiSnapshot(
 export function renderTurnActionView(options: RenderTurnActionViewOptions) {
   const { scene, context, assets, x, y, snapshot, onEndTurn } = options;
   const root = scene.add.container(x, y);
-  const panel = image(scene, context, 110, 84, assets.getCombatUiAsset("turnActionPanel").key, 240, 178, "combat-ui:turn-action-panel");
-  if (panel) root.add(panel);
-  else root.add(scene.add.rectangle(0, 0, 220, 168, 0x000000, 0.64).setOrigin(0).setStrokeStyle(1, 0xffffff, 0.18));
 
-  const light = image(scene, context, 36, 32, assets.getCombatUiAsset("turnStatusLight").key, 44, 44, "combat-ui:turn-status-light");
-  if (light) {
-    light.setTint(statusTint(snapshot.state));
-    root.add(light);
-  }
+  const frame = image(scene, context, 168, 44, assets.getCombatUiAsset("turnEnergyFrame").key, 300, 96, "combat-ui:turn-energy-frame");
+  if (frame) root.add(frame);
+  else root.add(scene.add.rectangle(18, 4, 300, 86, 0x000000, 0.64).setOrigin(0).setStrokeStyle(2, 0xf4c542, 0.86));
 
-  root.add(label(scene, 64, 18, snapshot.title, 17, colors.ink, 136));
-  root.add(label(scene, 18, 58, snapshot.message, 12, "#d1d5db", 186));
-  root.add(label(scene, 20, 104, `回合 ${snapshot.turn}`, 13, colors.ink));
+  root.add(label(scene, 64, 22, `回合 ${snapshot.turn}`, 16, colors.ink, 96));
+  root.add(label(scene, 64, 54, `能量 ${snapshot.energy}/${snapshot.maxEnergy}`, 14, colors.cyanText, 104));
 
-  const pipStrip = image(scene, context, 134, 116, assets.getCombatUiAsset("energyPipStrip").key, 116, 32, "combat-ui:energy-pip-strip", 0.94);
-  if (pipStrip) root.add(pipStrip);
-  root.add(bar(scene, 80, 108, 108, 10, snapshot.energy / Math.max(1, snapshot.maxEnergy), colors.cyan, 0x111827));
-  root.add(label(scene, 88, 124, `能量 ${snapshot.energy}/${snapshot.maxEnergy}`, 12, colors.cyanText));
-
-  const plate = image(scene, context, 110, 154, assets.getCombatUiAsset("endTurnButtonPlate").key, 154, 62, "combat-ui:end-turn-button-plate", snapshot.endTurnEnabled ? 1 : 0.52);
-  if (plate) root.add(plate);
-  root.add(
-    button(
+  for (let index = 0; index < snapshot.maxEnergy; index += 1) {
+    const icon = image(
       scene,
       context,
-      "end-turn",
-      "結束回合",
-      x + 38,
-      y + 128,
-      144,
-      48,
-      onEndTurn,
-      snapshot.endTurnEnabled,
-      snapshot.endTurnEnabled ? 0xf4e04d : 0x4b5563,
-      snapshot.endTurnEnabled ? 0.86 : 0.36
-    )
+      198 + index * 34,
+      56,
+      assets.getCombatUiAsset("energyLightningIcon").key,
+      24,
+      24,
+      `combat-ui:energy-lightning-icon-${index}`,
+      index < snapshot.energy ? 1 : 0.26
+    );
+    if (icon) root.add(icon);
+  }
+
+  const plateAlpha = snapshot.endTurnEnabled || snapshot.state === "enemyActing" ? 1 : 0.52;
+  const plate = image(scene, context, 170, 128, assets.getCombatUiAsset("endTurnButtonPlate").key, 340, 180, "combat-ui:end-turn-button-plate", plateAlpha);
+  if (plate) root.add(plate);
+
+  const labelKey = snapshot.state === "enemyActing" ? "enemyTurnLabel" : "endTurnLabel";
+  const labelRole = snapshot.state === "enemyActing" ? "combat-ui:enemy-turn-label" : "combat-ui:end-turn-label";
+  const labelSprite = image(scene, context, 170, 128, assets.getCombatUiAsset(labelKey).key, 220, 72, labelRole, plateAlpha);
+  if (labelSprite) root.add(labelSprite);
+
+  const hitZone = scene.add.zone(28, 78, 284, 94).setOrigin(0).setInteractive({ useHandCursor: snapshot.endTurnEnabled });
+  hitZone.setName("end-turn");
+  hitZone.on("pointerup", () => {
+    if (snapshot.endTurnEnabled) onEndTurn();
+  });
+  context.register?.(
+    "end-turn",
+    hitZone,
+    {
+      kind: "button",
+      text: snapshot.state === "enemyActing" ? "敵方回合" : "結束回合",
+      enabled: snapshot.endTurnEnabled,
+      bounds: { x: x + 28, y: y + 78, width: 284, height: 94 }
+    }
   );
+  root.add(hitZone);
 
   if (snapshot.endTurnDisabledReason) {
-    root.add(label(scene, 20, 184, snapshot.endTurnDisabledReason, 11, "#9ca3af", 180));
+    root.add(label(scene, 28, 172, snapshot.endTurnDisabledReason, 11, "#9ca3af", 280));
   }
 
   return root;
-}
-
-function statusTint(state: TurnActionUiState): number {
-  if (state === "playerReady") return 0x39d98a;
-  if (state === "playerNoPlayableCards" || state === "autoEndingNoPlayableCards") return 0xf4e04d;
-  if (state === "manualEnding") return 0x8be9d1;
-  if (state === "enemyActing") return 0xee4266;
-  if (state === "victoryPresentation") return 0xc4b5fd;
-  return 0x6b7280;
 }
 ```
 
@@ -1122,10 +1140,12 @@ with:
 ```js
   for (const role of [
     "combat-ui:background",
-    "combat-ui:turn-action-panel",
-    "combat-ui:turn-status-light",
-    "combat-ui:energy-pip-strip",
-    "combat-ui:end-turn-button-plate"
+    "combat-ui:turn-energy-frame",
+    "combat-ui:energy-lightning-icon-0",
+    "combat-ui:energy-lightning-icon-1",
+    "combat-ui:energy-lightning-icon-2",
+    "combat-ui:end-turn-button-plate",
+    "combat-ui:end-turn-label"
   ]) {
 ```
 

@@ -175,6 +175,45 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `25-game-settings-audio-entry-backlog.md`
 - Updated `backlogs/00-index-backlog.md` so these region-focused UI backlogs are scheduled after `18-combat-scene-ui-implementation-backlog.md` and before the next gameplay-flow backlogs.
 
+## 2026-05-06 Combat Turn Action Region
+
+- Started implementation for `22-combat-turn-action-region` on branch `codex/combat-turn-action-region`.
+- Required workflow: `superpowers:executing-plans` + `develop-web-game`.
+- User approved the final split asset direction:
+  - `end-turn-button-plate.png` is a newly drawn tall 340x180 proposal-1-inspired cyan/magenta/yellow explosion button, not a cropped proposal slice.
+  - `end-turn-label.png` and `enemy-turn-label.png` are separate text sprites.
+  - `turn-energy-frame.png` is a gold-bordered回合/能量 frame without lightning.
+  - `energy-lightning-icon.png` is a standalone energy bolt.
+- Backlog moved to `backlogs/in-progress/22-combat-turn-action-region-backlog.md`.
+- Task 2 registry slice complete:
+  - Added five turn action UI assets to `src/data/assets.json`.
+  - Added typed registry keys for `endTurnButtonPlate`, `endTurnLabel`, `enemyTurnLabel`, `turnEnergyFrame`, and `energyLightningIcon`.
+  - Added asset registry assertions.
+  - Red/green verification: `npm test -- tests/core/assetRegistry.test.ts` now passes.
+- Task 1 core query slice complete:
+  - Added framework-neutral `getCombatTurnActionState`, `canAnyCombatHandCardPlay`, and `combatCardPlayabilityReason`.
+  - Reused the core playability helper from Phaser drag/drop card rules.
+  - Red/green verification: `npm test -- tests/core/turnActionState.test.ts tests/phaser/cardPlayRules.test.ts` now passes.
+- Task 3-4 first integration slice complete:
+  - Added `TurnActionView` with pure `deriveTurnActionUiSnapshot()` and Phaser rendering for the five split assets.
+  - Replaced the old right-bottom translucent turn device plus text button with asset-backed turn action UI in `GameScene`.
+  - Added `turnActionUi` to `window.render_game_to_text()`.
+  - Updated E2E assertions for `combat-ui:turn-energy-frame`, energy lightning icons, `combat-ui:end-turn-button-plate`, and `combat-ui:end-turn-label`.
+  - Screenshot review initially found the new button overlapped the rightmost hand card, then got clipped too far right; adjusted the render position and display size until the button stayed readable without covering hand cards.
+- Verification:
+  - `npm test` passed: 15 files / 71 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - develop-web-game client ran against `http://127.0.0.1:5179/?e2e=1`; screenshot/state written to `output/web-game-turn-action-combat/`.
+  - Visual review of `output/web-game-turn-action-combat/shot-0.png` confirmed the right-bottom button, gold frame, energy icons, and label render with no hand-card occlusion.
+  - `output/web-game-turn-action-combat/state-0.json` confirmed `turnActionUi.state = playerReady`, expected asset roles, enabled `end-turn`, and no console/page error files.
+- Follow-up visual tuning against `externals/battle-design-proposal-1.png`:
+  - Reduced the end-turn label display size so `結束回合` stays inside the cyan button face.
+  - Tightened the button plate display size and adjusted the right-bottom anchor to avoid clipping and hand-card overlap.
+  - Raised the turn/energy frame and tightened energy lightning spacing to better match the proposal-1 information strip.
+  - develop-web-game verification wrote screenshot/state to `output/web-game-turn-action-tune/`; no error files were produced.
+  - Verification after tuning: `npm test`, `npm run build`, and `npm run test:e2e` passed.
+
 ## 2026-05-06 Combat Scene UI Implementation
 
 - Continuing in `.worktrees/combat-scene-ui-implementation` on branch `feature/combat-scene-ui-implementation`.
@@ -267,3 +306,108 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run build` passed.
   - `npm run test:e2e` passed.
 - Completed `24-combat-enemy-arena-region-backlog.md` and moved it to `backlogs/done/`.
+
+## 2026-05-06 Combat Turn Action Visual Tuning
+
+- User requested proposal-1-style micro-tuning for the right-bottom turn action UI:
+  - Turn transition should swap the main button label to `敵方回合` instead of showing debug-like `回合切換中` text.
+  - The large button plate should rotate left 20 degrees while the label stays unrotated and about 5% smaller.
+  - The turn/energy status frame should shrink to about 50% and left-align with the large button's left edge.
+- Updated `docs/superpowers/specs/2026-05-06-combat-turn-action-region-design.md` and `docs/superpowers/plans/2026-05-06-combat-turn-action-region-plan.md` with the tuning rule before implementing.
+- Implementation complete:
+  - `manualEnding` and `autoEndingNoPlayableCards` now use `enemyTurnLabel` and no longer expose `回合切換中。` as disabled reason.
+  - `TurnActionView` now rotates only the large button plate by -20 degrees, keeps the label unrotated, reduces label size by about 5%, and shrinks the turn/energy frame.
+- Verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-retune-combat/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-retune-transition/` confirmed `turnActionUi.labelAsset = enemyTurnLabel` during manual transition.
+- Follow-up tuning requested:
+  - Rotate the button label together with the large button plate.
+  - Move the turn/energy status frame closer to the button.
+  - Make status text/icons tighter and more prominent.
+  - Add E2E bounds checks so status text/icons cannot exceed the status frame.
+- Follow-up implementation complete:
+  - Button labels now rotate with the large button plate.
+  - Turn/energy frame moved closer to the button, with bolder status text and larger/tighter energy icons.
+  - `window.render_game_to_text()` now exposes `turnActionLayout` bounds for the status frame, text, and icons.
+  - E2E checks ensure status text/icons remain inside the status frame.
+- Follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-rotate/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-label-rotate-transition/` confirmed `enemyTurnLabel` during transition and bounds stayed inside the frame.
+- Second follow-up tuning requested:
+  - Make the button label larger and move it inward/right.
+  - Correct the button label rotation 5 degrees back toward upright while keeping the plate at -20 degrees.
+- Second follow-up implementation complete:
+  - Button label display size is larger and shifted 10px right into the cyan button body.
+  - Button label final rotation is -15 degrees while the plate remains -20 degrees.
+- Second follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-inset/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-label-inset-transition/` confirmed `enemyTurnLabel` still renders during transition.
+- Third follow-up tuning requested:
+  - Make the turn/energy status content larger, denser, and more right-aligned inside the same frame.
+  - Move the big button label sprite up by 5px.
+- Third follow-up implementation complete:
+  - Status text font sizes increased; status content moved right.
+  - Energy icons increased to 20px and tightened to 14px spacing.
+  - Big button label sprite moved up by 5px.
+- Third follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-status-dense/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-status-dense-transition/` confirmed `enemyTurnLabel` renders with the updated label position.
+
+## 2026-05-06 Combat Auxiliary UI Removal
+
+- User requested removing program-drawn hand area blocks and target selection frames.
+- Implementation direction:
+  - Keep cards, drag/drop, click targeting, and enemy hit zones functional.
+  - Remove only the visual hand tray block and target selection ring/frame/button visuals.
+  - Keep invisible interaction zones for enemy targeting.
+- Implementation complete:
+  - `renderCombatHandTray()` no longer draws the translucent hand tray rectangle.
+  - `EnemyView` no longer renders target ring/fallback selection frame or visible `目標` button.
+  - Enemy targeting now uses invisible Phaser zones while keeping `buttons` descriptors for E2E and click targeting.
+- Verification passed:
+  - `npm test -- tests/phaser/combatSceneLayout.test.ts tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-aux-ui/` with no console/page error files.
+  - Manual selected-attack screenshot/state check at `output/manual-remove-target-frame/` confirmed no `combat-ui:target-ring` and an enabled invisible enemy target zone.
+- Follow-up requested:
+  - Remove the remaining `手牌` text from the hand area.
+  - Remove drag drop-zone rectangle feedback while dragging cards.
+  - Remove decorative enemy platform art and use the original simple shadow.
+  - Add a small idle motion to living enemies so they do not feel like static images.
+- Follow-up implementation complete:
+  - `renderCombatHandTray()` now returns an empty container.
+  - Drag feedback no longer draws any drop-zone stroke rectangle.
+  - `EnemyView` always uses a Phaser ellipse shadow and does not render `combat-ui:enemy-platform`.
+  - Living enemy sprites get a subtle 4px yoyo idle tween.
+- Follow-up verification passed:
+  - `npm test -- tests/phaser/combatSceneLayout.test.ts tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-hand-target-platform/` confirmed no hand label, no enemy platform role, no target ring role, and no console/page error files.
+  - Manual dragging screenshot/state check at `output/manual-drag-no-rect/` confirmed active drag with no drop-zone rectangle visuals.
+
+## 2026-05-07 Combat Turn Action Region Done
+
+- User approved the current combat turn action and auxiliary visual cleanup state.
+- Completed `22-combat-turn-action-region-backlog.md`.
+- Moved backlog from `backlogs/in-progress/` to `backlogs/done/`.
+- Remaining user-owned/unrelated dirty file: `AGENTS.md`.
