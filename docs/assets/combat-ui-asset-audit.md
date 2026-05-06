@@ -43,4 +43,4 @@ Implement `backlogs/in-progress/18-combat-scene-ui-implementation-backlog.md` us
 - Assets must fit the existing modern Japanese street-graffiti chibi sticker direction.
 - For the regenerated combat UI pass, use the `style-teradadara-like` direction: character-focused sticker surfaces, oversized mascot eyes, symbolic pupils, at least seven clashing colors, thick marker-style linework, flat fills, and non-painterly rendering.
 - `externals/battle-design-proposal-3.png` and `externals/battle-design-proposal-4.png` are composition references only. Do not copy their exact characters, layout details, text, markings, or image content.
-- The combat background was revised toward `externals/battle-design-proposal-1.png`: dark road corridor, quieter central play field, subdued side graffiti, and reduced visual density. The proposal image is a reference only and must not be copied.
+- The combat background prompt now uses `externals/battle-design-proposal-1.png` as the primary visual reference and asks the generator to recreate the background plate as closely as possible while removing gameplay UI, enemies, cards, labels, numbers, and icons.
