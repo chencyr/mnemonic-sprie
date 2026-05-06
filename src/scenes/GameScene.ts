@@ -35,6 +35,7 @@ import {
   resolveEnemyPresentationTransitions,
   type EnemyPresentationStateMap
 } from "../phaser/combat/enemyPresentationState";
+import { createCombatPlayerStatusUiState } from "../phaser/ui/combatPlayerStatusUi";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import {
@@ -331,12 +332,8 @@ export class GameScene extends Phaser.Scene {
     this.playerDropZone = { x: combatLayout.playerPanel.x, y: combatLayout.playerPanel.y, w: combatLayout.playerPanel.w, h: combatLayout.playerPanel.h };
     this.handDropZone = { x: combatLayout.handTray.x, y: combatLayout.handTray.y, w: combatLayout.handTray.w, h: combatLayout.handTray.h };
     const anchors: CombatRenderAnchors = { enemies: new Map() };
-    const playerPanel = renderCombatPlayerPanel(this, this.engine.run, {
-      hp: combat.player.hp,
-      maxHp: combat.player.maxHp,
-      energy: combat.player.energy,
-      block: combat.player.block
-    });
+    const playerStatusUi = createCombatPlayerStatusUiState(combat);
+    const playerPanel = renderCombatPlayerPanel(this, this.uiContext(), this.assets, playerStatusUi);
     this.root?.add(playerPanel);
     anchors.player = {
       x: combatLayout.playerPanel.x + combatLayout.playerPanel.w / 2,

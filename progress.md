@@ -37,6 +37,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Red: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` failed before `src/phaser/ui/combatPlayerStatusUi.ts` existed.
   - Green: added `createCombatPlayerStatusUiState()` with HP ratio/state, block/energy, and pile counts.
   - Verification: `npm test -- tests/phaser/combatPlayerStatusUi.test.ts` passed.
+- Task 3 complete:
+  - `renderCombatPlayerPanel()` now renders `player-status-base.png`, draws HP fill under the transparent aperture, and overlays Phaser text for HP, energy, block, and low-priority pile counts.
+  - `GameScene.drawCombat()` now passes `createCombatPlayerStatusUiState(combat)` into the renderer.
+  - Verification: `npm run build` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
