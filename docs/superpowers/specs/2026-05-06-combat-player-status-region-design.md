@@ -178,7 +178,9 @@ playerStatusUi: {
 
 ## 素材策略與產出清單
 
-本 backlog 會新增 5 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記 prompt。
+本 backlog 會新增 5 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記來源與 prompt/history。
+
+這批素材必須 **看著 `externals/battle-design-proposal-1.png` 最左上玩家狀態區忠實重畫**。不得裁切、遮罩、描像素或直接處理主視覺原圖作為 runtime asset；也不得把主視覺只當靈感重新設計成另一套 UI。
 
 可使用的既有素材：
 
@@ -192,7 +194,7 @@ playerStatusUi: {
 | 左上面板外殼 | `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | 深色玻璃裝置外框，保留 HP / block / energy / counter 空槽。 |
 | HP bar 外框 | `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | HP bar frame，不含紅色填充值、不含文字。 |
 | 格擋 badge 底板 | `public/assets/ui/combat/player-block-badge.png` | 120x64 | Shield-like badge，不含數字與中文。 |
-| 能量槽 | `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | 三格能量槽，不含亮起狀態、不含數字。 |
+| 能量板 | `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | 忠實重畫主視覺青色能量板與閃電 icon；不含文字、不含數字。 |
 | 牌堆 counter 底板 | `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | 可重複用於抽牌 / 棄牌 / 手牌 counters。 |
 
 不建議 runtime 使用：
@@ -203,11 +205,12 @@ playerStatusUi: {
 
 - 必須以 `externals/battle-design-proposal-1.png` / `public/assets/ui/combat/battle-bg.png` 的暗色街頭裝置感為主視覺。
 - 必須對齊 `externals/battle-design-proposal-1.png` 最左上玩家區的拓撲：左側突出的鋸齒 avatar/emblem socket、右側 HP 長條、下方青色能量板與綠色格擋板。
+- 必須忠實重畫主視覺原本的輪廓、白色粗框、青色/綠色板、洋紅刮痕與粗糙材質；不得自由重畫成另一套類似 UI，也不得直接裁切處理原圖。
 - 必須低噪音、功能性優先，不使用 chibi mascot-heavy panel。
 - 必須透明背景。
 - 必須保留足夠內部空白，讓 Phaser 疊文字與數字。
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
-- 不得包含角色、敵人、卡牌、臉、眼睛 mascot、浮水印；shell 可保留空的鋸齒 avatar/emblem socket，但不可畫實際臉。
+- 不得包含敵人、卡牌、浮水印或新角色；shell 應忠實重畫主視覺左上原本的骷髏/皇冠 emblem，因為它是已確認主視覺的一部分。
 - 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
 
 ## 測試與驗收策略

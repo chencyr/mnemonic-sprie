@@ -162,17 +162,18 @@ These assets support the left-top combat player status region. They follow `exte
 Rules:
 
 - Store final runtime files under `public/assets/ui/combat/`.
+- Redraw these files while looking at `externals/battle-design-proposal-1.png`; do not crop, mask, trace pixels, or process the source image into runtime assets. Do not reinterpret them as a new design.
 - Keep every gameplay value Phaser-rendered. Do not embed HP, energy, block, deck counts, Chinese labels, numbers, or letters in the image.
 - Use transparent PNGs with clean empty slots for Phaser text, bars, pips, and counters.
-- Use dark glass, restrained cyan/magenta/yellow trim, subtle scuffs, and functional device framing.
-- Do not use characters, faces, eyes, mascots, cards, enemies, or watermark.
+- Preserve proposal-1 dark glass, rough white outline, cyan energy plate, green block plate, magenta/yellow trim, and subtle scuffs.
+- The player shell should faithfully redraw the skull/crown emblem because it is part of the confirmed main visual. Do not introduce new characters, mascots, cards, enemies, or watermark.
 
 | File | Size | Transparency | Purpose |
 | --- | ---: | --- | --- |
 | `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | Yes | Left-top player status shell with empty HP/block/energy/counter lanes. |
 | `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | Yes | HP bar frame; Phaser draws fill and text. |
 | `public/assets/ui/combat/player-block-badge.png` | 120x64 | Yes | Block badge base; Phaser draws number and label. |
-| `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | Yes | Three empty energy sockets; Phaser draws lit state. |
+| `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | Yes | Source-faithful cyan energy plate with lightning icon; Phaser draws text or runtime pips if needed. |
 | `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | Yes | Reusable small plate for draw/discard/hand counters. |
 
 ### Placeholders

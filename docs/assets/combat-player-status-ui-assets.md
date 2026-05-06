@@ -4,7 +4,9 @@
 
 These assets define the left-top combat player status UI component set for `19-combat-player-status-region`.
 
-The selected direction is **B1: functional device component set**. The runtime UI is composed from small transparent PNG components while Phaser renders all dynamic values, labels, bar fills, pips, and interaction state.
+The selected direction is **B1: faithful-redraw functional device component set**. The runtime UI is composed from small transparent PNG components while Phaser renders all dynamic values, labels, bar fills, pips, and interaction state.
+
+These assets must be redrawn while looking at `externals/battle-design-proposal-1.png`. Do not crop, mask, trace pixels, or process the source image into runtime assets. The goal is to faithfully redraw the proposal-1 far top-left player status UI as the same object language, while omitting dynamic labels, numbers, and fills for Phaser runtime rendering.
 
 ## Visual Reference
 
@@ -29,6 +31,9 @@ Visual language:
 - Output format: PNG.
 - Background: transparent.
 - Store files under `public/assets/ui/combat/`.
+- Source method: faithful redraw from visual reference, not crop or pixel extraction.
+- Preserve proposal-1 shape language, rough outlines, colors, scratches, proportions, and top-left UI topology.
+- Redraw the static skull/crown emblem when it is part of the shell; do not introduce a different mascot or new character.
 - No readable text.
 - No numbers.
 - No letters.
@@ -45,7 +50,7 @@ Visual language:
 | `player-status-panel-shell.png` | 420x240 | Left-top shell with empty lanes for HP, block, energy, and small counters. |
 | `player-hp-bar-frame.png` | 260x48 | HP bar frame. Phaser draws the fill and text. |
 | `player-block-badge.png` | 120x64 | Block badge base. Phaser draws the number and label. |
-| `player-energy-pip-strip.png` | 180x54 | Three empty energy sockets. Phaser draws lit pips and text. |
+| `player-energy-pip-strip.png` | 180x54 | Source-faithful cyan energy plate with lightning icon. Phaser draws text or any runtime pips if needed. |
 | `player-deck-counter-plate.png` | 120x64 | Small reusable counter plate for draw/discard/hand counts. Phaser draws the label and number. |
 
 ## Runtime Composition Rules
@@ -56,11 +61,12 @@ Visual language:
 - Block and energy share second priority.
 - Deck counters are low priority and should not compete with HP.
 - Phaser must be able to hide, tint, or replace individual components without regenerating the entire panel.
+- Do not invent sub-structures that are absent from the reference, such as energy sockets. If runtime needs pips later, Phaser should draw them separately.
 
 ## Prompt Source
 
-All generation prompts are registered in:
+Prompt/history entries are registered in:
 
 - `docs/assets/image-generation-prompts.jsonl`
 
-Do not generate these assets from ad hoc chat prompts. Update this spec and the JSONL prompt file first if style, size, output path, or exclusions change.
+For this asset set, prefer faithful redraw over source extraction. Do not generate unrelated variants or redesign from ad hoc chat prompts. Update this spec and the JSONL prompt file first if source method, style, size, output path, or exclusions change.
