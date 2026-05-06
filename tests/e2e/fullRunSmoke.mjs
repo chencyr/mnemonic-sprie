@@ -228,7 +228,8 @@ async function assertDragAttackAutoTargets(page) {
   assert.ok(enemyBefore, "Expected a living enemy before drag attack.");
   current = await clickButton(page, `card:${attack.id}`);
   assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:enemy-platform"), "combat should render enemy platform assets.");
-  assert.ok(current.visibleAssets?.some((asset) => asset.role === "combat-ui:target-ring"), "combat should render target ring assets when targeting.");
+  assert.ok(!current.visibleAssets?.some((asset) => asset.role === "combat-ui:target-ring"), "combat should not render target-ring selection visuals.");
+  assert.ok(current.buttons.some((button) => button.id.startsWith("enemy:") && button.enabled), "Selecting an attack should still expose invisible enemy target zones.");
   current = await dragButtonTo(page, `card:${attack.id}`, 620, 260);
   const enemyAfter = current.combat?.enemies.find((enemy) => enemy.id === enemyBefore.id);
   assert.ok(enemyAfter && enemyAfter.hp < enemyBefore.hp, "Dragging attack to battlefield should damage auto target.");

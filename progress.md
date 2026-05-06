@@ -368,3 +368,22 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-status-dense/` with no console/page error files.
   - Manual transition screenshot/state check at `output/manual-turn-action-status-dense-transition/` confirmed `enemyTurnLabel` renders with the updated label position.
+
+## 2026-05-06 Combat Auxiliary UI Removal
+
+- User requested removing program-drawn hand area blocks and target selection frames.
+- Implementation direction:
+  - Keep cards, drag/drop, click targeting, and enemy hit zones functional.
+  - Remove only the visual hand tray block and target selection ring/frame/button visuals.
+  - Keep invisible interaction zones for enemy targeting.
+- Implementation complete:
+  - `renderCombatHandTray()` no longer draws the translucent hand tray rectangle.
+  - `EnemyView` no longer renders target ring/fallback selection frame or visible `目標` button.
+  - Enemy targeting now uses invisible Phaser zones while keeping `buttons` descriptors for E2E and click targeting.
+- Verification passed:
+  - `npm test -- tests/phaser/combatSceneLayout.test.ts tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-aux-ui/` with no console/page error files.
+  - Manual selected-attack screenshot/state check at `output/manual-remove-target-frame/` confirmed no `combat-ui:target-ring` and an enabled invisible enemy target zone.
