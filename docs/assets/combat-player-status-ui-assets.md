@@ -17,6 +17,7 @@ Visual language:
 
 - Dark street arcade device.
 - Black glass / smoky translucent hardware.
+- Far top-left proposal-1 topology: a protruding left avatar/emblem socket, a right-extending angled HP lane, and two lower connected cyan/green plates.
 - Restrained cyan, magenta, and yellow edge accents.
 - Low visual noise.
 - Thick marker-like contour only at key edges.
@@ -32,7 +33,7 @@ Visual language:
 - No numbers.
 - No letters.
 - No embedded `HP`, `能量`, `格擋`, `抽牌`, `棄牌`, or `手牌` labels.
-- No characters, faces, eyes, mascots, cards, enemies, or watermark.
+- No characters, faces, eyes, mascots, cards, enemies, or watermark. The shell may include an empty jagged avatar/emblem socket, but not an actual face drawing.
 - Keep all dynamic gameplay information Phaser-rendered.
 - Keep the center of each slot clean enough for text, bars, or pips.
 - Avoid cute sticker-heavy surface art. This UI must feel like a readable combat device, not a decorative character panel.

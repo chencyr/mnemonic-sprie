@@ -202,11 +202,12 @@ playerStatusUi: {
 素材硬性規則：
 
 - 必須以 `externals/battle-design-proposal-1.png` / `public/assets/ui/combat/battle-bg.png` 的暗色街頭裝置感為主視覺。
+- 必須對齊 `externals/battle-design-proposal-1.png` 最左上玩家區的拓撲：左側突出的鋸齒 avatar/emblem socket、右側 HP 長條、下方青色能量板與綠色格擋板。
 - 必須低噪音、功能性優先，不使用 chibi mascot-heavy panel。
 - 必須透明背景。
 - 必須保留足夠內部空白，讓 Phaser 疊文字與數字。
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
-- 不得包含角色、敵人、卡牌、臉、眼睛 mascot、浮水印。
+- 不得包含角色、敵人、卡牌、臉、眼睛 mascot、浮水印；shell 可保留空的鋸齒 avatar/emblem socket，但不可畫實際臉。
 - 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
 
 ## 測試與驗收策略
