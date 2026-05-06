@@ -244,3 +244,7 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
 - Goal: implement `docs/superpowers/specs/2026-05-06-combat-enemy-arena-region-design.md`.
 - Direction: core enemy gameplay state stays `alive | dead`; Phaser owns presentation state `alive | dying | dead`.
 - Victory/reward must wait for all enemy death presentation transitions to complete.
+- Task 1 complete:
+  - Added pure `src/phaser/combat/enemyPresentationState.ts`.
+  - Added Vitest coverage for newly dead enemies entering `dying`, due transitions becoming `dead`, stale dead enemies staying dead, new combat reset, and quick-mode duration.
+  - Verified with `npm test -- tests/phaser/enemyPresentationState.test.ts`.
