@@ -170,11 +170,10 @@ Rules:
 
 | File | Size | Transparency | Purpose |
 | --- | ---: | --- | --- |
-| `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | Yes | Left-top player status shell with empty HP/block/energy/counter lanes. |
-| `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | Yes | HP bar frame; Phaser draws fill and text. |
-| `public/assets/ui/combat/player-block-badge.png` | 120x64 | Yes | Block badge base; Phaser draws number and label. |
-| `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | Yes | Source-faithful cyan energy plate with lightning icon; Phaser draws text or runtime pips if needed. |
-| `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | Yes | Reusable small plate for draw/discard/hand counters. |
+| `public/assets/ui/combat/player-status-base.png` | 420x240 | Yes | Complete redrawn left-top player status base. |
+| `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | Yes | Local HP fill slot aligned to the base HP lane. |
+| `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | Yes | Local cyan energy value area aligned to the base energy plate. |
+| `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | Yes | Local green block value area aligned to the base block plate. |
 
 ### Placeholders
 

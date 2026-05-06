@@ -178,9 +178,9 @@ playerStatusUi: {
 
 ## 素材策略與產出清單
 
-本 backlog 會新增 5 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記來源與 prompt/history。
+本 backlog 會新增 4 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記來源與 prompt/history。
 
-這批素材必須 **看著 `externals/battle-design-proposal-1.png` 最左上玩家狀態區忠實重畫**。不得裁切、遮罩、描像素或直接處理主視覺原圖作為 runtime asset；也不得把主視覺只當靈感重新設計成另一套 UI。
+這批素材必須 **看著 `externals/battle-design-proposal-1.png` 最左上玩家狀態區忠實重畫成一個完整元件**。不得裁切、遮罩、描像素或直接處理主視覺原圖作為 runtime asset；也不得把主視覺只當靈感重新設計成另一套 UI。
 
 可使用的既有素材：
 
@@ -191,11 +191,10 @@ playerStatusUi: {
 
 | Runtime Use | Asset | Size | Role |
 | --- | --- | ---: | --- |
-| 左上面板外殼 | `public/assets/ui/combat/player-status-panel-shell.png` | 420x240 | 深色玻璃裝置外框，保留 HP / block / energy / counter 空槽。 |
-| HP bar 外框 | `public/assets/ui/combat/player-hp-bar-frame.png` | 260x48 | HP bar frame，不含紅色填充值、不含文字。 |
-| 格擋 badge 底板 | `public/assets/ui/combat/player-block-badge.png` | 120x64 | Shield-like badge，不含數字與中文。 |
-| 能量板 | `public/assets/ui/combat/player-energy-pip-strip.png` | 180x54 | 忠實重畫主視覺青色能量板與閃電 icon；不含文字、不含數字。 |
-| 牌堆 counter 底板 | `public/assets/ui/combat/player-deck-counter-plate.png` | 120x64 | 可重複用於抽牌 / 棄牌 / 手牌 counters。 |
+| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 忠實重畫主視覺左上整體：骷髏/皇冠 emblem、HP 長條、青色能量板、綠色格擋板。 |
+| HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的局部槽位；Phaser 繪製紅色填充值與 HP 文字。 |
+| 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的局部槽位；Phaser 繪製能量文字與數字。 |
+| 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的局部槽位；Phaser 繪製格擋文字與數字。 |
 
 不建議 runtime 使用：
 
@@ -207,6 +206,7 @@ playerStatusUi: {
 - 必須對齊 `externals/battle-design-proposal-1.png` 最左上玩家區的拓撲：左側突出的鋸齒 avatar/emblem socket、右側 HP 長條、下方青色能量板與綠色格擋板。
 - 必須忠實重畫主視覺原本的輪廓、白色粗框、青色/綠色板、洋紅刮痕與粗糙材質；不得自由重畫成另一套類似 UI，也不得直接裁切處理原圖。
 - 必須低噪音、功能性優先，不使用 chibi mascot-heavy panel。
+- 不得任意拆成互不相連的 UI 卡片；主素材必須是一個完整左上狀態元件。
 - 必須透明背景。
 - 必須保留足夠內部空白，讓 Phaser 疊文字與數字。
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
@@ -252,4 +252,4 @@ playerStatusUi: {
 - 玩家能一眼理解 HP、格擋與能量：透過 HP 主列、block pill、energy pip/text 達成。
 - 玩家狀態區不遮擋背景、敵人或手牌：沿用左上 bounded layout，限制尺寸。
 - HP/格擋/能量變化有清楚回饋且不重疊：使用穩定 bar/pill/pip 與可測 snapshot。
-- 若使用素材圖，素材規格與 prompt 必須寫入 `docs/assets/`：本 spec 已定義 5 張新增素材，並要求先更新 `docs/assets/` 與 JSONL prompt 後才可生圖。
+- 若使用素材圖，素材規格與 prompt 必須寫入 `docs/assets/`：本 spec 已定義 4 張新增素材，並要求先更新 `docs/assets/` 與 JSONL prompt 後才可生圖。

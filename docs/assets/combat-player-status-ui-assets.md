@@ -4,9 +4,9 @@
 
 These assets define the left-top combat player status UI component set for `19-combat-player-status-region`.
 
-The selected direction is **B1: faithful-redraw functional device component set**. The runtime UI is composed from small transparent PNG components while Phaser renders all dynamic values, labels, bar fills, pips, and interaction state.
+The selected direction is **faithful redraw of the complete left-top player status component**. The runtime UI uses one complete base asset that preserves the proposal-1 structure, plus only the minimal local slots needed for Phaser-rendered dynamic values.
 
-These assets must be redrawn while looking at `externals/battle-design-proposal-1.png`. Do not crop, mask, trace pixels, or process the source image into runtime assets. The goal is to faithfully redraw the proposal-1 far top-left player status UI as the same object language, while omitting dynamic labels, numbers, and fills for Phaser runtime rendering.
+These assets must be redrawn while looking at `externals/battle-design-proposal-1.png`. Do not crop, mask, trace pixels, or process the source image into runtime assets. The goal is to faithfully redraw the proposal-1 far top-left player status UI as one coherent component, while omitting dynamic labels, numbers, and HP fill for Phaser runtime rendering.
 
 ## Visual Reference
 
@@ -47,19 +47,17 @@ Visual language:
 
 | Asset | Size | Runtime Role |
 | --- | ---: | --- |
-| `player-status-panel-shell.png` | 420x240 | Left-top shell with empty lanes for HP, block, energy, and small counters. |
-| `player-hp-bar-frame.png` | 260x48 | HP bar frame. Phaser draws the fill and text. |
-| `player-block-badge.png` | 120x64 | Block badge base. Phaser draws the number and label. |
-| `player-energy-pip-strip.png` | 180x54 | Source-faithful cyan energy plate with lightning icon. Phaser draws text or any runtime pips if needed. |
-| `player-deck-counter-plate.png` | 120x64 | Small reusable counter plate for draw/discard/hand counts. Phaser draws the label and number. |
+| `player-status-base.png` | 420x240 | Complete redrawn left-top player status base: skull/crown emblem, HP lane, cyan energy plate, green block plate. No dynamic text, numbers, or HP fill. |
+| `player-status-hp-fill-slot.png` | 260x48 | Local HP fill slot aligned to the base HP lane. Phaser draws the red fill and HP text. |
+| `player-status-energy-value-slot.png` | 180x54 | Local clean cyan value area aligned to the base energy plate. Phaser draws energy text/number. |
+| `player-status-block-value-slot.png` | 180x54 | Local clean green value area aligned to the base block plate. Phaser draws block text/number. |
 
 ## Runtime Composition Rules
 
-- The shell should sit within the existing `combatLayout.playerPanel` area, with modest growth allowed up to about 340x190 runtime display size.
-- The shell asset may be larger than runtime size to preserve source detail.
-- HP has the highest visual priority.
-- Block and energy share second priority.
-- Deck counters are low priority and should not compete with HP.
+- The base should sit within the existing `combatLayout.playerPanel` area, with modest growth allowed up to about 340x190 runtime display size.
+- The base asset may be larger than runtime size to preserve source detail.
+- HP has the highest visual priority, then energy and block.
+- Do not add deck counters to this asset set. The proposal-1 left-top player status component does not contain deck counters.
 - Phaser must be able to hide, tint, or replace individual components without regenerating the entire panel.
 - Do not invent sub-structures that are absent from the reference, such as energy sockets. If runtime needs pips later, Phaser should draw them separately.
 
