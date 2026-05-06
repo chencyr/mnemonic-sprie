@@ -4,9 +4,17 @@
 
 These assets define the left-top combat player status UI component set for `19-combat-player-status-region`.
 
-The selected direction is **faithful redraw of the complete left-top player status component**. The runtime UI uses one complete base asset that preserves the proposal-1 structure, plus only the minimal local slots needed for Phaser-rendered dynamic values.
+The selected direction is **style-teradadara-like redraw of the complete left-top player status component**. The runtime UI uses one complete base asset that preserves the proposal-1 structure, plus only the minimal local slots needed for Phaser-rendered dynamic values.
 
 These assets must be redrawn while looking at `externals/battle-design-proposal-1.png`. Do not crop, mask, trace pixels, or process the source image into runtime assets. The goal is to faithfully redraw the proposal-1 far top-left player status UI as one coherent component, while omitting dynamic labels, numbers, and HP fill for Phaser runtime rendering.
+
+Final accepted base direction:
+
+- Use `style-teradadara-like` on top of the original `player-status-base` prompt.
+- The complete base asset is `public/assets/ui/combat/player-status-base.png`.
+- The HP fill aperture must be transparent and have an extra inner rim, especially along the top edge, so it reads as a framed fill slot rather than a broken cutout.
+- Energy and block value areas must be opaque, not translucent.
+- Only the HP fill aperture remains transparent for Phaser-rendered red HP fill.
 
 ## Visual Reference
 
@@ -40,14 +48,14 @@ Visual language:
 - No embedded `HP`, `能量`, `格擋`, `抽牌`, `棄牌`, or `手牌` labels.
 - No characters, faces, eyes, mascots, cards, enemies, or watermark. The shell may include an empty jagged avatar/emblem socket, but not an actual face drawing.
 - Keep all dynamic gameplay information Phaser-rendered.
-- Keep the center of each slot clean enough for text, bars, or pips.
+- Keep the center of each slot clean enough for text and bars.
 - Avoid cute sticker-heavy surface art. This UI must feel like a readable combat device, not a decorative character panel.
 
 ## Asset Slots
 
 | Asset | Size | Runtime Role |
 | --- | ---: | --- |
-| `player-status-base.png` | 420x240 | Complete redrawn left-top player status base: skull/crown emblem, HP lane, cyan energy plate, green block plate. No dynamic text, numbers, or HP fill. |
+| `player-status-base.png` | 420x240 | Accepted style-teradadara-like left-top player status base: skull/crown emblem, HP lane with transparent framed fill aperture, opaque cyan energy plate, opaque green block plate. No dynamic text or numbers. |
 | `player-status-hp-fill-slot.png` | 260x48 | Local HP fill slot aligned to the base HP lane. Phaser draws the red fill and HP text. |
 | `player-status-energy-value-slot.png` | 180x54 | Local clean cyan value area aligned to the base energy plate. Phaser draws energy text/number. |
 | `player-status-block-value-slot.png` | 180x54 | Local clean green value area aligned to the base block plate. Phaser draws block text/number. |
@@ -57,9 +65,9 @@ Visual language:
 - The base should sit within the existing `combatLayout.playerPanel` area, with modest growth allowed up to about 340x190 runtime display size.
 - The base asset may be larger than runtime size to preserve source detail.
 - HP has the highest visual priority, then energy and block.
-- Do not add deck counters to this asset set. The proposal-1 left-top player status component does not contain deck counters.
+- Do not add deck resource graphics to this asset set. The proposal-1 left-top player status component does not contain them.
 - Phaser must be able to hide, tint, or replace individual components without regenerating the entire panel.
-- Do not invent sub-structures that are absent from the reference, such as energy sockets. If runtime needs pips later, Phaser should draw them separately.
+- Do not invent sub-structures that are absent from the reference, such as energy sockets. This asset set does not define energy pips.
 
 ## Prompt Source
 

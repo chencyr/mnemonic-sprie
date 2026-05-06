@@ -4,12 +4,12 @@
 
 `19-combat-player-status-region-backlog.md` 目標是重新設計戰鬥畫面左上玩家狀態區。
 
-目前左上區由 `renderCombatPlayerPanel()` 繪製為黑色半透明矩形，內含 HP、能量、格擋與牌組數。它可讀、穩定，也符合現階段測試需求，但視覺上仍像 debug panel。玩家需要在戰鬥中快速判斷：
+目前左上區由 `renderCombatPlayerPanel()` 繪製為黑色半透明矩形，內含 HP、能量、格擋與牌組數。它可讀、穩定，也符合現階段測試需求，但視覺上仍像 debug panel。這個 backlog 的主素材只處理左上已確認主視覺裡的 HP、能量與格擋元件；牌堆數字若保留，應由 Phaser 另以低層級文字顯示。玩家需要在戰鬥中快速判斷：
 
 - 自己還剩多少 HP，是否接近危險線。
 - 目前格擋是否足以承受敵人攻擊。
 - 目前能量是否足以打出手牌。
-- 抽牌堆、棄牌堆與目前手牌資源的大致狀態。
+- 目前手牌與牌堆資源的大致狀態，但這不是左上主素材的視覺重點。
 
 這個區域位於左上角，不能遮擋中央敵人、下方手牌或右下回合動作區。它也不能把重要數字嵌在圖片裡，否則 Phaser 動態更新與 E2E 觀測會變弱。
 
@@ -19,12 +19,12 @@
 
 本 backlog 採用 **B1：功能裝置元件組**：
 
-- 左上玩家狀態 UI 拆成多個可組合透明 PNG 元件。
-- 圖片負責外框、材質、槽位、裝置感與少量邊緣裝飾。
+- 左上玩家狀態 UI 使用一張完整透明 PNG 底板作為主元件，局部值區由 Phaser 疊加。
+- 圖片負責外框、材質、槽位、裝置感與少量邊緣裝飾；不得把主視覺拆成多張彼此不連續的卡片。
 - Phaser 負責排版、文字、數字、bar fill、能量亮起狀態與狀態變化。
 - 不使用目前的 `public/assets/ui/combat/player-panel.png` 作為 runtime 主面板，因為它的 chibi 貼紙面板風格太高噪音，會跟 proposal-1 背景、手牌與敵人搶視線。
 - 可使用現有 `public/assets/characters/seeker.png` 作為小型玩家 portrait 或剪影點綴，但它不是必要資訊承載物。
-- HP、格擋、能量、牌堆數字、狀態 label 都必須由 Phaser 動態文字渲染。
+- HP、格擋、能量、狀態 label 與必要的牌堆數字都必須由 Phaser 動態文字渲染。
 - `window.render_game_to_text()` 必須新增玩家狀態區 snapshot，讓測試能觀察 UI 呈現狀態，而不是只觀察 core combat 數值。
 
 ## 曾考慮的替代方案與取捨
@@ -41,9 +41,9 @@
 
 決策：不作為本 backlog 主方向。若後續視覺驗收認為左上仍太素，可以在另一個素材 backlog 補一張低噪音外框，但不能嵌入動態文字。
 
-### 方案 3：B1 功能裝置元件組
+### 方案 3：完整底板加局部槽位
 
-將左上 UI 拆成 panel shell、HP bar frame、block badge、energy pip strip、deck counter plate。素材只承載質感與槽位，Phaser 疊動態文字、數字與填充值。這保留 proposal-1 的街頭暗色裝置感，也維持數值清楚與測試可觀測性。
+先嘗試把左上 UI 拆成多個 panel shell、HP bar frame、block badge、energy plate 等獨立元件，但實際效果會讓元件彼此不像同一個完整 UI。最終調整為一張完整 `player-status-base.png` 底板，另保留局部 runtime 槽位供 Phaser 疊 HP 填充值與文字。這保留 proposal-1 的整體接縫與比例，也維持數值清楚與測試可觀測性。
 
 決策：採用。
 
@@ -64,7 +64,7 @@
 - 左上玩家狀態區看起來像正式戰鬥 HUD，不是 debug panel。
 - 玩家一眼能讀到 HP、格擋與能量。
 - HP、格擋、能量變化時有明確但不吵的回饋。
-- 牌組、棄牌、抽牌或手牌資源資訊可讀，但視覺層級低於 HP / 格擋 / 能量。
+- 若顯示牌組、棄牌、抽牌或手牌資源資訊，必須由 Phaser 以低層級文字補充，不放進 `player-status-base.png`。
 - 所有動態數值與主要文字由 Phaser 渲染。
 - 不改核心戰鬥數值規則。
 - 不影響中央敵人區、右上進度區、右側 ticker、右下 turn action、下方手牌。
@@ -93,20 +93,20 @@
    - HP bar 使用 magenta / red 系列，低 HP 時進入 warning state。
 
 2. **戰鬥防護與能量列**
-   - 格擋使用綠色或黃綠色 shield-like pill。
-   - 能量使用 cyan 狀態燈或 3 格 pip，文字顯示 `能量 N/3`。
-   - 這一列要比 HP 小，但比牌堆 counters 大。
+   - 格擋使用主素材右下方的不透明綠色板，文字顯示目前 block。
+   - 能量使用主素材左下方的不透明 cyan 能量板與閃電 icon 區，文字顯示 `能量 N/3`。
+   - 這一列要比 HP 小，但比任何牌堆輔助文字更醒目。
 
-3. **牌堆資源 counters**
-   - 顯示抽牌堆、棄牌堆、消耗堆或牌組剩餘資訊。
-   - 若目前 core snapshot 無法穩定提供所有區分，MVP 至少顯示 `抽牌`、`棄牌` 與 `手牌` 或現有可得的 deck/discard/hand counts。
-   - counter 字級小，使用 muted color，避免搶 HP。
+3. **低層級資源文字**
+   - `player-status-base.png` 不包含牌堆圖形，也不要求額外素材槽。
+   - 若 implementation 仍需要保留抽牌堆、棄牌堆、手牌數，應由 Phaser 以小字顯示在不干擾主元件的位置。
+   - 這些文字的視覺層級必須低於 HP / 能量 / 格擋。
 
 ### 視覺語言
 
-- 面板底為深色半透明 glass / street HUD。
+- 面板底為深色 street HUD 裝置，PNG 背景透明；能量與格擋值區本身不使用半透明。
 - 邊框使用 proposal-1 的低噪音 cyan / magenta / yellow 切角線，不使用高彩度角色面板。
-- HP bar、能量 pip、格擋 pill 都用清楚幾何形狀。
+- HP bar 使用透明填色孔供 Phaser 從下方填紅；能量板與格擋板用清楚不透明幾何形狀。
 - 低 HP warning 可使用短暫 pulse 或邊框色變，不使用大幅 shake。
 - 格擋增加時可沿用既有 combat feedback 的浮字語言，但玩家狀態區本身應顯示數值變化後的穩定狀態。
 
@@ -128,9 +128,9 @@ export interface CombatPlayerStatusUiState {
   hasBlock: boolean;
   energy: number;
   maxEnergy: number;
-  drawPileCount: number;
-  discardPileCount: number;
-  handCount: number;
+  drawPileCount?: number;
+  discardPileCount?: number;
+  handCount?: number;
 }
 ```
 
@@ -147,8 +147,8 @@ export interface CombatPlayerStatusUiState {
 
 渲染職責：
 
-- 繪製 panel 背板、切角邊框、分隔線。
-- 繪製 HP bar、energy pips、block pill、deck counters。
+- 繪製 HP fill，接著疊上 `player-status-base.png`，再繪製 HP、能量與格擋文字。
+- 視情況繪製必要的低層級牌堆文字，但不得把牌堆資訊塞入主底板素材規格。
 - 保持文字不溢出、不重疊。
 - 在低 HP 或有格擋時套用簡單 presentation state。
 
@@ -166,9 +166,9 @@ playerStatusUi: {
   hasBlock: boolean;
   energy: number;
   maxEnergy: number;
-  drawPileCount: number;
-  discardPileCount: number;
-  handCount: number;
+  drawPileCount?: number;
+  discardPileCount?: number;
+  handCount?: number;
   visible: boolean;
   reference: "battle-design-proposal-1";
 }
@@ -178,9 +178,15 @@ playerStatusUi: {
 
 ## 素材策略與產出清單
 
-本 backlog 會新增 4 張左上玩家狀態 UI 元件素材。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記來源與 prompt/history。
+本 backlog 會新增 4 張左上玩家狀態 UI 元件素材，其中正式 runtime 主素材是完整底板 `player-status-base.png`。所有素材都必須是 PNG，存放於 `public/assets/ui/combat/`，並在 `docs/assets/image-generation-prompts.jsonl` 登記來源與 prompt/history。
 
-這批素材必須 **看著 `externals/battle-design-proposal-1.png` 最左上玩家狀態區忠實重畫成一個完整元件**。不得裁切、遮罩、描像素或直接處理主視覺原圖作為 runtime asset；也不得把主視覺只當靈感重新設計成另一套 UI。
+這批素材必須 **看著 `externals/battle-design-proposal-1.png` 最左上玩家狀態區，用 `style-teradadara-like` 規則重畫成一個完整元件**。不得裁切、遮罩、描像素或直接處理主視覺原圖作為 runtime asset；也不得把主視覺只當靈感重新設計成另一套 UI。
+
+目前已確認採用 `public/assets/ui/combat/player-status-base.png` 作為正式 runtime 底板。這張底板有三個重要約束：
+
+- HP 填色槽是透明的，並且有額外內描邊，避免上緣看起來像去背破口。
+- 能量區與格擋區是不透明底色，不使用半透明值槽。
+- 牌堆資訊不放入這個底板，避免違背主視覺左上元件結構。
 
 可使用的既有素材：
 
@@ -191,10 +197,10 @@ playerStatusUi: {
 
 | Runtime Use | Asset | Size | Role |
 | --- | --- | ---: | --- |
-| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 忠實重畫主視覺左上整體：骷髏/皇冠 emblem、HP 長條、青色能量板、綠色格擋板。 |
-| HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的局部槽位；Phaser 繪製紅色填充值與 HP 文字。 |
-| 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的局部槽位；Phaser 繪製能量文字與數字。 |
-| 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的局部槽位；Phaser 繪製格擋文字與數字。 |
+| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 採用 style-teradadara-like 重畫主視覺左上整體：骷髏/皇冠 emblem、HP 透明填色槽含內描邊、青色不透明能量板、綠色不透明格擋板。 |
+| HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的輔助槽位規格；runtime 可用 Phaser shape 直接填紅，不必顯示此槽圖。 |
+| 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的輔助規格；runtime 主要使用底板上的不透明能量區並疊 Phaser 文字。 |
+| 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的輔助規格；runtime 主要使用底板上的不透明格擋區並疊 Phaser 文字。 |
 
 不建議 runtime 使用：
 
@@ -205,6 +211,7 @@ playerStatusUi: {
 - 必須以 `externals/battle-design-proposal-1.png` / `public/assets/ui/combat/battle-bg.png` 的暗色街頭裝置感為主視覺。
 - 必須對齊 `externals/battle-design-proposal-1.png` 最左上玩家區的拓撲：左側突出的鋸齒 avatar/emblem socket、右側 HP 長條、下方青色能量板與綠色格擋板。
 - 必須忠實重畫主視覺原本的輪廓、白色粗框、青色/綠色板、洋紅刮痕與粗糙材質；不得自由重畫成另一套類似 UI，也不得直接裁切處理原圖。
+- 正式底板採用 `style-teradadara-like` 版本；若重新生成，必須套用該 skill 的粗 marker 線條、強烈貼紙輪廓、衝突色規則，但仍不得改變主視覺左上元件拓撲。
 - 必須低噪音、功能性優先，不使用 chibi mascot-heavy panel。
 - 不得任意拆成互不相連的 UI 卡片；主素材必須是一個完整左上狀態元件。
 - 必須透明背景。
@@ -212,6 +219,7 @@ playerStatusUi: {
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
 - 不得包含敵人、卡牌、浮水印或新角色；shell 應忠實重畫主視覺左上原本的骷髏/皇冠 emblem，因為它是已確認主視覺的一部分。
 - 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
+- HP 填色槽必須透明且可由 Phaser 從底下填紅色；能量與格擋值區必須不透明。
 
 ## 測試與驗收策略
 
@@ -227,7 +235,7 @@ playerStatusUi: {
 建議新增或更新測試：
 
 - 純 helper test：HP ratio 與 `hpState` 對應正確。
-- Phaser/UI helper test：player status snapshot 包含 HP、block、energy、deck counters，且與 combat snapshot 數值一致。
+- Phaser/UI helper test：player status snapshot 包含 HP、block、energy，若有低層級牌堆數字也必須與 combat snapshot 數值一致。
 - E2E：進入戰鬥後確認 `playerStatusUi.reference === "battle-design-proposal-1"`。
 - E2E：打出格擋牌後，`playerStatusUi.block > 0` 且 `hasBlock === true`。
 - E2E：敵人回合造成傷害後，`playerStatusUi.hp` 與 `combat.playerHp` 同步下降。
@@ -245,11 +253,11 @@ playerStatusUi: {
 - **過度素材化**：若左上變成大型貼紙面板，會破壞 proposal-1 低噪音戰鬥背景方向。MVP 應先用 Phaser HUD 完成。
 - **牌堆語意不清**：如果 draw/discard/exhaust 的 core 欄位命名與玩家理解不同，需在 implementation plan 中先確認資料來源，避免顯示錯誤。
 - **snapshot 分裂**：新增 `playerStatusUi` 後，必須在測試中確認它與 `combat` snapshot 一致，避免 UI contract 變成另一套真相。
-- **左上空間不足**：若同時塞 avatar、HP、block、energy、三個 counter，可能擁擠。implementation 應優先保 HP / block / energy，牌堆 counters 可縮小或排到面板底部。
+- **左上空間不足**：若同時塞 avatar、HP、block、energy、三個牌堆數字，可能擁擠。implementation 應優先保 HP / block / energy，牌堆文字可縮小、移到面板底部，或暫時不放入左上主元件。
 
 ## 驗收標準對應
 
-- 玩家能一眼理解 HP、格擋與能量：透過 HP 主列、block pill、energy pip/text 達成。
+- 玩家能一眼理解 HP、格擋與能量：透過 HP 主列、綠色格擋板與青色能量板達成。
 - 玩家狀態區不遮擋背景、敵人或手牌：沿用左上 bounded layout，限制尺寸。
-- HP/格擋/能量變化有清楚回饋且不重疊：使用穩定 bar/pill/pip 與可測 snapshot。
+- HP/格擋/能量變化有清楚回饋且不重疊：使用穩定 HP fill、能量/格擋文字與可測 snapshot。
 - 若使用素材圖，素材規格與 prompt 必須寫入 `docs/assets/`：本 spec 已定義 4 張新增素材，並要求先更新 `docs/assets/` 與 JSONL prompt 後才可生圖。
