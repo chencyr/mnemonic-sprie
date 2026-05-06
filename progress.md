@@ -175,6 +175,39 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `25-game-settings-audio-entry-backlog.md`
 - Updated `backlogs/00-index-backlog.md` so these region-focused UI backlogs are scheduled after `18-combat-scene-ui-implementation-backlog.md` and before the next gameplay-flow backlogs.
 
+## 2026-05-06 Combat Turn Action Region
+
+- Started implementation for `22-combat-turn-action-region` on branch `codex/combat-turn-action-region`.
+- Required workflow: `superpowers:executing-plans` + `develop-web-game`.
+- User approved the final split asset direction:
+  - `end-turn-button-plate.png` is a newly drawn tall 340x180 proposal-1-inspired cyan/magenta/yellow explosion button, not a cropped proposal slice.
+  - `end-turn-label.png` and `enemy-turn-label.png` are separate text sprites.
+  - `turn-energy-frame.png` is a gold-bordered回合/能量 frame without lightning.
+  - `energy-lightning-icon.png` is a standalone energy bolt.
+- Backlog moved to `backlogs/in-progress/22-combat-turn-action-region-backlog.md`.
+- Task 2 registry slice complete:
+  - Added five turn action UI assets to `src/data/assets.json`.
+  - Added typed registry keys for `endTurnButtonPlate`, `endTurnLabel`, `enemyTurnLabel`, `turnEnergyFrame`, and `energyLightningIcon`.
+  - Added asset registry assertions.
+  - Red/green verification: `npm test -- tests/core/assetRegistry.test.ts` now passes.
+- Task 1 core query slice complete:
+  - Added framework-neutral `getCombatTurnActionState`, `canAnyCombatHandCardPlay`, and `combatCardPlayabilityReason`.
+  - Reused the core playability helper from Phaser drag/drop card rules.
+  - Red/green verification: `npm test -- tests/core/turnActionState.test.ts tests/phaser/cardPlayRules.test.ts` now passes.
+- Task 3-4 first integration slice complete:
+  - Added `TurnActionView` with pure `deriveTurnActionUiSnapshot()` and Phaser rendering for the five split assets.
+  - Replaced the old right-bottom translucent turn device plus text button with asset-backed turn action UI in `GameScene`.
+  - Added `turnActionUi` to `window.render_game_to_text()`.
+  - Updated E2E assertions for `combat-ui:turn-energy-frame`, energy lightning icons, `combat-ui:end-turn-button-plate`, and `combat-ui:end-turn-label`.
+  - Screenshot review initially found the new button overlapped the rightmost hand card, then got clipped too far right; adjusted the render position and display size until the button stayed readable without covering hand cards.
+- Verification:
+  - `npm test` passed: 15 files / 71 tests.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+  - develop-web-game client ran against `http://127.0.0.1:5179/?e2e=1`; screenshot/state written to `output/web-game-turn-action-combat/`.
+  - Visual review of `output/web-game-turn-action-combat/shot-0.png` confirmed the right-bottom button, gold frame, energy icons, and label render with no hand-card occlusion.
+  - `output/web-game-turn-action-combat/state-0.json` confirmed `turnActionUi.state = playerReady`, expected asset roles, enabled `end-turn`, and no console/page error files.
+
 ## 2026-05-06 Combat Scene UI Implementation
 
 - Continuing in `.worktrees/combat-scene-ui-implementation` on branch `feature/combat-scene-ui-implementation`.

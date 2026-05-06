@@ -28,7 +28,16 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetRole(current, "combat-ui:background", "combat");
   assertNoCombatPanelSurfaceAssets(current);
   assert.equal(current.combatUi?.reference, "battle-design-proposal-3");
-  for (const role of ["combat-ui:background"]) {
+  assert.equal(current.turnActionUi?.state, "playerReady");
+  assert.equal(current.turnActionUi?.labelAsset, "endTurnLabel");
+  assert.equal(current.turnActionUi?.endTurnEnabled, true);
+  for (const role of [
+    "combat-ui:background",
+    "combat-ui:turn-energy-frame",
+    "combat-ui:energy-lightning-icon-0",
+    "combat-ui:end-turn-button-plate",
+    "combat-ui:end-turn-label"
+  ]) {
     assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
   }
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
@@ -176,6 +185,7 @@ async function assertVictoryTransitionDelaysReward(page) {
   assert.ok(current.feedback?.center?.some((item) => item.type === "death"), "Enemy death should surface as center combat feedback.");
   assert.ok(current.feedback?.ticker?.some((item) => item.type === "death"), "Enemy death should surface in combat ticker.");
   assert.ok(current.victoryTransition, "Victory should wait for death presentation.");
+  assert.equal(current.turnActionUi?.state, "victoryPresentation");
   assert.equal(current.reward, undefined);
   assert.ok(!current.buttons.find((button) => button.id === "end-turn")?.enabled, "End turn should be disabled during victory presentation.");
   assert.ok(!current.buttons.find((button) => button.id === "auto-win")?.enabled, "Test win shortcut should be disabled during victory presentation.");

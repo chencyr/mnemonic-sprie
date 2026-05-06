@@ -171,23 +171,24 @@ Mapping rules:
 
 | Runtime Use | Proposed File | Size | Transparency | Notes |
 | --- | --- | ---: | --- | --- |
-| Turn action panel shell | `public/assets/ui/combat/turn-action-panel.png` | 420x260 | Yes | 右下深色街頭裝置底板，不含文字。 |
-| End turn button plate | `public/assets/ui/combat/end-turn-button-plate.png` | 220x88 | Yes | 按鈕底座，可搭配 Phaser 文字與狀態色。 |
-| Energy pip strip | `public/assets/ui/combat/energy-pip-strip.png` | 180x48 | Yes | 能量槽裝飾，不含數字。 |
-| Turn status light | `public/assets/ui/combat/turn-status-light.png` | 96x96 | Yes | 狀態燈或小型裝置，不含 icon 文字。 |
+| End turn button plate | `public/assets/ui/combat/end-turn-button-plate.png` | 340x180 | Yes | 依 proposal-1 右下角 UI 重新繪製的大顆青色斜切按鈕底板，含粉紅背板與周圍爆炸貼紙特效，不含文字。 |
+| End turn label | `public/assets/ui/combat/end-turn-label.png` | 220x72 | Yes | `結束回合` 文字圖，疊在大顆按鈕底板上。 |
+| Enemy turn label | `public/assets/ui/combat/enemy-turn-label.png` | 220x72 | Yes | `敵方回合` 文字圖，敵人階段替換按鈕文字。 |
+| Turn energy frame | `public/assets/ui/combat/turn-energy-frame.png` | 300x96 | Yes | 金邊黑底回合/能量資訊框，不含文字、數字與閃電。 |
+| Energy lightning icon | `public/assets/ui/combat/energy-lightning-icon.png` | 64x64 | Yes | 獨立青色閃電能量 icon，由 Phaser 依目前能量數量排列。 |
 
 素材生成必須先更新 `docs/assets/image-generation-prompts.jsonl`，並符合 AGENTS.md 規則。
+
+已確認的大顆按鈕方向是「直接重新繪製一張完整素材」，不是從 `externals/battle-design-proposal-1.png` 程式切圖。按鈕本體需要比早期 340x130 試作更高，正式規格為 340x180，避免右下操作區看起來太扁。
 
 ### Phaser Dynamic Content
 
 右下區由 Phaser 疊加：
 
-- 狀態標題，例如 `玩家回合`、`自動結束`、`敵人行動`、`勝利過場`。
-- 狀態說明，例如 `選擇卡牌或結束回合`、`沒有可出的牌，準備結束回合`。
 - 回合數，例如 `回合 3`。
 - 能量，例如 `能量 2/3`。
-- 能量 pips 或 bar。
-- `結束回合` 按鈕文字。
+- 能量閃電 icon，依目前能量數量重複顯示。
+- `結束回合` / `敵方回合` 文字圖，依狀態切換。
 - disabled reason。
 
 ### Layout
@@ -230,4 +231,3 @@ Mapping rules:
 - 若 core query 直接依賴 Phaser transition，就會破壞 framework-neutral 邊界。Transition state 必須留在 Phaser。
 - 若 `turnActionUi` 暴露過多 UI 細節，E2E 會變脆弱。Snapshot 只暴露狀態、文案、按鈕 enabled、能量與回合。
 - `04-turn-flow-pacing` 之後可能重寫回合 sequence。本 backlog 的 UI state mapper 必須能被 `04` 擴充，而不是把所有 phase 寫死在 `GameScene`。
-

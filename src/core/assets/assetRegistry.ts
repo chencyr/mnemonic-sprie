@@ -12,6 +12,11 @@ export type CombatUiAssetKey =
   | "playerPanel"
   | "topResourceFrame"
   | "turnDevice"
+  | "endTurnButtonPlate"
+  | "endTurnLabel"
+  | "enemyTurnLabel"
+  | "turnEnergyFrame"
+  | "energyLightningIcon"
   | "tickerPanel"
   | "enemyPlatform"
   | "targetRing"
@@ -54,6 +59,11 @@ const combatUiAssetKeys: Record<CombatUiAssetKey, keyof GameData["assets"]["ui"]
   playerPanel: "combatPlayerPanel",
   topResourceFrame: "combatTopResourceFrame",
   turnDevice: "combatTurnDevice",
+  endTurnButtonPlate: "combatEndTurnButtonPlate",
+  endTurnLabel: "combatEndTurnLabel",
+  enemyTurnLabel: "combatEnemyTurnLabel",
+  turnEnergyFrame: "combatTurnEnergyFrame",
+  energyLightningIcon: "combatEnergyLightningIcon",
   tickerPanel: "combatTickerPanel",
   enemyPlatform: "combatEnemyPlatform",
   targetRing: "combatTargetRing",

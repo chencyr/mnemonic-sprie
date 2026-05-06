@@ -31,6 +31,8 @@ export { createCombat, createCombatLookup, drawCards } from "./combat/createComb
 export { checkCombatEnd, effectiveCardCost, endPlayerTurn, playCard, startPlayerTurn } from "./combat/combatEngine";
 export { combatEffectIds, resolveCombatEffect } from "./combat/cardEffects";
 export { isEnemyAlive, markEnemyDead, syncEnemyDeathState } from "./combat/enemyState";
+export { canAnyCombatHandCardPlay, combatCardPlayabilityReason, getCombatTurnActionState } from "./combat/turnActionState";
+export type { CombatTurnActionState, CombatTurnActionSuggestedUiState } from "./combat/turnActionState";
 export type {
   BossCountermeasure,
   CardInstance,

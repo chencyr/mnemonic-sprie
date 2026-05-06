@@ -1,4 +1,4 @@
-import { effectiveCardCost, isEnemyAlive, type CardDefinition, type CardInstance, type CombatState, type EnemyInstance, type GameData } from "../../core";
+import { combatCardPlayabilityReason, isEnemyAlive, type CardDefinition, type CardInstance, type CombatState, type EnemyInstance, type GameData } from "../../core";
 
 export type DropZoneKind = "enemy" | "battlefield" | "player" | "hand" | "invalid";
 
@@ -29,14 +29,7 @@ export function canAnyHandCardPlay(data: GameData, combat: CombatState): boolean
 }
 
 export function playabilityReason(data: GameData, combat: CombatState, cardInstanceId: string): string | undefined {
-  const cardInstance = combat.cards.find((card) => card.instanceId === cardInstanceId);
-  const definition = cardInstance ? cardDefinition(data, cardInstance) : undefined;
-  if (!cardInstance || !definition) return "找不到卡牌。";
-  if (!combat.hand.includes(cardInstanceId)) return "卡牌不在手牌中。";
-  if (effectiveCardCost(data, cardInstance) > combat.player.energy) return "能量不足。";
-  if ((definition.target === "singleEnemy" || definition.target === "allEnemies") && !findAutoEnemyTarget(combat.enemies)) return "沒有可攻擊目標。";
-  if (definition.target === "handCard" && !targetHandCard(combat, cardInstanceId)) return "沒有可指定的手牌。";
-  return undefined;
+  return combatCardPlayabilityReason(data, combat, cardInstanceId);
 }
 
 export function resolveDraggedCardPlay(data: GameData, combat: CombatState, cardInstanceId: string, drop: CardDropResult): ResolvedCardPlay {
