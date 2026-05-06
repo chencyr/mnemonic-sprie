@@ -58,6 +58,8 @@
 - `docs/assets/` 是素材生成規格與生成方式的主要位置。
 - 這裡的內容用於重新生成、修正錯誤素材、檢查素材槽規格。
 - 給 image generation / image2 使用的 prompt、規格、風格限制、檔名與尺寸要求都應寫在這裡。
+- 畫任何素材圖時，必須先讀取並遵守 `docs/assets/image-generation-prompts.jsonl` 中對應素材槽的定義；不得只依照對話中的臨時描述、個人判斷或未記錄 prompt 直接生成。
+- 若要變更素材風格、尺寸、透明度、參考圖、排除項或輸出路徑，必須先更新 `docs/assets/image-generation-prompts.jsonl` 與必要的 `docs/assets/*` 規格文件，再重新生成素材。
 - 程式碼引用素材時，應優先透過資料表與 asset registry，不要硬編素材路徑。
 
 ### `backlogs/`
