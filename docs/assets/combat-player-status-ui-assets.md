@@ -12,9 +12,7 @@ Final accepted base direction:
 
 - Use `style-teradadara-like` on top of the original `player-status-base` prompt.
 - The complete base asset is `public/assets/ui/combat/player-status-base.png`.
-- The HP fill aperture must be transparent and have an extra inner rim, especially along the top edge, so it reads as a framed fill slot rather than a broken cutout.
-- Energy and block value areas must be opaque, not translucent.
-- Only the HP fill aperture remains transparent for Phaser-rendered red HP fill.
+- Use the accepted original generated trial as-is. Do not post-process the base asset for HP cutouts, extra mask work, or opacity changes unless this spec is changed first.
 
 ## Visual Reference
 
@@ -55,7 +53,7 @@ Visual language:
 
 | Asset | Size | Runtime Role |
 | --- | ---: | --- |
-| `player-status-base.png` | 420x240 | Accepted style-teradadara-like left-top player status base: skull/crown emblem, HP lane with transparent framed fill aperture, opaque cyan energy plate, opaque green block plate. No dynamic text or numbers. |
+| `player-status-base.png` | 420x240 | Accepted original style-teradadara-like left-top player status base: skull/crown emblem, HP lane, cyan energy plate, green block plate. No dynamic text or numbers. |
 | `player-status-hp-fill-slot.png` | 260x48 | Local HP fill slot aligned to the base HP lane. Phaser draws the red fill and HP text. |
 | `player-status-energy-value-slot.png` | 180x54 | Local clean cyan value area aligned to the base energy plate. Phaser draws energy text/number. |
 | `player-status-block-value-slot.png` | 180x54 | Local clean green value area aligned to the base block plate. Phaser draws block text/number. |

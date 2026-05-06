@@ -93,8 +93,8 @@
    - HP bar 使用 magenta / red 系列，低 HP 時進入 warning state。
 
 2. **戰鬥防護與能量列**
-   - 格擋使用主素材右下方的不透明綠色板，文字顯示目前 block。
-   - 能量使用主素材左下方的不透明 cyan 能量板與閃電 icon 區，文字顯示 `能量 N/3`。
+   - 格擋使用主素材右下方的綠色板，文字顯示目前 block。
+   - 能量使用主素材左下方的 cyan 能量板與閃電 icon 區，文字顯示 `能量 N/3`。
    - 這一列要比 HP 小，但比任何牌堆輔助文字更醒目。
 
 3. **低層級資源文字**
@@ -104,9 +104,9 @@
 
 ### 視覺語言
 
-- 面板底為深色 street HUD 裝置，PNG 背景透明；能量與格擋值區本身不使用半透明。
+- 面板底為深色 street HUD 裝置，PNG 背景透明。
 - 邊框使用 proposal-1 的低噪音 cyan / magenta / yellow 切角線，不使用高彩度角色面板。
-- HP bar 使用透明填色孔供 Phaser 從下方填紅；能量板與格擋板用清楚不透明幾何形狀。
+- HP bar、能量板與格擋板沿用已接受原始生成圖的幾何形狀；動態數值由 Phaser 疊文字。
 - 低 HP warning 可使用短暫 pulse 或邊框色變，不使用大幅 shake。
 - 格擋增加時可沿用既有 combat feedback 的浮字語言，但玩家狀態區本身應顯示數值變化後的穩定狀態。
 
@@ -184,8 +184,8 @@ playerStatusUi: {
 
 目前已確認採用 `public/assets/ui/combat/player-status-base.png` 作為正式 runtime 底板。這張底板有三個重要約束：
 
-- HP 填色槽是透明的，並且有額外內描邊，避免上緣看起來像去背破口。
-- 能量區與格擋區是不透明底色，不使用半透明值槽。
+- 必須使用已接受的原始 `style-teradadara-like` trial 圖，不再後處理成另一張不同外觀。
+- 不得對正式底板再做 HP 挖空、額外 mask、透明度改造或重畫局部。
 - 牌堆資訊不放入這個底板，避免違背主視覺左上元件結構。
 
 可使用的既有素材：
@@ -197,10 +197,10 @@ playerStatusUi: {
 
 | Runtime Use | Asset | Size | Role |
 | --- | --- | ---: | --- |
-| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 採用 style-teradadara-like 重畫主視覺左上整體：骷髏/皇冠 emblem、HP 透明填色槽含內描邊、青色不透明能量板、綠色不透明格擋板。 |
-| HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的輔助槽位規格；runtime 可用 Phaser shape 直接填紅，不必顯示此槽圖。 |
-| 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的輔助規格；runtime 主要使用底板上的不透明能量區並疊 Phaser 文字。 |
-| 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的輔助規格；runtime 主要使用底板上的不透明格擋區並疊 Phaser 文字。 |
+| 完整左上狀態底板 | `public/assets/ui/combat/player-status-base.png` | 420x240 | 採用已接受的原始 style-teradadara-like trial：骷髏/皇冠 emblem、HP 長條、青色能量板、綠色格擋板。 |
+| HP 填充值槽 | `public/assets/ui/combat/player-status-hp-fill-slot.png` | 260x48 | 對齊底板 HP 長條的輔助槽位規格；runtime 不應為了填色修改正式底板本身。 |
+| 能量數值槽 | `public/assets/ui/combat/player-status-energy-value-slot.png` | 180x54 | 對齊底板青色能量板的輔助規格；runtime 主要使用底板上的能量區並疊 Phaser 文字。 |
+| 格擋數值槽 | `public/assets/ui/combat/player-status-block-value-slot.png` | 180x54 | 對齊底板綠色格擋板的輔助規格；runtime 主要使用底板上的格擋區並疊 Phaser 文字。 |
 
 不建議 runtime 使用：
 
@@ -219,7 +219,7 @@ playerStatusUi: {
 - 不得包含 readable text、numbers、HP、能量、格擋、抽牌、棄牌、手牌 label。
 - 不得包含敵人、卡牌、浮水印或新角色；shell 應忠實重畫主視覺左上原本的骷髏/皇冠 emblem，因為它是已確認主視覺的一部分。
 - 不得使用大面積高彩度貼紙裝飾搶走手牌與敵人視線。
-- HP 填色槽必須透明且可由 Phaser 從底下填紅色；能量與格擋值區必須不透明。
+- 正式底板必須保持已接受圖的原貌；若要調整 HP 填色表現，應由 Phaser 疊加或另開素材規格，不得改寫這張 base。
 
 ## 測試與驗收策略
 

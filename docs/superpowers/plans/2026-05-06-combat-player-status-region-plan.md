@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the combat left-top debug-style player panel with the accepted `player-status-base.png` asset, Phaser-rendered HP fill/text, and a testable `playerStatusUi` snapshot.
+**Goal:** Replace the combat left-top debug-style player panel with the accepted `player-status-base.png` asset, Phaser-rendered HP/energy/block text, and a testable `playerStatusUi` snapshot.
 
 **Architecture:** Keep gameplay rules in `src/core/` unchanged. Add typed asset registry entries, a focused Phaser UI state helper, then wire `CombatSceneView` and `GameScene` to render the accepted base asset and expose the derived UI contract through `window.render_game_to_text()`.
 
@@ -17,7 +17,7 @@
 - Modify `tests/core/assetRegistry.test.ts`: prove the new keys resolve and preload.
 - Create `src/phaser/ui/combatPlayerStatusUi.ts`: derive UI-only HP ratio, HP state, block/energy flags, and pile counts from `CombatState`.
 - Create `tests/phaser/combatPlayerStatusUi.test.ts`: lock the helper thresholds and snapshot values before renderer changes.
-- Modify `src/phaser/ui/CombatSceneView.ts`: render HP fill below the accepted base asset, then overlay dynamic HP/energy/block text.
+- Modify `src/phaser/ui/CombatSceneView.ts`: render the accepted base asset as-is, then overlay dynamic HP/energy/block text.
 - Modify `src/scenes/GameScene.ts`: pass `UiRenderContext` and assets into the renderer, and expose `playerStatusUi` in `TextSnapshot`.
 - Modify `tests/e2e/fullRunSmoke.mjs`: assert the new asset role and `playerStatusUi` consistency with the combat snapshot.
 
@@ -27,7 +27,7 @@
 - Do not use `public/assets/ui/combat/player-panel.png` for this left-top runtime panel.
 - Do not render readable text from PNG assets; HP, energy, block, and pile counts remain Phaser text.
 - Do not add deck graphics into `player-status-base.png`; only Phaser text may show pile counts.
-- Draw the red HP fill before drawing `player-status-base.png`, because the accepted asset has a transparent HP aperture.
+- Use `player-status-base.png` as-is. Do not require HP cutouts or opacity post-processing in the base asset.
 - Use Codex app browser / develop-web-game style verification for visual inspection; do not use an external browser.
 
 ### Task 1: Register Player Status UI Assets
@@ -363,8 +363,6 @@ export function renderCombatPlayerPanel(
 ) {
   const root = scene.add.container(combatLayout.playerPanel.x, combatLayout.playerPanel.y);
   const assetKey = assets.getCombatUiAsset("playerStatusBase").key;
-  const hpFill = playerStatusHpFill(status);
-  root.add(scene.add.rectangle(hpFill.x, hpFill.y, hpFill.w * status.hpRatio, hpFill.h, hpFill.color, 0.96).setOrigin(0));
   const base = image(
     scene,
     context,
@@ -377,7 +375,7 @@ export function renderCombatPlayerPanel(
   );
   if (base) root.add(base);
 
-  root.add(statusText(scene, 168, 60, `${status.hp}/${status.maxHp}`, 22, "#fff8d8", 0.5));
+  root.add(statusText(scene, 168, 60, `${status.hp}/${status.maxHp}`, 22, hpTextColor(status.hpState), 0.5));
   root.add(statusText(scene, 130, 128, `${status.energy}/${status.maxEnergy}`, 20, "#062024", 0.5));
   root.add(statusText(scene, 250, 132, `${status.block}`, 20, status.hasBlock ? "#102112" : "#2b3429", 0.5));
   root.add(statusText(scene, 244, 166, `牌 ${status.drawPileCount}/${status.discardPileCount}/${status.handCount}`, 11, colors.muted, 0.5));
@@ -385,20 +383,14 @@ export function renderCombatPlayerPanel(
   return root;
 }
 
-function playerStatusHpFill(status: CombatPlayerStatusUiState) {
-  const colorByState: Record<CombatPlayerStatusUiState["hpState"], number> = {
-    healthy: 0xff335f,
-    wounded: 0xff7a2f,
-    critical: 0xff1f6d,
-    dead: 0x3f0b18
+function hpTextColor(hpState: CombatPlayerStatusUiState["hpState"]) {
+  const colorByState: Record<CombatPlayerStatusUiState["hpState"], string> = {
+    healthy: "#fff8d8",
+    wounded: "#ffd166",
+    critical: "#ff5b7f",
+    dead: "#7f1d1d"
   };
-  return {
-    x: 145,
-    y: 73,
-    w: 146,
-    h: 16,
-    color: colorByState[status.hpState]
-  };
+  return colorByState[hpState];
 }
 
 function statusText(scene: Phaser.Scene, x: number, y: number, value: string, size: number, color: string, originX = 0) {
@@ -638,8 +630,8 @@ Also inspect console/page errors. Expected: no console errors and no page errors
 Inspect the latest combat screenshot and confirm:
 
 - Left-top UI uses `player-status-base.png`.
-- The HP fill appears through the transparent HP aperture and does not leak outside the framed slot.
-- Energy and block value areas look opaque.
+- The base asset matches the accepted original style-teradadara-like trial.
+- HP, energy, and block runtime text sit on the intended lanes without forcing a modified base image.
 - HP, energy, and block text remain readable at 1280x720.
 - The left-top component does not cover the enemy area, hand tray, or end-turn device.
 
@@ -656,6 +648,6 @@ If verification produces no tracked changes, record the passing commands in the 
 
 ## Self-Review
 
-- Spec coverage: Tasks cover accepted asset registration, Phaser-rendered HP fill/text, opaque energy/block value presentation, `playerStatusUi` snapshot, E2E checks, and required visual verification.
+- Spec coverage: Tasks cover accepted asset registration, Phaser-rendered HP/energy/block text, `playerStatusUi` snapshot, E2E checks, and required visual verification.
 - Completion scan: This plan does not contain unresolved filler language or open implementation gaps.
 - Type consistency: `CombatPlayerStatusUiState`, `createCombatPlayerStatusUiState`, `playerStatusUi`, and `playerStatusBase` are named consistently across tests, renderer, snapshot, and E2E.
