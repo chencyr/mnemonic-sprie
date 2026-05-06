@@ -262,3 +262,8 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Reward waits for enemy death presentation completion.
   - `window.render_game_to_text()` exposes `combatEnemyArena`.
   - Console/page errors were empty in the manual death-transition scenario.
+- Final verification passed for combat enemy arena:
+  - `npm test`: 13 files / 61 tests passed.
+  - `npm run build` passed.
+  - `npm run test:e2e` passed.
+- Completed `24-combat-enemy-arena-region-backlog.md` and moved it to `backlogs/done/`.
