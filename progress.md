@@ -341,3 +341,16 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-rotate/` with no console/page error files.
   - Manual transition screenshot/state check at `output/manual-turn-action-label-rotate-transition/` confirmed `enemyTurnLabel` during transition and bounds stayed inside the frame.
+- Second follow-up tuning requested:
+  - Make the button label larger and move it inward/right.
+  - Correct the button label rotation 5 degrees back toward upright while keeping the plate at -20 degrees.
+- Second follow-up implementation complete:
+  - Button label display size is larger and shifted 10px right into the cyan button body.
+  - Button label final rotation is -15 degrees while the plate remains -20 degrees.
+- Second follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-inset/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-label-inset-transition/` confirmed `enemyTurnLabel` still renders during transition.

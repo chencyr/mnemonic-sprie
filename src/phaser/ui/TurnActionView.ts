@@ -67,8 +67,11 @@ const BUTTON_DISPLAY_W = 292;
 const BUTTON_DISPLAY_H = 154;
 const BUTTON_LEFT_X = BUTTON_CENTER_X - BUTTON_DISPLAY_W / 2;
 const BUTTON_ROTATION = (-20 * Math.PI) / 180;
-const LABEL_DISPLAY_W = 169;
-const LABEL_DISPLAY_H = 55;
+const LABEL_CENTER_X = BUTTON_CENTER_X + 10;
+const LABEL_CENTER_Y = BUTTON_CENTER_Y;
+const LABEL_ROTATION = (-15 * Math.PI) / 180;
+const LABEL_DISPLAY_W = 184;
+const LABEL_DISPLAY_H = 60;
 const STATE_FRAME_W = 156;
 const STATE_FRAME_H = 54;
 const STATE_FRAME_CENTER_X = BUTTON_LEFT_X + STATE_FRAME_W / 2;
@@ -292,8 +295,8 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
   if (plate) root.add(plate.setRotation(BUTTON_ROTATION));
 
   const labelRole = snapshot.labelAsset === "enemyTurnLabel" ? "combat-ui:enemy-turn-label" : "combat-ui:end-turn-label";
-  const labelSprite = image(scene, context, BUTTON_CENTER_X, BUTTON_CENTER_Y, assets.getCombatUiAsset(snapshot.labelAsset).key, LABEL_DISPLAY_W, LABEL_DISPLAY_H, labelRole, plateAlpha);
-  if (labelSprite) root.add(labelSprite.setRotation(BUTTON_ROTATION));
+  const labelSprite = image(scene, context, LABEL_CENTER_X, LABEL_CENTER_Y, assets.getCombatUiAsset(snapshot.labelAsset).key, LABEL_DISPLAY_W, LABEL_DISPLAY_H, labelRole, plateAlpha);
+  if (labelSprite) root.add(labelSprite.setRotation(LABEL_ROTATION));
 
   const hitZone = scene.add.zone(38, 90, 264, 88).setOrigin(0).setInteractive({ useHandCursor: snapshot.endTurnEnabled });
   hitZone.setName("end-turn");

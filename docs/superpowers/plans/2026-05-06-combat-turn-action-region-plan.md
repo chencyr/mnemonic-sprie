@@ -8,7 +8,7 @@
 
 **Tech Stack:** Phaser 3, TypeScript, Vite, Vitest, Playwright E2E, Codex in-app browser / develop-web-game verification.
 
-**Current visual tuning rule:** During manual or auto turn transition, the main button swaps to the `敵方回合` label asset instead of showing debug-style transition text. The large button plate and label are both rotated left about 20 degrees. The turn/energy frame is about half the previous visual size, left-aligns to the large button's left edge, sits close to the button, and exposes bounds so E2E can verify status text/icons remain inside the frame.
+**Current visual tuning rule:** During manual or auto turn transition, the main button swaps to the `敵方回合` label asset instead of showing debug-style transition text. The large button plate rotates left about 20 degrees; the label follows the diagonal but is corrected 5 degrees back toward upright and shifted inward on the cyan button body. The turn/energy frame is about half the previous visual size, left-aligns to the large button's left edge, sits close to the button, and exposes bounds so E2E can verify status text/icons remain inside the frame.
 
 ---
 
