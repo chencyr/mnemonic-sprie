@@ -65,6 +65,11 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Adjusted energy text to `153,137`; adjusted block text to `266,137`; removed the low-priority pile count text from `renderCombatPlayerPanel()`.
   - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-no-deck/player-status-crop.png` reviewed; console/page errors empty.
   - Verification: `npm run build` and `npm run test:e2e` passed.
+- Follow-up fine alignment:
+  - User asked to move energy/block values left/down by 2px, then left another 2px.
+  - Final positions: energy `149,139`, block `262,139`.
+  - Verification: manual Playwright screenshot `output/manual-combat-player-status-align-4px/player-status-crop.png` reviewed; console/page errors empty.
+  - Verification: `npm run build` and `npm run test:e2e` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
