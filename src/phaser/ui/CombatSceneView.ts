@@ -68,17 +68,11 @@ export function renderCombatBackground(scene: Phaser.Scene, context: UiRenderCon
 
 export function renderCombatPlayerPanel(
   scene: Phaser.Scene,
-  context: UiRenderContext,
-  assets: AssetRegistry,
   run: RunState,
   vitals: { hp: number; maxHp: number; energy: number; block: number }
 ) {
   const root = scene.add.container(combatLayout.playerPanel.x, combatLayout.playerPanel.y);
-  const surface = image(scene, context, 0, 0, assets.getCombatUiAsset("playerPanel").key, combatLayout.playerPanel.w, combatLayout.playerPanel.h, "combat-ui:player-panel");
-  if (surface) {
-    surface.setOrigin(0);
-    root.add(surface);
-  }
+  root.add(translucentRegion(scene, combatLayout.playerPanel.w, combatLayout.playerPanel.h));
   root.add(label(scene, 82, 18, "HP", 16, "#ff4f8b"));
   root.add(label(scene, 82, 42, `${vitals.hp}/${vitals.maxHp}`, 22, colors.ink));
   root.add(bar(scene, 82, 74, 210, 12, vitals.hp / vitals.maxHp, colors.red, 0x111827));
@@ -88,13 +82,9 @@ export function renderCombatPlayerPanel(
   return root;
 }
 
-export function renderCombatTopResource(scene: Phaser.Scene, context: UiRenderContext, assets: AssetRegistry, run: RunState) {
+export function renderCombatTopResource(scene: Phaser.Scene, run: RunState) {
   const root = scene.add.container(combatLayout.topResource.x, combatLayout.topResource.y);
-  const surface = image(scene, context, 0, 0, assets.getCombatUiAsset("topResourceFrame").key, combatLayout.topResource.w, combatLayout.topResource.h, "combat-ui:top-resource");
-  if (surface) {
-    surface.setOrigin(0);
-    root.add(surface);
-  }
+  root.add(translucentRegion(scene, combatLayout.topResource.w, combatLayout.topResource.h));
   root.add(label(scene, 22, 15, `F${run.floor || 0}/12`, 18, colors.ink));
   root.add(label(scene, 132, 15, `金幣 ${run.gold}`, 17, colors.gold));
   root.add(label(scene, 292, 15, `遺物 ${run.relics.length}`, 15, colors.purpleText));
@@ -102,36 +92,24 @@ export function renderCombatTopResource(scene: Phaser.Scene, context: UiRenderCo
   return root;
 }
 
-export function renderCombatTurnDevice(scene: Phaser.Scene, context: UiRenderContext, assets: AssetRegistry, turn: number, energy: number) {
+export function renderCombatTurnDevice(scene: Phaser.Scene, turn: number, energy: number) {
   const root = scene.add.container(combatLayout.turnDevice.x, combatLayout.turnDevice.y);
-  const surface = image(scene, context, 0, 0, assets.getCombatUiAsset("turnDevice").key, combatLayout.turnDevice.w, combatLayout.turnDevice.h, "combat-ui:turn-device");
-  if (surface) {
-    surface.setOrigin(0);
-    root.add(surface);
-  }
+  root.add(translucentRegion(scene, combatLayout.turnDevice.w, combatLayout.turnDevice.h));
   root.add(label(scene, 42, 22, `回合 ${turn}`, 17, colors.ink));
   root.add(label(scene, 42, 50, `能量 ${energy}/3`, 16, colors.cyanText));
   return root;
 }
 
-export function renderCombatTickerSurface(scene: Phaser.Scene, context: UiRenderContext, assets: AssetRegistry) {
+export function renderCombatTickerSurface(scene: Phaser.Scene) {
   const root = scene.add.container(combatLayout.ticker.x, combatLayout.ticker.y);
-  const surface = image(scene, context, 0, 0, assets.getCombatUiAsset("tickerPanel").key, combatLayout.ticker.w, combatLayout.ticker.h, "combat-ui:ticker-panel");
-  if (surface) {
-    surface.setOrigin(0);
-    root.add(surface);
-  }
+  root.add(translucentRegion(scene, combatLayout.ticker.w, combatLayout.ticker.h));
   root.add(label(scene, 20, 24, "戰況", 18, colors.ink));
   return root;
 }
 
-export function renderCombatHandTray(scene: Phaser.Scene, context: UiRenderContext, assets: AssetRegistry) {
+export function renderCombatHandTray(scene: Phaser.Scene) {
   const root = scene.add.container(combatLayout.handTray.x, combatLayout.handTray.y);
-  const surface = image(scene, context, 0, 0, assets.getCombatUiAsset("handTray").key, combatLayout.handTray.w, combatLayout.handTray.h, "combat-ui:hand-tray");
-  if (surface) {
-    surface.setOrigin(0);
-    root.add(surface);
-  }
+  root.add(translucentRegion(scene, combatLayout.handTray.w, combatLayout.handTray.h));
   root.add(label(scene, 12, 12, "手牌", 18, colors.ink));
   return root;
 }
@@ -143,4 +121,8 @@ export function combatText(scene: Phaser.Scene, x: number, y: number, text: stri
     fontSize: `${size}px`,
     fontStyle: size >= 18 ? "800" : "650"
   });
+}
+
+function translucentRegion(scene: Phaser.Scene, w: number, h: number) {
+  return scene.add.rectangle(0, 0, w, h, 0x000000, 0.58).setOrigin(0).setStrokeStyle(1, 0xffffff, 0.14);
 }

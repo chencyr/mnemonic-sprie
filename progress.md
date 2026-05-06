@@ -216,3 +216,6 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - Resized/saved runtime asset to 1920x1080 opaque PNG.
   - Manual Playwright screenshot written to `output/manual-imagegen-battle-bg/combat.png`.
   - Manual state confirmed `combat-ui:background` is visible and console/page errors were empty.
+- User requested simplifying combat panel surfaces:
+  - Player status, progress status, battle ticker, turn actions, and hand tray now use black translucent Phaser rectangles instead of UI surface image assets.
+  - `測試勝利` quick test button moved to the lower-left corner.

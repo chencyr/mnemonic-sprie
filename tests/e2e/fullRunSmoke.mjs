@@ -26,12 +26,9 @@ await withGamePage(async ({ page }) => {
   assertVisibleAssetPrefix(current, "card:", "combat");
   assertVisibleAssetPrefix(current, "ui:intent", "combat");
   assertVisibleAssetRole(current, "combat-ui:background", "combat");
-  assertVisibleAssetRole(current, "combat-ui:player-panel", "combat");
-  assertVisibleAssetRole(current, "combat-ui:turn-device", "combat");
-  assertVisibleAssetRole(current, "combat-ui:ticker-panel", "combat");
-  assertVisibleAssetRole(current, "combat-ui:hand-tray", "combat");
+  assertNoCombatPanelSurfaceAssets(current);
   assert.equal(current.combatUi?.reference, "battle-design-proposal-3");
-  for (const role of ["combat-ui:background", "combat-ui:player-panel", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]) {
+  for (const role of ["combat-ui:background"]) {
     assert.ok(current.combatUi.assetRoles.includes(role), `combat UI snapshot should include ${role}`);
   }
   assert.equal(current.audio?.currentMusic, "audio:combatBgm");
@@ -316,6 +313,12 @@ function assertNoInvalidNumbers(current) {
       assert.ok(["alive", "dead"].includes(enemy.state), `enemy state should be lifecycle state: ${enemy.id}`);
     }
   }
+}
+
+function assertNoCombatPanelSurfaceAssets(current) {
+  const removedRoles = new Set(["combat-ui:player-panel", "combat-ui:top-resource", "combat-ui:ticker-panel", "combat-ui:hand-tray", "combat-ui:turn-device"]);
+  const stillRendered = current.visibleAssets?.filter((asset) => removedRoles.has(asset.role)) ?? [];
+  assert.deepEqual(stillRendered, [], "combat status/progress/ticker/action/hand regions should use black translucent Phaser regions, not UI image assets.");
 }
 
 function chooseMapButton(current, visitedScreens) {
