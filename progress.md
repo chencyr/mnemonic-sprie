@@ -404,3 +404,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-remove-hand-target-platform/` confirmed no hand label, no enemy platform role, no target ring role, and no console/page error files.
   - Manual dragging screenshot/state check at `output/manual-drag-no-rect/` confirmed active drag with no drop-zone rectangle visuals.
+
+## 2026-05-07 Combat Turn Action Region Done
+
+- User approved the current combat turn action and auxiliary visual cleanup state.
+- Completed `22-combat-turn-action-region-backlog.md`.
+- Moved backlog from `backlogs/in-progress/` to `backlogs/done/`.
+- Remaining user-owned/unrelated dirty file: `AGENTS.md`.
