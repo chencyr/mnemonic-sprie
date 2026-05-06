@@ -41,6 +41,10 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `renderCombatPlayerPanel()` now renders `player-status-base.png`, draws HP fill under the transparent aperture, and overlays Phaser text for HP, energy, block, and low-priority pile counts.
   - `GameScene.drawCombat()` now passes `createCombatPlayerStatusUiState(combat)` into the renderer.
   - Verification: `npm run build` passed.
+- Task 4 complete:
+  - `window.render_game_to_text()` now exposes `playerStatusUi` with values, visibility, reference, and player-status asset roles.
+  - E2E now asserts `combat-ui:player-status-base`, `playerStatusUi.reference === "battle-design-proposal-1"`, and consistency with combat HP/block/energy.
+  - Verification: `npm run test:e2e` passed.
 
 ## 2026-05-06 Phaser Game Feel
 
