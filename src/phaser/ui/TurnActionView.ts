@@ -68,7 +68,7 @@ const BUTTON_DISPLAY_H = 154;
 const BUTTON_LEFT_X = BUTTON_CENTER_X - BUTTON_DISPLAY_W / 2;
 const BUTTON_ROTATION = (-20 * Math.PI) / 180;
 const LABEL_CENTER_X = BUTTON_CENTER_X + 10;
-const LABEL_CENTER_Y = BUTTON_CENTER_Y;
+const LABEL_CENTER_Y = BUTTON_CENTER_Y - 5;
 const LABEL_ROTATION = (-15 * Math.PI) / 180;
 const LABEL_DISPLAY_W = 184;
 const LABEL_DISPLAY_H = 60;
@@ -78,18 +78,18 @@ const STATE_FRAME_CENTER_X = BUTTON_LEFT_X + STATE_FRAME_W / 2;
 const STATE_FRAME_CENTER_Y = 72;
 const STATUS_FRAME_LEFT_X = STATE_FRAME_CENTER_X - STATE_FRAME_W / 2;
 const STATUS_FRAME_TOP_Y = STATE_FRAME_CENTER_Y - STATE_FRAME_H / 2;
-const TURN_TEXT_X = STATUS_FRAME_LEFT_X + 16;
-const TURN_TEXT_Y = STATUS_FRAME_TOP_Y + 8;
-const TURN_TEXT_W = 58;
-const TURN_TEXT_H = 16;
-const ENERGY_TEXT_X = STATUS_FRAME_LEFT_X + 16;
+const TURN_TEXT_X = STATUS_FRAME_LEFT_X + 30;
+const TURN_TEXT_Y = STATUS_FRAME_TOP_Y + 7;
+const TURN_TEXT_W = 72;
+const TURN_TEXT_H = 18;
+const ENERGY_TEXT_X = STATUS_FRAME_LEFT_X + 30;
 const ENERGY_TEXT_Y = STATUS_FRAME_TOP_Y + 29;
-const ENERGY_TEXT_W = 34;
-const ENERGY_TEXT_H = 16;
-const ENERGY_ICON_SIZE = 18;
-const ENERGY_ICON_X = STATUS_FRAME_LEFT_X + 66;
-const ENERGY_ICON_Y = STATUS_FRAME_TOP_Y + 37;
-const ENERGY_ICON_GAP = 17;
+const ENERGY_TEXT_W = 42;
+const ENERGY_TEXT_H = 18;
+const ENERGY_ICON_SIZE = 20;
+const ENERGY_ICON_X = STATUS_FRAME_LEFT_X + 88;
+const ENERGY_ICON_Y = STATUS_FRAME_TOP_Y + 38;
+const ENERGY_ICON_GAP = 14;
 
 function absoluteBounds(rootX: number, rootY: number, bounds: UiBounds): UiBounds {
   return {
@@ -255,12 +255,12 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
   if (frame) root.add(frame);
   else root.add(scene.add.rectangle(STATUS_FRAME_LEFT_X, STATUS_FRAME_TOP_Y, STATE_FRAME_W, STATE_FRAME_H, 0x000000, 0.64).setOrigin(0).setStrokeStyle(2, 0xf4c542, 0.86));
 
-  const turnText = label(scene, TURN_TEXT_X, TURN_TEXT_Y, `回合 ${snapshot.turn}`, 13, "#fff3a6", TURN_TEXT_W);
+  const turnText = label(scene, TURN_TEXT_X, TURN_TEXT_Y, `回合 ${snapshot.turn}`, 15, "#fff3a6", TURN_TEXT_W);
   turnText.setFontStyle("900");
   turnText.setShadow(1, 1, "#111827", 2, true, true);
   root.add(turnText);
 
-  const energyText = label(scene, ENERGY_TEXT_X, ENERGY_TEXT_Y, `能量`, 12, colors.cyanText, ENERGY_TEXT_W);
+  const energyText = label(scene, ENERGY_TEXT_X, ENERGY_TEXT_Y, `能量`, 14, colors.cyanText, ENERGY_TEXT_W);
   energyText.setFontStyle("900");
   energyText.setShadow(1, 1, "#111827", 2, true, true);
   root.add(energyText);

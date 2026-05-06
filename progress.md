@@ -354,3 +354,17 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run test:e2e`
   - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-label-inset/` with no console/page error files.
   - Manual transition screenshot/state check at `output/manual-turn-action-label-inset-transition/` confirmed `enemyTurnLabel` still renders during transition.
+- Third follow-up tuning requested:
+  - Make the turn/energy status content larger, denser, and more right-aligned inside the same frame.
+  - Move the big button label sprite up by 5px.
+- Third follow-up implementation complete:
+  - Status text font sizes increased; status content moved right.
+  - Energy icons increased to 20px and tightened to 14px spacing.
+  - Big button label sprite moved up by 5px.
+- Third follow-up verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-status-dense/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-status-dense-transition/` confirmed `enemyTurnLabel` renders with the updated label position.
