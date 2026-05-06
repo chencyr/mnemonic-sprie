@@ -258,6 +258,10 @@ async function assertAutoEndTurnMessage(page) {
   if (current.mode !== "combat") return;
   if (current.turnTransition?.kind === "autoNoPlayableCards") {
     assert.match(current.turnTransition.message, /自動結束回合/);
+    assert.equal(current.turnActionUi?.state, "autoEndingNoPlayableCards");
+    assert.equal(current.turnActionUi?.labelAsset, "enemyTurnLabel");
+    assert.equal(current.turnActionUi?.endTurnEnabled, false);
+    assert.equal(current.turnActionUi?.endTurnDisabledReason, undefined);
     await page.waitForTimeout(850);
     current = await state(page);
     assert.equal(current.turnTransition, undefined);

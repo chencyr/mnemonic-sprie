@@ -44,13 +44,27 @@ describe("turn action view", () => {
   });
 
   it("maps active manual transition to a disabled ending state", () => {
-    expect(deriveTurnActionUiSnapshot(playerReady, { turnTransition: { kind: "manual", message: "回合結束。" } })).toMatchObject({
+    const snapshot = deriveTurnActionUiSnapshot(playerReady, { turnTransition: { kind: "manual", message: "回合結束。" } });
+    expect(snapshot).toMatchObject({
       state: "manualEnding",
       title: "回合結束",
       message: "回合結束。",
-      endTurnEnabled: false,
-      endTurnDisabledReason: "回合切換中。"
+      labelAsset: "enemyTurnLabel",
+      endTurnEnabled: false
     });
+    expect(snapshot.endTurnDisabledReason).toBeUndefined();
+  });
+
+  it("maps active auto transition to the enemy-turn label instead of debug transition text", () => {
+    const snapshot = deriveTurnActionUiSnapshot(playerReady, { turnTransition: { kind: "autoNoPlayableCards", message: "自動結束回合。" } });
+    expect(snapshot).toMatchObject({
+      state: "autoEndingNoPlayableCards",
+      title: "自動結束",
+      message: "自動結束回合。",
+      labelAsset: "enemyTurnLabel",
+      endTurnEnabled: false
+    });
+    expect(snapshot.endTurnDisabledReason).toBeUndefined();
   });
 
   it("maps enemy phase to the enemy-turn label asset", () => {

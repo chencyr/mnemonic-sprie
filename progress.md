@@ -306,3 +306,21 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - `npm run build` passed.
   - `npm run test:e2e` passed.
 - Completed `24-combat-enemy-arena-region-backlog.md` and moved it to `backlogs/done/`.
+
+## 2026-05-06 Combat Turn Action Visual Tuning
+
+- User requested proposal-1-style micro-tuning for the right-bottom turn action UI:
+  - Turn transition should swap the main button label to `敵方回合` instead of showing debug-like `回合切換中` text.
+  - The large button plate should rotate left 20 degrees while the label stays unrotated and about 5% smaller.
+  - The turn/energy status frame should shrink to about 50% and left-align with the large button's left edge.
+- Updated `docs/superpowers/specs/2026-05-06-combat-turn-action-region-design.md` and `docs/superpowers/plans/2026-05-06-combat-turn-action-region-plan.md` with the tuning rule before implementing.
+- Implementation complete:
+  - `manualEnding` and `autoEndingNoPlayableCards` now use `enemyTurnLabel` and no longer expose `回合切換中。` as disabled reason.
+  - `TurnActionView` now rotates only the large button plate by -20 degrees, keeps the label unrotated, reduces label size by about 5%, and shrinks the turn/energy frame.
+- Verification passed:
+  - `npm test -- tests/phaser/turnActionView.test.ts`
+  - `npm test`
+  - `npm run build`
+  - `npm run test:e2e`
+  - `$WEB_GAME_CLIENT` screenshot/state check at `output/web-game-turn-action-retune-combat/` with no console/page error files.
+  - Manual transition screenshot/state check at `output/manual-turn-action-retune-transition/` confirmed `turnActionUi.labelAsset = enemyTurnLabel` during manual transition.

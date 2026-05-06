@@ -157,8 +157,8 @@ Mapping rules:
 
 - Core `playerReady` + no transition => `playerReady`
 - Core `playerNoPlayableCards` + no transition => `playerNoPlayableCards`
-- Phaser `turnTransition.kind === "manual"` => `manualEnding`
-- Phaser `turnTransition.kind === "autoNoPlayableCards"` => `autoEndingNoPlayableCards`
+- Phaser `turnTransition.kind === "manual"` => `manualEnding`，主按鈕文字圖切成 `敵方回合`，不顯示「回合切換中」字樣。
+- Phaser `turnTransition.kind === "autoNoPlayableCards"` => `autoEndingNoPlayableCards`，主按鈕文字圖切成 `敵方回合`，不顯示「回合切換中」字樣。
 - Core `enemyPhase` => `enemyActing`
 - Phaser `victoryTransition` => `victoryPresentation`
 - Not combat or unsupported state => `disabled`
@@ -198,6 +198,8 @@ Mapping rules:
 - Panel 不得和右側 ticker 重疊。
 - `測試勝利` 保持左下，只在 `?e2e=1` 顯示。
 - 右下 panel 的按鈕尺寸必須穩定，不因文字長短造成 layout shift。
+- 大顆按鈕底圖向左旋轉約 20 度，文字圖不旋轉並縮小約 5%，避免文字跑出按鈕安全區。
+- 回合/能量狀態框縮小到原先約 50%，左界對齊大顆按鈕左界；能量 icon 與文字同步縮小。
 
 ## 測試與驗收策略
 
