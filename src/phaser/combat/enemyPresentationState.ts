@@ -11,7 +11,7 @@ export interface EnemyPresentationEntry {
 export type EnemyPresentationStateMap = Map<string, EnemyPresentationEntry>;
 
 export const ENEMY_DEATH_PRESENTATION_MS = 1000;
-export const QUICK_ENEMY_DEATH_PRESENTATION_MS = 50;
+export const QUICK_ENEMY_DEATH_PRESENTATION_MS = 250;
 
 export interface EnemyPresentationUpdateResult {
   changed: boolean;

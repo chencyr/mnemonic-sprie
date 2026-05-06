@@ -68,6 +68,6 @@ describe("enemy presentation state", () => {
 
     reconcileEnemyPresentationStates(states, [enemy("enemy-a", "dead", 0)], 1000, true);
 
-    expect(states.get("enemy-a")).toEqual({ state: "dying", startedAt: 1000, dueAt: 1050 });
+    expect(states.get("enemy-a")).toEqual({ state: "dying", startedAt: 1000, dueAt: 1250 });
   });
 });

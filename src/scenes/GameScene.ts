@@ -27,7 +27,14 @@ import {
 import { cameraHit, fadeOutOnDeath, flashTarget, floatText, shakeTarget, type FxTarget } from "../phaser/fx/combatFx";
 import { consumeNewCombatEvents, type CombatEventCursor } from "../phaser/fx/combatEventDiff";
 import { activeFeedbackItems, mapCombatEventsToFeedback, tickerItems, type CombatFeedbackItem } from "../phaser/fx/combatFeedback";
-import { enemyPresentationState, type EnemyPresentationStateMap } from "../phaser/combat/enemyPresentationState";
+import {
+  createEnemyPresentationSnapshot,
+  enemyPresentationState,
+  hasPendingEnemyDeathTransitions,
+  reconcileEnemyPresentationStates,
+  resolveEnemyPresentationTransitions,
+  type EnemyPresentationStateMap
+} from "../phaser/combat/enemyPresentationState";
 import { canAnyHandCardPlay, playabilityReason, resolveDraggedCardPlay, type CardDropResult, type DropZoneKind } from "../phaser/input/cardPlayRules";
 import { CARD_HEIGHT, CARD_WIDTH, renderCardView } from "../phaser/ui/CardView";
 import {
@@ -115,6 +122,7 @@ interface TextSnapshot {
   victoryTransition?: {
     message: string;
   };
+  combatEnemyArena?: ReturnType<typeof createEnemyPresentationSnapshot>;
   feedback: {
     active: CombatFeedbackItem[];
     ticker: CombatFeedbackItem[];
@@ -169,6 +177,7 @@ export class GameScene extends Phaser.Scene {
   private turnTransition?: TurnTransitionState;
   private victoryTransition?: VictoryTransitionState;
   private enemyPresentationStates: EnemyPresentationStateMap = new Map();
+  private enemyPresentationTimer?: Phaser.Time.TimerEvent;
   private feedbackItems: CombatFeedbackItem[] = [];
   private feedbackSequence = 0;
   private virtualNow = 0;
@@ -186,6 +195,7 @@ export class GameScene extends Phaser.Scene {
     window.advanceTime = (ms: number) => {
       this.virtualNow += ms;
       this.resolvePendingTurnTransition();
+      this.resolvePendingEnemyPresentationTransitions();
       this.resolvePendingVictoryTransition();
       this.render();
     };
@@ -201,6 +211,9 @@ export class GameScene extends Phaser.Scene {
       this.turnTransition = undefined;
       this.victoryTransition = undefined;
       this.feedbackItems = [];
+      this.enemyPresentationStates.clear();
+      this.enemyPresentationTimer?.remove(false);
+      this.enemyPresentationTimer = undefined;
     }
     this.clearDragFeedback();
     this.root?.destroy(true);
@@ -302,6 +315,15 @@ export class GameScene extends Phaser.Scene {
   private drawCombat() {
     const combat = this.engine.run.currentCombat;
     if (!combat) return;
+    resolveEnemyPresentationTransitions(this.enemyPresentationStates, this.virtualNow);
+    const presentationUpdate = reconcileEnemyPresentationStates(this.enemyPresentationStates, combat.enemies, this.virtualNow, this.quick);
+    if (presentationUpdate.newlyDyingEnemyIds.length > 0) {
+      this.turnTransition = undefined;
+      this.selected = undefined;
+      if (this.dragCard.active) this.dragCard = { active: false, reasonIfBlocked: "目標已倒下。" };
+      this.clearDragFeedback();
+    }
+    this.schedulePendingEnemyPresentationTransition();
     this.enemyDropZones = new Map();
     this.root?.add(renderCombatBackground(this, this.uiContext(), this.assets));
     this.root?.add(renderCombatTopResource(this, this.engine.run));
@@ -345,7 +367,9 @@ export class GameScene extends Phaser.Scene {
         y,
         target: enemyView as FxTarget
       });
-      if (isEnemyAlive(enemy)) this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 110, y: y - 122, w: 220, h: 260 });
+      if (isEnemyAlive(enemy) && enemyPresentationState(this.enemyPresentationStates, enemy) === "alive") {
+        this.enemyDropZones.set(enemy.instanceId, { id: enemy.instanceId, x: x - 110, y: y - 122, w: 220, h: 260 });
+      }
     });
     const diff = consumeNewCombatEvents(this.combatEventCursor, combat.id, combat.events);
     this.combatEventCursor = diff.cursor;
@@ -729,15 +753,20 @@ export class GameScene extends Phaser.Scene {
   private maybeBeginVictoryTransition(): boolean {
     const combat = this.engine.run.currentCombat;
     if (this.engine.run.mode !== "combat" || !combat || combat.phase !== "victory") return false;
+    reconcileEnemyPresentationStates(this.enemyPresentationStates, combat.enemies, this.virtualNow, this.quick);
     this.beginVictoryTransition();
     return true;
   }
 
   private beginVictoryTransition() {
     if (this.victoryTransition || this.engine.run.mode !== "combat") return;
-    const delayMs = 1000;
-    const transition: VictoryTransitionState = { message: "敵人倒下，記憶正在沉澱。", dueAt: this.virtualNow + delayMs };
+    const pendingDueAt = this.nextPendingEnemyDeathDueAt();
+    const dueAt = pendingDueAt ?? this.virtualNow + (this.quick ? 50 : 1000);
+    const delayMs = Math.max(0, dueAt - this.virtualNow);
+    const transition: VictoryTransitionState = { message: "敵人倒下，記憶正在沉澱。", dueAt };
     transition.timer = this.time.delayedCall(delayMs, () => {
+      this.virtualNow = Math.max(this.virtualNow, dueAt);
+      this.resolvePendingEnemyPresentationTransitions();
       this.resolvePendingVictoryTransition(true);
       this.render();
     });
@@ -749,11 +778,38 @@ export class GameScene extends Phaser.Scene {
   private resolvePendingVictoryTransition(force = false) {
     if (!this.victoryTransition) return;
     if (!force && this.virtualNow < this.victoryTransition.dueAt) return;
+    resolveEnemyPresentationTransitions(this.enemyPresentationStates, this.virtualNow);
+    if (hasPendingEnemyDeathTransitions(this.enemyPresentationStates)) return;
     this.victoryTransition.timer?.remove(false);
     this.victoryTransition = undefined;
     if (this.engine.run.mode !== "combat" || this.engine.run.currentCombat?.phase !== "victory") return;
     completeCurrentCombat(this.engine);
     this.selected = undefined;
+  }
+
+  private resolvePendingEnemyPresentationTransitions() {
+    const result = resolveEnemyPresentationTransitions(this.enemyPresentationStates, this.virtualNow);
+    if (result.changed) this.resolvePendingVictoryTransition();
+  }
+
+  private schedulePendingEnemyPresentationTransition() {
+    if (this.enemyPresentationTimer) return;
+    const pendingEnemyDeathDueAt = this.nextPendingEnemyDeathDueAt();
+    if (typeof pendingEnemyDeathDueAt !== "number") return;
+    const delay = Math.max(0, pendingEnemyDeathDueAt - this.virtualNow);
+    this.enemyPresentationTimer = this.time.delayedCall(delay, () => {
+      this.enemyPresentationTimer = undefined;
+      this.virtualNow = Math.max(this.virtualNow, pendingEnemyDeathDueAt);
+      this.resolvePendingEnemyPresentationTransitions();
+      this.render();
+    });
+  }
+
+  private nextPendingEnemyDeathDueAt() {
+    return Array.from(this.enemyPresentationStates.values())
+      .filter((entry) => entry.state === "dying" && typeof entry.dueAt === "number")
+      .map((entry) => entry.dueAt as number)
+      .sort((a, b) => a - b)[0];
   }
 
   private playSfx(key: string, volume = 0.5) {
@@ -901,6 +957,7 @@ export class GameScene extends Phaser.Scene {
       drag: this.dragCard,
       turnTransition: this.turnTransition ? { kind: this.turnTransition.kind, message: this.turnTransition.message } : undefined,
       victoryTransition: this.victoryTransition ? { message: this.victoryTransition.message } : undefined,
+      combatEnemyArena: combat ? createEnemyPresentationSnapshot(this.enemyPresentationStates, combat.enemies) : undefined,
       feedback: this.feedbackSnapshot(),
       combatUi:
         run.mode === "combat"
@@ -928,7 +985,16 @@ export class GameScene extends Phaser.Scene {
               const def = this.dataModel.cards.find((item) => item.id === card.cardId)!;
               return { id, cardId: card.cardId, name: card.mutation?.name ?? def.name, cost: effectiveCardCost(this.dataModel, card), type: def.type };
             }),
-            enemies: combat.enemies.map((enemy) => ({ id: enemy.instanceId, enemyId: enemy.enemyId, state: enemy.state, hp: enemy.hp, maxHp: enemy.maxHp, intent: enemy.intent.type })),
+            enemies: combat.enemies.map((enemy) => ({
+              id: enemy.instanceId,
+              enemyId: enemy.enemyId,
+              state: enemy.state,
+              gameplayState: enemy.state,
+              presentationState: enemyPresentationState(this.enemyPresentationStates, enemy),
+              hp: enemy.hp,
+              maxHp: enemy.maxHp,
+              intent: enemy.intent.type
+            })),
             events: combat.events.slice(-8).map((event) => ({
               type: event.type,
               message: event.message,

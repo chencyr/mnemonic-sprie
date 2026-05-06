@@ -170,6 +170,9 @@ async function assertVictoryTransitionDelaysReward(page) {
   assert.equal(current.mode, "combat");
   assert.equal(current.combat.phase, "victory");
   assert.equal(current.combat.enemies[0].state, "dead");
+  assert.equal(current.combat.enemies[0].presentationState, "dying");
+  assert.deepEqual(current.combatEnemyArena.pendingDeathTransitions, ["transition-target"]);
+  assert.equal(current.combatEnemyArena.victoryBlockedByEnemyTransitions, true);
   assert.ok(current.feedback?.center?.some((item) => item.type === "death"), "Enemy death should surface as center combat feedback.");
   assert.ok(current.feedback?.ticker?.some((item) => item.type === "death"), "Enemy death should surface in combat ticker.");
   assert.ok(current.victoryTransition, "Victory should wait for death presentation.");
@@ -177,12 +180,14 @@ async function assertVictoryTransitionDelaysReward(page) {
   assert.ok(!current.buttons.find((button) => button.id === "end-turn")?.enabled, "End turn should be disabled during victory presentation.");
   assert.ok(!current.buttons.find((button) => button.id === "auto-win")?.enabled, "Test win shortcut should be disabled during victory presentation.");
 
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(25);
   current = await state(page);
   assert.equal(current.mode, "combat");
-  assert.ok(current.victoryTransition, "Reward should not appear before the 1s death presentation finishes.");
+  assert.equal(current.combat.enemies[0].presentationState, "dying");
+  assert.equal(current.combatEnemyArena.victoryBlockedByEnemyTransitions, true);
+  assert.ok(current.victoryTransition, "Reward should not appear before the death presentation finishes.");
 
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(180);
   current = await state(page);
   assert.equal(current.mode, "reward");
   assert.equal(current.victoryTransition, undefined);
