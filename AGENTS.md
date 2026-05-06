@@ -117,5 +117,8 @@
   - `npm test`
   - `npm run build`
   - `npm run test:e2e`
-- 若修改 UI，必須用瀏覽器或 Playwright 截圖檢查相關畫面。
+- 若修改 UI，必須用 Codex app 的 in-app browser 或專案自動化 Playwright 截圖檢查相關畫面。
+- 所有互動式、人工視覺檢查、local URL 導頁與 browser smoke test，都必須使用 Codex app browser / browser-use / MCP Playwright 的 in-app browser target。
+- 不得使用 macOS `open`、Chrome、Safari、Firefox 或其他使用者自行安裝的外部瀏覽器來替代 Codex app browser 測試。
+- 若需要自動化瀏覽器測試，只能使用專案測試指令、`$WEB_GAME_CLIENT` 或等效的工具化/headless Playwright 流程；不得開啟 app 外部的使用者瀏覽器。
 - 若修改遊戲流程，必須更新 `window.render_game_to_text()` 或 E2E，讓測試能觀察新增狀態。
