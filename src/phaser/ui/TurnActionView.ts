@@ -152,22 +152,22 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
   const { scene, context, assets, x, y, snapshot, onEndTurn } = options;
   const root = scene.add.container(x, y);
 
-  const frame = image(scene, context, 168, 44, assets.getCombatUiAsset("turnEnergyFrame").key, 286, 91, "combat-ui:turn-energy-frame");
+  const frame = image(scene, context, 168, 36, assets.getCombatUiAsset("turnEnergyFrame").key, 282, 90, "combat-ui:turn-energy-frame");
   if (frame) root.add(frame);
   else root.add(scene.add.rectangle(18, 4, 300, 86, 0x000000, 0.64).setOrigin(0).setStrokeStyle(2, 0xf4c542, 0.86));
 
-  root.add(label(scene, 58, 19, `回合 ${snapshot.turn}`, 15, colors.ink, 96));
-  root.add(label(scene, 58, 51, `能量 ${snapshot.energy}/${snapshot.maxEnergy}`, 14, colors.cyanText, 104));
+  root.add(label(scene, 60, 10, `回合 ${snapshot.turn}`, 15, colors.ink, 92));
+  root.add(label(scene, 60, 43, `能量 ${snapshot.energy}/${snapshot.maxEnergy}`, 14, colors.cyanText, 104));
 
   for (let index = 0; index < snapshot.maxEnergy; index += 1) {
     const icon = image(
       scene,
       context,
-      194 + index * 34,
-      58,
+      206 + index * 30,
+      50,
       assets.getCombatUiAsset("energyLightningIcon").key,
-      24,
-      24,
+      22,
+      22,
       `combat-ui:energy-lightning-icon-${index}`,
       index < snapshot.energy ? 1 : 0.26
     );
@@ -175,14 +175,14 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
   }
 
   const plateAlpha = snapshot.endTurnEnabled || snapshot.state === "enemyActing" ? 1 : 0.52;
-  const plate = image(scene, context, 170, 130, assets.getCombatUiAsset("endTurnButtonPlate").key, 300, 159, "combat-ui:end-turn-button-plate", plateAlpha);
+  const plate = image(scene, context, 170, 136, assets.getCombatUiAsset("endTurnButtonPlate").key, 292, 154, "combat-ui:end-turn-button-plate", plateAlpha);
   if (plate) root.add(plate);
 
   const labelRole = snapshot.labelAsset === "enemyTurnLabel" ? "combat-ui:enemy-turn-label" : "combat-ui:end-turn-label";
-  const labelSprite = image(scene, context, 170, 130, assets.getCombatUiAsset(snapshot.labelAsset).key, 206, 67, labelRole, plateAlpha);
+  const labelSprite = image(scene, context, 170, 136, assets.getCombatUiAsset(snapshot.labelAsset).key, 178, 58, labelRole, plateAlpha);
   if (labelSprite) root.add(labelSprite);
 
-  const hitZone = scene.add.zone(28, 78, 284, 94).setOrigin(0).setInteractive({ useHandCursor: snapshot.endTurnEnabled });
+  const hitZone = scene.add.zone(38, 90, 264, 88).setOrigin(0).setInteractive({ useHandCursor: snapshot.endTurnEnabled });
   hitZone.setName("end-turn");
   hitZone.on("pointerup", () => {
     if (snapshot.endTurnEnabled) onEndTurn();
@@ -191,15 +191,15 @@ export function renderTurnActionView(options: RenderTurnActionViewOptions) {
     id: "end-turn",
     label: snapshot.labelAsset === "enemyTurnLabel" ? "敵方回合" : "結束回合",
     x: x + 170,
-    y: y + 125,
-    w: 284,
-    h: 94,
+    y: y + 136,
+    w: 264,
+    h: 88,
     enabled: snapshot.endTurnEnabled
   });
   root.add(hitZone);
 
   if (snapshot.endTurnDisabledReason) {
-    root.add(label(scene, 28, 174, snapshot.endTurnDisabledReason, 11, "#d1d5db", 280));
+    root.add(label(scene, 38, 184, snapshot.endTurnDisabledReason, 11, "#d1d5db", 260));
   }
 
   return root;

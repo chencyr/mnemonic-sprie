@@ -409,8 +409,8 @@ export class GameScene extends Phaser.Scene {
         scene: this,
         context: this.uiContext(),
         assets: this.assets,
-        x: WIDTH - 318,
-        y: 498,
+        x: WIDTH - 330,
+        y: 492,
         snapshot: turnActionUi,
         onEndTurn: () => this.beginTurnTransition("manual")
       })

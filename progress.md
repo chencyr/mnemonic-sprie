@@ -207,6 +207,12 @@ Original prompt: 初始化這個專案 git 準備一個遊戲開發
   - develop-web-game client ran against `http://127.0.0.1:5179/?e2e=1`; screenshot/state written to `output/web-game-turn-action-combat/`.
   - Visual review of `output/web-game-turn-action-combat/shot-0.png` confirmed the right-bottom button, gold frame, energy icons, and label render with no hand-card occlusion.
   - `output/web-game-turn-action-combat/state-0.json` confirmed `turnActionUi.state = playerReady`, expected asset roles, enabled `end-turn`, and no console/page error files.
+- Follow-up visual tuning against `externals/battle-design-proposal-1.png`:
+  - Reduced the end-turn label display size so `結束回合` stays inside the cyan button face.
+  - Tightened the button plate display size and adjusted the right-bottom anchor to avoid clipping and hand-card overlap.
+  - Raised the turn/energy frame and tightened energy lightning spacing to better match the proposal-1 information strip.
+  - develop-web-game verification wrote screenshot/state to `output/web-game-turn-action-tune/`; no error files were produced.
+  - Verification after tuning: `npm test`, `npm run build`, and `npm run test:e2e` passed.
 
 ## 2026-05-06 Combat Scene UI Implementation
 
